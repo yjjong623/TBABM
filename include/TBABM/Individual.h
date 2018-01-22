@@ -29,7 +29,7 @@ public:
 
 	long householdID;
 
-	int age;
+	int birthDate; // In units of 't'
 	Sex sex;
 
 	Pointer<Individual> spouse;
@@ -37,19 +37,27 @@ public:
 	Pointer<Individual> father;
 	std::vector<Pointer<Individual>> offspring; // Can have multiple children	
 
+	std::vector<Pointer<Individual>> livedWithBefore; // People lived with before
+
 	HouseholdPosition householdPosition;
+	MarriageStatus marriageStatus;
 	// HIVStatus hivStatus;
 	// TBStatus tbStatus;
 
-	Individual(long hid, int age, Sex sex,
+	Individual(long householdID, int birthDate, Sex sex,
 			   Pointer<Individual> spouse,
 			   Pointer<Individual> mother,
 			   Pointer<Individual> father,
 			   std::vector<Pointer<Individual>> offspring,
-			   HouseholdPosition householdPosition);
+			   HouseholdPosition householdPosition,
+			   MarriageStatus marriageStatus) :
+	  householdID(householdID), birthDate(birthDate), sex(sex), spouse(spouse),
+	  mother(mother), father(father), offspring(offspring),
+	  householdPosition(householdPosition),
+	  marriageStatus(marriageStatus) {};
 	
-	Individual(long hid, int age, Sex sex, HouseholdPosition householdPosition) :
-	  Individual(hid, age, sex, Pointer<Individual>(), Pointer<Individual>(), Pointer<Individual>(), {}, householdPosition) {};
-
+	Individual(long hid, int birthDate, Sex sex, HouseholdPosition householdPosition,
+			   MarriageStatus marriageStatus) :
+	  Individual(hid, birthDate, sex, Pointer<Individual>(), Pointer<Individual>(), Pointer<Individual>(), {}, householdPosition, marriageStatus) {};
 private:
 };

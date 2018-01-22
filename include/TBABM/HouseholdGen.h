@@ -1,16 +1,26 @@
 #include <cstdio>
 #include <iostream>
+#include <map>
+#include <string>
 
 #include "Household.h"
 #include "Individual.h"
 
-using Individual::HouseholdPosition;
-using Individual::Sex;
+#include <StatisticalDistribution.h>
+
+using HouseholdPosition = Individual::HouseholdPosition;
+using Sex               = Individual::Sex;
+using MarriageStatus    = Individual::MarriageStatus;
+
+using std::map;
+using std::string;
+
+using namespace StatisticalDistributions;
 
 class HouseholdGen {
 public:
-	using Distributions = map<string, StatisticalDistribution>;
-	using Constants = map<string, int>;
+	using Distributions = map<string, Pointer<StatisticalDistribution<long double>>>;
+	using Constants = map<string, double>;
 
 	struct MicroIndividual {
 		HouseholdPosition role;
@@ -22,8 +32,8 @@ public:
 
 	Pointer<Household> GetHousehold(int hid);
 
-	HouseholdGen(const Distributions d, const Constants c, const char *file) : 
-		distributions(d), constants(c), file(file) {
+	HouseholdGen(const Distributions d, const Constants cst, const char *file) : 
+		distributions(d), constants(cst), file(file) {
 			FILE *ifile = fopen(file, "r");
 			int c;
 			int lines = 2;
@@ -37,7 +47,7 @@ public:
 
 				fscanf(ifile, "%i", &c);
 				if (getc(ifile) != ',') {
-					cerr << "Line #" << lines << " has a noninteger number of people. Treating as 0" << endl;
+					std::cerr << "Line #" << lines << " has a noninteger number of people. Treating as 0" << std::endl;
 					c = 0;
 				}
 
@@ -89,6 +99,6 @@ private:
 	std::vector<MicroFamily> families;
 
 	const Distributions distributions;
-	const Constants constants;	
+	const Constants constants;
 	const char *file;
-}
+};

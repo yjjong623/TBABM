@@ -4,12 +4,15 @@
 #include <string>
 
 #include <StatisticalDistribution.h>
+#include <Exponential.h>
 #include <RNG.h>
 #include <EventQueue.h>
 #include <PrevalenceTimeSeries.h>
 
 #include "Individual.h"
 #include "Household.h"
+#include "HouseholdGen.h"
+
 
 using std::map;
 using std::unordered_set;
@@ -25,7 +28,7 @@ using Pointer = std::shared_ptr<T>;
 class TBABM {
 public:
 	using Distributions = map<string, Pointer<StatisticalDistribution<long double>>>;
-	using Constants = map<string, int>;
+	using Constants = map<string, double>;
 
 	using EQ = EventQueue<double, bool>;
 	using EventFunc = EQ::EventFunc;
@@ -56,7 +59,9 @@ public:
 		Deaths
 	};
 
-	TBABM(TBABM::Distributions distributions, TBABM::Constants constants) : 
+	TBABM(TBABM::Distributions distributions, 
+		  TBABM::Constants constants,
+		  const char *householdsFile) : 
 		distributions(distributions),
 		constants(constants),
 
@@ -70,8 +75,10 @@ public:
 		maleSeeking({}),
 		femaleSeeking({}),
 
+		householdGen(distributions, constants, householdsFile),
+
 		nHouseholds(0),
-		rng(0) {}
+		rng(0) {};
 
 	bool Run(void);
 
@@ -94,28 +101,17 @@ private:
 	EventFunc NewHouseholds(int num);
 
 	// Algorithm S5: Create a household
-	EventFunc CreateHousehold(vector<Pointer<Individual>> idvs);
+	EventFunc CreateHousehold(Pointer<Individual> head,
+						      Pointer<Individual> spouse,
+							  std::unordered_set<Pointer<Individual>> offspring,
+							  std::unordered_set<Pointer<Individual>> other);
 
 	// Algorithm S6: Birth
-	EventFunc Birth(void);
+	EventFunc Birth(int motherHID, Pointer<Individual> mother, 
+								   Pointer<Individual> father);
 
 	// Algorithm S7: Joining a household
 	EventFunc JoinHousehold(Pointer<Individual>, long hid);
-
-	// Algorithm S8: Create an individual
-	// DRAFT implemented
-	template <typename... Args>
-	EventFunc CreateIndividual(Args... args)
-	{
-		EventFunc ef = 
-			[this](double t, SchedulerT scheduler) {
-				auto idv = std::make_shared<Individual>(std::forward<Args>(args)...);
-
-				schedule(t, ChangeAgeGroup(idv));
-
-				return true;
-			};
-	}
 
 	// Algorithm S9: Change of age groups
 	EventFunc ChangeAgeGroup(Pointer<Individual>);
@@ -136,6 +132,20 @@ private:
 	EventFunc Divorce(Pointer<Individual> m, Pointer<Individual> f);
 
 	////////////////////////////////////////////////////////
+	/// Scheduling
+	////////////////////////////////////////////////////////
+
+	bool Schedule(int t, EventFunc e);
+
+	////////////////////////////////////////////////////////
+	/// Utility
+	////////////////////////////////////////////////////////
+	void PurgeReferencesToIndividual(Pointer<Individual> host,
+										    Pointer<Individual> idv);
+
+	void DeleteIndividual(Pointer<Individual> idv);
+
+	////////////////////////////////////////////////////////
 	/// Data
 	////////////////////////////////////////////////////////
 
@@ -151,6 +161,8 @@ private:
 
 	Distributions distributions;
 	Constants constants;
+
+	HouseholdGen householdGen;
 
 	long nHouseholds;
 

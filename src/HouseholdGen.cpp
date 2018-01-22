@@ -5,15 +5,17 @@
 #include "../include/TBABM/HouseholdGen.h"
 
 Pointer<Household>
-HouseholdGen::GetHousehold(const int hid, const RNG &rng)
+HouseholdGen::GetHousehold(const int hid)
 {
 	// Create a blank Household object
 	auto household = std::make_shared<Household>();
 
 	// Grab a random number between 0 and size(dataset)-1
+	std::random_device rd;
+	std::mt19937 gen(rd());
 	size_t size = families.size();
 	std::uniform_int_distribution<> dis(0, size-1);
-	auto fid = dis(rng);
+	auto fid = dis(gen);
 
 	// Retrieve the corresponding vector
 	MicroFamily family = families[fid];
@@ -22,7 +24,8 @@ HouseholdGen::GetHousehold(const int hid, const RNG &rng)
 	//   household; create an Individual using the smaller
 	//   constructor
 	MicroIndividual _head = family[0];
-	auto head = std::make_shared<Individual>(hid, _head.age, _head.sex, _head.role);
+	auto head = std::make_shared<Individual>(hid, 0-365*_head.age, _head.sex, _head.role, MarriageStatus::Married);
+	auto newIndividuals = std::vector<Pointer<Individual>>{head};
 
 	// Add this object to the household as the head
 	household->head = head;
@@ -35,41 +38,57 @@ HouseholdGen::GetHousehold(const int hid, const RNG &rng)
 	for (int i = 1; i < family.size(); ++i)
 	{
 		MicroIndividual midv = family[i];
-		auto idv = std::make_shared<Individual>(hid, midv.age, midv.sex, midv.role);
-		switch (idv.householdPosition) {
+		auto idv = std::make_shared<Individual>(hid, 0-365*midv.age, midv.sex, midv.role, MarriageStatus::Single);
+		newIndividuals.push_back(idv);
+		switch (idv->householdPosition) {
 			case (HouseholdPosition::Head):
-				cout << "Error: Can't have two household heads" << endl;
+				std::cout << "Error: Can't have two household heads" << std:: endl;
 				break;
 			case (HouseholdPosition::Spouse):
-				household.spouse = idv;
-				idv->spouse = household->head;
-				household.head->spouse = idv;
+				idv->marriageStatus = MarriageStatus::Married;
+
+				household->spouse = idv;
+				
+				idv->spouse = household->head; // bidirectional
+				household->head->spouse = idv;
 				break;
 			case (HouseholdPosition::Offspring):
 				// Add offspring to head and spouse
-				household.head->offspring.push_back(idv);
-				if (household.spouse)
-					household.spouse->offspring.push_back(idv);
+				household->head->offspring.push_back(idv);
+				if (household->spouse)
+					household->spouse->offspring.push_back(idv);
 
 				// Add offspring to household
-				household.offspring.push_back(idv);
+				household->offspring.insert(idv);
 
 				// Add mat/paternity to offspring
-				if (household->head.sex == Sex::Male)
-					idv->father = household.head;
+				if (household->head->sex == Sex::Male)
+					idv->father = household->head;
 				else
-					idv->mother = household.head;
+					idv->mother = household->head;
 
-				if (household.spouse)
-					if (household.spouse->sex == Sex::Female)
-						idv->mother = household.spouse;
-					else
-						idv->father = household.spouse;
-
+				if (household->spouse) {
+					if (household->spouse->sex == Sex::Female) {
+						idv->mother = household->spouse;
+					}
+					else {
+						idv->father = household->spouse;
+					}
+				}
+				
 				break;
 			case (HouseholdPosition::Other):
-				household.other.push_back(idv);
+				idv->marriageStatus = MarriageStatus::Single;
+				household->other.insert(idv);
 				break;
 		}
 	}
+
+	// Keep track of who the individuals have lived with before
+	for (size_t i = 0; i < newIndividuals.size(); i++)
+		for (size_t j = 0; j < newIndividuals.size(); j++)
+			if (newIndividuals[i] != newIndividuals[j])
+				newIndividuals[i]->livedWithBefore.push_back(newIndividuals[j]);
+
+	return household;
 }

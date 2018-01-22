@@ -6,7 +6,7 @@ set(header ${header_path}/Individual.h
 		   ${header_path}/TBABM.h)
 
 # Set source files
-set(src TBABM.cpp)
+set(src TBABM.cpp HouseholdGen.cpp)
 
 # Require C++14 compilation
 set(CMAKE_CXX_STANDARD 14)
