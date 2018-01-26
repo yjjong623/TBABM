@@ -23,6 +23,9 @@ find_package(StatisticalDistributionsLib REQUIRED)
 # Define library target
 add_library(TBABM ${header} ${src})
 
+add_executable(TBABMTest test.cpp TBABM.cpp HouseholdGen.cpp)
+target_link_libraries(TBABMTest PUBLIC SimulationLib StatisticalDistributionsLib)
+
 target_include_directories(TBABM PUBLIC
   $<BUILD_INTERFACE:${TBABM_SOURCE_DIR}/include> # for headers when building
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> # for config_impl.hpp when building

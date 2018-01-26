@@ -47,8 +47,8 @@ public:
 
 				fscanf(ifile, "%i", &c);
 				if (getc(ifile) != ',') {
-					std::cerr << "Line #" << lines << " has a noninteger number of people. Treating as 0" << std::endl;
-					c = 0;
+					std::cerr << "Line #" << lines << " has a noninteger number of people. Skipping over" << std::endl;
+					continue;
 				}
 
 				MicroFamily f;
@@ -89,7 +89,8 @@ public:
 
 					f.push_back(idv);
 
-					while((c = getc(ifile)) != EOF && c != '\n');
+					int b;
+					while((b = getc(ifile)) != EOF && b != '\n');
 				}
 
 				families.push_back(f);

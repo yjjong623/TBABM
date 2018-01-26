@@ -8,6 +8,7 @@
 #include <RNG.h>
 #include <EventQueue.h>
 #include <PrevalenceTimeSeries.h>
+#include <EventQueue.h>
 
 #include "Individual.h"
 #include "Household.h"
@@ -134,8 +135,9 @@ private:
 	////////////////////////////////////////////////////////
 	/// Scheduling
 	////////////////////////////////////////////////////////
+	EventQueue<> eq;
 
-	bool Schedule(int t, EventFunc e);
+	void Schedule(int t, EventQueue<>::EventFunc ef);
 
 	////////////////////////////////////////////////////////
 	/// Utility
