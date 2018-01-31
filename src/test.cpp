@@ -24,8 +24,8 @@ int main(int argc, char const *argv[])
 	distributions["timeToBirth"]             = std::make_shared<Normal>(1,1);
 
 	// These are active
-	constants["naturalDeath-0-m"] = 1./50.;
-	constants["naturalDeath-0-f"] = 1./50.;
+	constants["naturalDeath-0-M"] = 1./20.;
+	constants["naturalDeath-0-F"] = 1./20.;
 	constants["tMax"] = 365*100;
 	constants["periodLength"] = 365;
 

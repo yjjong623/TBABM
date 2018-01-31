@@ -37,7 +37,7 @@ bool TBABM::Run(void)
 
 	while (!eq.Empty()) {
 		auto e = eq.Top();
-		printf("Running event at time %d", (int)e->t);
+		printf("Running event at time %d\n", (int)e->t);
 		e->run();
 		delete e;
 		eq.Pop();
@@ -317,12 +317,12 @@ EventFunc TBABM::Birth(int motherHID, Pointer<Individual> mother,
 
 				return constantName;
 			};
-			double deathRate = constants[concoctConstantName(t, "naturalDeath")];
-			printf("death rate is %f\n", deathRate);
+			double deathRate = constants.at(concoctConstantName(t, "naturalDeath"));
 			double timeToDeath = 365 * Exponential(deathRate)(rng.mt_);
 
 			Schedule(t + timeToDeath, Death(baby));
 			printf("%d\n", (int)(t+timeToDeath));
+			printf("death rate is %f\n", deathRate);
 			// [END] FOR TESTING ONLY!
 			
 			// UNCOMMENT when not testing birth-death!
@@ -470,6 +470,7 @@ EventFunc TBABM::Death(Pointer<Individual> idv)
 				femaleSeeking.erase(idv);
 
 			auto household = households[idv->householdID];
+
 			switch (idv->householdPosition) {
 				case (HouseholdPosition::Head):
 					household->head.reset();
@@ -478,11 +479,12 @@ EventFunc TBABM::Death(Pointer<Individual> idv)
 					household->spouse.reset();
 					break;
 				case (HouseholdPosition::Offspring):
-					for (auto it = household->offspring.begin(); it != household->offspring.end(); it++)
+					for (auto it = household->offspring.begin(); it != household->offspring.end(); it++) {
 						if (*it == idv) {
 							household->offspring.erase(it);
 							break;
 						}
+					}
 					break;
 				case (HouseholdPosition::Other):
 					for (auto it = household->other.begin(); it != household->other.end(); it++)
@@ -495,43 +497,49 @@ EventFunc TBABM::Death(Pointer<Individual> idv)
 
 			DeleteIndividual(idv);
 
-			if (household->spouse) {
-				household->head = household->spouse;
-				household->head->marriageStatus = MarriageStatus::Single;
-				household->spouse.reset();
-			} else if (household->other.size() > 0 || household->offspring.size() > 0) {
-				// Identify oldest 'other' in household
-				int earliestBirthDateOther = std::numeric_limits<int>::max();
-				auto oldestOther = Pointer<Individual>();
-				for (auto it = household->other.begin(); it != household->other.end(); it++) {
-					if ((*it)->birthDate < earliestBirthDateOther) {
-						earliestBirthDateOther = (*it)->birthDate;
-						oldestOther = *it;
+			if (idv == household->head) {
+				if (household->spouse) {
+					household->head = household->spouse;
+					household->head->marriageStatus = MarriageStatus::Single;
+					household->spouse.reset();
+				} else if (household->other.size() > 0 || household->offspring.size() > 0) {
+					// Identify oldest 'other' in household
+					int earliestBirthDateOther = std::numeric_limits<int>::max();
+					auto oldestOther = Pointer<Individual>();
+					for (auto it = household->other.begin(); it != household->other.end(); it++) {
+						if ((*it)->birthDate < earliestBirthDateOther) {
+							earliestBirthDateOther = (*it)->birthDate;
+							oldestOther = *it;
+						}
 					}
-				}
 
-				// Identify oldest 'offspring' in household
-				int earliestBirthDateOffspring = std::numeric_limits<int>::max();
-				auto oldestOffspring = Pointer<Individual>();
-				for (auto it = household->offspring.begin(); it != household->offspring.end(); it++) {
-					if ((*it)->birthDate < earliestBirthDateOffspring) {
-						earliestBirthDateOffspring = (*it)->birthDate;
-						oldestOffspring = *it;
+					// Identify oldest 'offspring' in household
+					int earliestBirthDateOffspring = std::numeric_limits<int>::max();
+					auto oldestOffspring = Pointer<Individual>();
+					for (auto it = household->offspring.begin(); it != household->offspring.end(); it++) {
+						if ((*it)->birthDate < earliestBirthDateOffspring) {
+							earliestBirthDateOffspring = (*it)->birthDate;
+							oldestOffspring = *it;
+						}
 					}
-				}
 
-				// Assign new head
-				if (earliestBirthDateOther < earliestBirthDateOffspring) { // Oldest person is an 'other'
-					household->head = oldestOther;
-					household->other.erase(oldestOther);
-				} else { // Oldest person is an offspring
-					household->head = oldestOffspring;
-					household->offspring.erase(oldestOffspring);
+					// Assign new head
+					if (earliestBirthDateOther < earliestBirthDateOffspring) { // Oldest person is an 'other'
+						household->head = oldestOther;
+						household->other.erase(oldestOther);
+					} else { // Oldest person is an offspring
+						household->head = oldestOffspring;
+						household->offspring.erase(oldestOffspring);
+					}
+				} else { // Household must be empty because there is no spouse, others, offspring
+					households[idv->householdID].reset();
 				}
-			} else { // Household must be empty because there is no spouse, others, offspring
-				households[idv->householdID].reset();
 			}
 
+			household->RemoveIndividual(idv);
+			population.erase(idv);
+
+			printf("\tRecording change in population size\n");
 			populationSize.Record(t, -1);
 
 			return true;
