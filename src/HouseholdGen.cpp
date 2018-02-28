@@ -17,6 +17,7 @@ HouseholdGen::GetHousehold(const int hid)
 	std::uniform_int_distribution<> dis(0, size-1);
 	auto fid = dis(gen);
 
+
 	// Retrieve the corresponding vector
 	MicroFamily family = families[fid];
 
@@ -42,7 +43,7 @@ HouseholdGen::GetHousehold(const int hid)
 		newIndividuals.push_back(idv);
 		switch (idv->householdPosition) {
 			case (HouseholdPosition::Head):
-				std::cout << "Error: Can't have two household heads" << std:: endl;
+				std::cout << "Error: Can't have two household heads" << std::endl;
 				break;
 			case (HouseholdPosition::Spouse):
 				idv->marriageStatus = MarriageStatus::Married;
@@ -51,6 +52,7 @@ HouseholdGen::GetHousehold(const int hid)
 				
 				idv->spouse = household->head; // bidirectional
 				household->head->spouse = idv;
+				household->head->marriageStatus = MarriageStatus::Married;
 				break;
 			case (HouseholdPosition::Offspring):
 				// Add offspring to head and spouse
@@ -81,6 +83,8 @@ HouseholdGen::GetHousehold(const int hid)
 				idv->marriageStatus = MarriageStatus::Single;
 				household->other.insert(idv);
 				break;
+			default:
+				printf("\t\tError!!\n");
 		}
 	}
 

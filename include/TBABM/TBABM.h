@@ -2,12 +2,15 @@
 
 #include <map>
 #include <string>
+#include <ctime>
 
 #include <StatisticalDistribution.h>
 #include <Exponential.h>
 #include <RNG.h>
 #include <EventQueue.h>
 #include <PrevalenceTimeSeries.h>
+#include <IncidenceTimeSeries.h>
+#include <CSVExport.h>
 #include <EventQueue.h>
 
 #include "Individual.h"
@@ -66,8 +69,9 @@ public:
 		distributions(distributions),
 		constants(constants),
 
-		births("births", constants["tMax"], constants["periodLength"]),
-		deaths("deaths", constants["tMax"], constants["periodLength"]),
+		births("births", 0, constants["tMax"], constants["periodLength"]),
+		deaths("deaths", 0, constants["tMax"], constants["periodLength"]),
+		marriages("marriages", 0, constants["tMax"], constants["periodLength"]),
 		populationSize("populationSize", constants["tMax"], constants["periodLength"]),
 
 		population({}),
@@ -79,12 +83,19 @@ public:
 		householdGen(distributions, constants, householdsFile),
 
 		nHouseholds(0),
-		rng(0) {};
+		rng(std::time(nullptr)) {};
 
 	bool Run(void);
 
+	bool Export(void);
+
 	template <typename T>
 	const T& GetData(TBABMData field);
+
+	IncidenceTimeSeries<int> births;
+	IncidenceTimeSeries<int> deaths;
+	IncidenceTimeSeries<int> marriages;
+	PrevalenceTimeSeries<int> populationSize;	
 
 private:
 
@@ -147,13 +158,14 @@ private:
 
 	void DeleteIndividual(Pointer<Individual> idv);
 
+	void ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPosition newRole);
+
+
 	////////////////////////////////////////////////////////
 	/// Data
 	////////////////////////////////////////////////////////
 
-	PrevalenceTimeSeries<int> births;
-	PrevalenceTimeSeries<int> deaths;
-	PrevalenceTimeSeries<int> populationSize;	
+
 
 	unordered_set<Pointer<Individual>> population;
 	map<long, Pointer<Household>> households;

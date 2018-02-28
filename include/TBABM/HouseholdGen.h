@@ -48,6 +48,7 @@ public:
 				fscanf(ifile, "%i", &c);
 				if (getc(ifile) != ',') {
 					std::cerr << "Line #" << lines << " has a noninteger number of people. Skipping over" << std::endl;
+					while ((c = getc(ifile)) != EOF && c != '\n');
 					continue;
 				}
 
@@ -87,12 +88,15 @@ public:
 						default: sex = Sex::Male;
 					}
 
-					f.push_back(idv);
+					idv.role = role;
+					idv.sex = sex;
+					idv.age = age;
 
-					int b;
-					while((b = getc(ifile)) != EOF && b != '\n');
+					f.push_back(idv);
 				}
 
+				int b;
+				while((b = getc(ifile)) != EOF && b != '\n');
 				families.push_back(f);
 			}
 		};
