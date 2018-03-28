@@ -60,12 +60,14 @@ public:
 		Marriages,
 		Divorces,
 		Births,
-		Deaths
+		Deaths,
+		PopulationSize
 	};
 
 	TBABM(TBABM::Distributions distributions, 
 		  TBABM::Constants constants,
-		  const char *householdsFile) : 
+		  const char *householdsFile, 
+		  long seed) : 
 		distributions(distributions),
 		constants(constants),
 
@@ -83,14 +85,14 @@ public:
 		householdGen(distributions, constants, householdsFile),
 
 		nHouseholds(0),
-		rng(std::time(nullptr)) {};
+		rng(seed) {};
 
 	bool Run(void);
 
 	bool Export(void);
 
 	template <typename T>
-	const T& GetData(TBABMData field);
+	const T* GetData(TBABMData field);
 
 	IncidenceTimeSeries<int> births;
 	IncidenceTimeSeries<int> deaths;

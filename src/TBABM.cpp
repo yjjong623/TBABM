@@ -16,15 +16,41 @@ using StatisticalDistributions::Exponential;
 
 using namespace StatisticalDistributions;
 
+template <>
+const PrevalenceTimeSeries<int> *TBABM::GetData<PrevalenceTimeSeries<int>>(TBABMData field)
+{
+    switch(field) {
+        case TBABMData::Marriages:   return nullptr;
+        case TBABMData::Births:      return nullptr;
+        case TBABMData::Deaths:		 return nullptr;
+        case TBABMData::PopulationSize: return &populationSize;
+        case TBABMData::Divorces:    return nullptr;
+        default:                   return nullptr;
+    }
+}
+
+template <>
+const IncidenceTimeSeries<int> *TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
+{
+    switch(field) {
+        case TBABMData::Marriages:   return &marriages;
+        case TBABMData::Births:      return &births;
+        case TBABMData::Deaths:		 return &deaths;
+        case TBABMData::PopulationSize: return nullptr;
+        case TBABMData::Divorces:    return nullptr;
+        default:                   return nullptr;
+    }
+}
+
 bool TBABM::Run(void)
 {
-	Schedule(0, CreatePopulation(10000));
+	Schedule(0, CreatePopulation(1000));
 	Schedule(365, Matchmaking());
 
 	while (!eq.Empty()) {
 		auto e = eq.Top();
 
-		if (e->t > 365*10)
+		if (e->t > constants["tMax"])
 			break;
 
 		printf("\t\t\t\tBEEP\n");
@@ -527,7 +553,7 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			////////////////////////////////////////////////////////
 			/// Natural death
 			////////////////////////////////////////////////////////
-			double deathRate = constants[concoctConstantName(t, "naturalDeath")];
+			double deathRate = constants[concoctConstantName(birthDateToAge(idv->birthDate, t), "naturalDeath")];
 			double timeToDeath = 365 * Exponential(deathRate)(rng.mt_);
 
 			bool scheduledDeath = false;
@@ -720,9 +746,9 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 
 			// DIVORCE IS DISABLED RN
 			// Time to divorce
-			// double yearsToDivorce = (*distributions["marriageDuration"])(rng.mt_);
-			// int daysToDivorce = 365 * yearsToDivorce;
-			// Schedule(t + daysToDivorce, Divorce(m, f));
+			double yearsToDivorce = (*distributions["marriageDuration"])(rng.mt_);
+			int daysToDivorce = 365 * yearsToDivorce;
+			Schedule(t + daysToDivorce, Divorce(m, f));
 
 			// Time to first birth
 			double yearsToFirstBirth = (*distributions["timeToBirth"])(rng.mt_);
@@ -743,10 +769,11 @@ EventFunc TBABM::Divorce(Pointer<Individual> m, Pointer<Individual> f)
 {
 	EventFunc ef = 
 		[this, m, f](double t, SchedulerT scheduler) {
-			printf("[%d] Divorce\n", (int)t);
+			printf("[%d] Divorce, populationSize=%lu, people: m=%ld::%lu f=%ld::%lu\n", (int)t, population.size(), m->householdID, std::hash<Pointer<Individual>>()(m), f->householdID, std::hash<Pointer<Individual>>()(f));
 
-			assert(m);
-			assert(f);
+			// If someone is dead they can't divorce
+			if (!population.count(m) || !population.count(f))
+				return true;
 
 			// Change marriage status to divorced
 			m->marriageStatus = MarriageStatus::Divorced;

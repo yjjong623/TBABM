@@ -2,6 +2,7 @@
 #include <Weibull.h>
 #include <Uniform.h>
 #include <CSVExport.h>
+#include <RNG.h>
 
 #include "../include/TBABM/TBABM.h"
 
@@ -47,53 +48,57 @@ int main(int argc, char const *argv[])
 	constants["naturalDeath-80-F"] = 1./20.;
 	constants["naturalDeath-90-M"] = 1./1.1;
 	constants["naturalDeath-90-F"] = 1./1.1;
-	constants["tMax"] = 365*100;
+	constants["tMax"] = 365*10;
 	constants["periodLength"] = 30;
 	constants["ageGroupWidth"] = 10;
 
 	const char *householdsFile = "household_structure.csv";
 
-	TBABM sim1(distributions, constants, householdsFile);
-	TBABM sim2(distributions, constants, householdsFile);
-	TBABM sim3(distributions, constants, householdsFile);
-	TBABM sim4(distributions, constants, householdsFile);
-	TBABM sim5(distributions, constants, householdsFile);
+	RNG rng(std::time(NULL));
+
+	TBABM sim1(distributions, constants, householdsFile, rng.mt_());
+	TBABM sim2(distributions, constants, householdsFile, rng.mt_());
+	TBABM sim3(distributions, constants, householdsFile, rng.mt_());
+	TBABM sim4(distributions, constants, householdsFile, rng.mt_());
+	TBABM sim5(distributions, constants, householdsFile, rng.mt_());
 
 	sim1.Run();
-	// sim2.Run();
-	// sim3.Run();
-	// sim4.Run();
-	// sim5.Run();
+	sim2.Run();
+	sim3.Run();
+	sim4.Run();
+	sim5.Run();
 
-	// TimeSeriesExport<int> births("births.csv");
-	// births.Add(&sim1.births);
-	// births.Add(&sim2.births);
-	// births.Add(&sim3.births);
-	// births.Add(&sim4.births);
-	// births.Add(&sim5.births);
-	// TimeSeriesExport<int> deaths("deaths.csv");
-	// deaths.Add(&sim1.deaths);
-	// deaths.Add(&sim1.deaths);
-	// deaths.Add(&sim1.deaths);
-	// deaths.Add(&sim1.deaths);
-	// deaths.Add(&sim1.deaths);
-	// TimeSeriesExport<int> populationSize("populationSize.csv");
-	// populationSize.Add(&sim1.populationSize);
-	// populationSize.Add(&sim1.populationSize);
-	// populationSize.Add(&sim1.populationSize);
-	// populationSize.Add(&sim1.populationSize);
-	// populationSize.Add(&sim1.populationSize);
-	// TimeSeriesExport<int> marriages("marriages.csv");
-	// marriages.Add(&sim1.marriages);
-	// marriages.Add(&sim1.marriages);
-	// marriages.Add(&sim1.marriages);
-	// marriages.Add(&sim1.marriages);
-	// marriages.Add(&sim1.marriages);
+	TimeSeriesExport<int> births("births.csv");
+	births.Add(&sim1.births);
+	births.Add(&sim2.births);
+	births.Add(&sim3.births);
+	births.Add(&sim4.births);
+	births.Add(&sim5.births);
+	TimeSeriesExport<int> deaths("deaths.csv");
+	deaths.Add(&sim1.deaths);
+	deaths.Add(&sim2.deaths);
+	deaths.Add(&sim3.deaths);
+	deaths.Add(&sim4.deaths);
+	deaths.Add(&sim5.deaths);
+	TimeSeriesExport<int> populationSize("populationSize.csv");
+	populationSize.Add(&sim1.populationSize);
+	populationSize.Add(&sim2.populationSize);
+	populationSize.Add(&sim3.populationSize);
+	populationSize.Add(&sim4.populationSize);
+	populationSize.Add(&sim5.populationSize);
+	TimeSeriesExport<int> marriages("marriages.csv");
+	marriages.Add(&sim1.marriages);
+	marriages.Add(&sim2.marriages);
+	marriages.Add(&sim3.marriages);
+	marriages.Add(&sim4.marriages);
+	marriages.Add(&sim5.marriages);
 
-	// births.Write();
-	// deaths.Write();
-	// populationSize.Write();
-	// marriages.Write();
+	if (births.Write()&&
+	deaths.Write()&&
+	populationSize.Write()&&
+	marriages.Write()) {
+		printf("everything was written successfully!\n");
+	}
 
 	return 0;
 }

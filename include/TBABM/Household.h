@@ -85,6 +85,10 @@ public:
 		return (head ? 1:0) + (spouse ? 1:0) + offspring.size() + other.size();
 	}
 
+	bool hasMember(Pointer<Individual> idv) {
+		return head == idv || spouse == idv || offspring.count(idv) == 1 || other.count(idv) == 1;
+	}
+
 	Household(Pointer<Individual> head,
 			  Pointer<Individual> spouse,
 			  std::unordered_set<Pointer<Individual>> offspring,
