@@ -19,7 +19,6 @@ public:
 	std::unordered_set<Pointer<Individual>> other;
 
 	void RemoveIndividual(Pointer<Individual> idv) {
-		printf("RemoveIndividual: BEGINNING\n");
 
 		assert(idv);
 
@@ -58,7 +57,6 @@ public:
 
 		offspring.erase(idv);
 		other.erase(idv);
-		printf("RemoveIndividual: SUCCESS\n");
 	}
 
 	void PrintHousehold(int t) {

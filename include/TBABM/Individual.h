@@ -44,6 +44,8 @@ public:
 	// HIVStatus hivStatus;
 	// TBStatus tbStatus;
 
+	bool dead;
+
 	Individual(long householdID, int birthDate, Sex sex,
 			   Pointer<Individual> spouse,
 			   Pointer<Individual> mother,
@@ -54,7 +56,8 @@ public:
 	  householdID(householdID), birthDate(birthDate), sex(sex), spouse(spouse),
 	  mother(mother), father(father), offspring(offspring),
 	  householdPosition(householdPosition),
-	  marriageStatus(marriageStatus) {};
+	  marriageStatus(marriageStatus),
+	  dead(false) {};
 	
 	Individual(long hid, int birthDate, Sex sex, HouseholdPosition householdPosition,
 			   MarriageStatus marriageStatus) :

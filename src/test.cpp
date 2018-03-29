@@ -1,3 +1,5 @@
+#include <vector>
+
 #include <Normal.h>
 #include <Weibull.h>
 #include <Uniform.h>
@@ -10,6 +12,8 @@ using Distributions = TBABM::Distributions;
 using Constants = TBABM::Constants;
 
 using namespace StatisticalDistributions;
+
+using std::vector;
 
 int main(int argc, char const *argv[])
 {
@@ -26,7 +30,7 @@ int main(int argc, char const *argv[])
 	distributions["marriageAgeDifference"]   = std::make_shared<Normal>(7,3.2);
 	distributions["marriageDuration"]        = std::make_shared<Weibull>(1.34,12.91);
 	distributions["leavingHousehold"]        = std::make_shared<Normal>(365*5,2);
-	distributions["timeToLooking"]           = std::make_shared<Exponential>(1/50.,1);
+	distributions["timeToLooking"]           = std::make_shared<Exponential>(1,1);
 
 	constants["naturalDeath-0-M"]  = 1./20.;
 	constants["naturalDeath-0-F"]  = 1./20.;
@@ -54,49 +58,38 @@ int main(int argc, char const *argv[])
 
 	const char *householdsFile = "household_structure.csv";
 
+	int nTrajectories = 5;
+
 	RNG rng(std::time(NULL));
 
-	TBABM sim1(distributions, constants, householdsFile, rng.mt_());
-	TBABM sim2(distributions, constants, householdsFile, rng.mt_());
-	TBABM sim3(distributions, constants, householdsFile, rng.mt_());
-	TBABM sim4(distributions, constants, householdsFile, rng.mt_());
-	TBABM sim5(distributions, constants, householdsFile, rng.mt_());
+	std::vector<std::shared_ptr<TBABM>> trajectories{};
 
-	sim1.Run();
-	sim2.Run();
-	sim3.Run();
-	sim4.Run();
-	sim5.Run();
+	for (int i = 0; i < nTrajectories; i++)
+		trajectories.push_back(std::make_shared<TBABM>(distributions, constants, householdsFile, rng.mt_()));
+
+	for (int i = 0; i < nTrajectories; i++)
+		trajectories[i]->Run();
 
 	TimeSeriesExport<int> births("births.csv");
-	births.Add(&sim1.births);
-	births.Add(&sim2.births);
-	births.Add(&sim3.births);
-	births.Add(&sim4.births);
-	births.Add(&sim5.births);
 	TimeSeriesExport<int> deaths("deaths.csv");
-	deaths.Add(&sim1.deaths);
-	deaths.Add(&sim2.deaths);
-	deaths.Add(&sim3.deaths);
-	deaths.Add(&sim4.deaths);
-	deaths.Add(&sim5.deaths);
 	TimeSeriesExport<int> populationSize("populationSize.csv");
-	populationSize.Add(&sim1.populationSize);
-	populationSize.Add(&sim2.populationSize);
-	populationSize.Add(&sim3.populationSize);
-	populationSize.Add(&sim4.populationSize);
-	populationSize.Add(&sim5.populationSize);
 	TimeSeriesExport<int> marriages("marriages.csv");
-	marriages.Add(&sim1.marriages);
-	marriages.Add(&sim2.marriages);
-	marriages.Add(&sim3.marriages);
-	marriages.Add(&sim4.marriages);
-	marriages.Add(&sim5.marriages);
+	TimeSeriesExport<int> divorces("divorces.csv");
+
+	using TBABMData = TBABM::TBABMData;
+	for (int i = 0; i < nTrajectories; i++) {
+		births.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Births));
+		deaths.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Deaths));
+		populationSize.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::PopulationSize));
+		marriages.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Marriages));
+		divorces.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Divorces));
+	}
 
 	if (births.Write()&&
 	deaths.Write()&&
 	populationSize.Write()&&
-	marriages.Write()) {
+	marriages.Write()&&
+	divorces.Write()) {
 		printf("everything was written successfully!\n");
 	}
 

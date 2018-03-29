@@ -74,6 +74,7 @@ public:
 		births("births", 0, constants["tMax"], constants["periodLength"]),
 		deaths("deaths", 0, constants["tMax"], constants["periodLength"]),
 		marriages("marriages", 0, constants["tMax"], constants["periodLength"]),
+		divorces("divorces", 0, constants["tMax"], constants["periodLength"]),
 		populationSize("populationSize", constants["tMax"], constants["periodLength"]),
 
 		population({}),
@@ -85,21 +86,19 @@ public:
 		householdGen(distributions, constants, householdsFile),
 
 		nHouseholds(0),
-		rng(seed) {};
+		rng(seed) { printf("Finished initing\n"); };
 
 	bool Run(void);
 
-	bool Export(void);
-
 	template <typename T>
-	const T* GetData(TBABMData field);
+	T* GetData(TBABMData field);
 
+private:
 	IncidenceTimeSeries<int> births;
 	IncidenceTimeSeries<int> deaths;
 	IncidenceTimeSeries<int> marriages;
+	IncidenceTimeSeries<int> divorces;
 	PrevalenceTimeSeries<int> populationSize;	
-
-private:
 
 	////////////////////////////////////////////////////////
 	/// Events
