@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.3)
 project (TBABM)
 
+find_package(Boost REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
+
 # Define library version
 set(TBABM_VERSION_MAJOR 0 CACHE STRING "major version" FORCE)
 set(TBABM_VERSION_MINOR 1 CACHE STRING "minor version" FORCE)
