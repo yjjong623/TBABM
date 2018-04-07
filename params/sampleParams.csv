@@ -1,0 +1,13 @@
+description               ,short-name             ,type,distribution                 ,parameter-description       ,parameter-1,parameter-2,parameter-3,parameter-4,included-in-calibration
+Sex                       ,sex                    ,v   ,Uniform                      ,(min-max)                   ,0          ,1          ,           ,           ,F                      
+Couple forms new household,coupleFormsNewHousehold,v   ,Uniform                      ,(min-max)                   ,0          ,1          ,           ,           ,F                      
+Time to first birth       ,timeToFirstBirth       ,f   ,time to first birth.csv      ,                            ,           ,           ,           ,           ,                       
+Time to subsequent births ,timeToSubsequentBirths ,f   ,time to subsequent births.csv,                            ,           ,           ,           ,           ,                       
+Marriage age difference   ,marriageAgeDifference  ,v   ,Johnson Su                   ,(shape-shape-location-scale),2.0084     ,3.9767     ,-0.5023    ,1.0690     ,F                      
+Time to divorce           ,timeToDivorce          ,v   ,Weibull                      ,(alpha-beta)                ,1.3685     ,12.5257    ,           ,           ,F                      
+Probability of divorce    ,probabilityOfDivorce   ,v   ,Bernoulli                    ,p                           ,0.5        ,           ,           ,           ,T                      
+Leaving household         ,leavingHousehold       ,v   ,Bernoulli                    ,p                           ,0.5        ,           ,           ,           ,T                      
+Time to looking           ,timeToLooking          ,f   ,time to looking.csv          ,                            ,           ,           ,           ,           ,                       
+Time in marriage          ,timeInMarriage         ,f   ,time in marriage.csv         ,                            ,           ,           ,           ,           ,                       
+Time to death             ,naturalDeath           ,f   ,time to natural death.csv    ,                            ,           ,           ,           ,           ,                       
+                          

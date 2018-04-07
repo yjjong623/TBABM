@@ -1,0 +1,18 @@
+sex
+coupleFormsNewHousehold
+
+timeToFirstBirth (by age group)
+timeToSubsequentBirths (by age group)
+
+marriageAgeDifference
+timeToDivorce/marriageDuration
+	Weibull with a: 1.3686594561456833 and b: 12.525723220003089
+	
+probabilityOfDivorce (calibrated)
+
+
+leavingHousehold
+timeToLooking (by age group and sex)
+
+yearsInMarriage (by age group and maybe by sex)
+naturalDeath (by age group and sex)
