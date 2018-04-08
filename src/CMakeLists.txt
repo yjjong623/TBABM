@@ -6,7 +6,7 @@ set(header ${header_path}/Individual.h
 		   ${header_path}/TBABM.h)
 
 # Set source files
-set(src TBABM.cpp HouseholdGen.cpp)
+set(src TBABM.cpp paramTest.cpp HouseholdGen.cpp)
 
 # Require C++14 compilation
 set(CMAKE_CXX_STANDARD 14)
@@ -26,7 +26,9 @@ find_package(StatisticalDistributionsLib REQUIRED)
 add_library(TBABM ${header} ${src})
 
 add_executable(TBABMTest test.cpp TBABM.cpp HouseholdGen.cpp)
+add_executable(TBABMParamTest paramTest.cpp)
 target_link_libraries(TBABMTest PUBLIC SimulationLib StatisticalDistributionsLib)
+target_link_libraries(TBABMParamTest PUBLIC SimulationLib StatisticalDistributionsLib)
 
 target_include_directories(TBABM PUBLIC
   $<BUILD_INTERFACE:${TBABM_SOURCE_DIR}/include> # for headers when building

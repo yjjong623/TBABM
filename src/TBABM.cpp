@@ -52,10 +52,10 @@ bool TBABM::Run(void)
 	while (!eq.Empty()) {
 		auto e = eq.Top();
 
-		if (e->t > constants["tMax"])
+		if (e.t > constants["tMax"])
 			break;
 
-		e->run();
+		e.run();
 		// delete e;
 		eq.Pop();
 	}
