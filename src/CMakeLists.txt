@@ -18,6 +18,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 # Include SimulationLib
 find_package(SimulationLib REQUIRED)
 find_package(StatisticalDistributionsLib REQUIRED)
+find_package(Boost REQUIRED)
+
+include_directories(${Boost_INCLUDE_DIRS})
 
 # Configure config.hpp.in
 # configure_file("config.hpp.in" "${CMAKE_CURRENT_BINARY_DIR}/config_impl.hpp")

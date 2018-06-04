@@ -1,0 +1,44 @@
+﻿  Building Custom Rule C:/Users/ry87/Documents/CppVSProject/TBABM/src/CMakeLists.txt
+  CMake is re-running because C:/Users/ry87/Documents/CppVSProject/TBABM/src/CMakeFiles/generate.stamp is out-of-date.
+    the file 'C:/Users/ry87/Documents/CppVSProject/TBABM/src/CMakeLists.txt'
+    is newer than 'C:/Users/ry87/Documents/CppVSProject/TBABM/src/CMakeFiles/generate.stamp.depend'
+    result='-1'
+  CMake Error at C:/Program Files/CMake/share/cmake-3.9/Modules/FindBoost.cmake:1877 (message):
+    Unable to find the requested Boost libraries.
+  
+    Unable to find the Boost header files.  Please set BOOST_ROOT to the root
+    directory containing Boost or BOOST_INCLUDEDIR to the directory containing
+    Boost's headers.
+  Call Stack (most recent call first):
+    CMakeLists.txt:4 (find_package)
+  
+  
+  CMake Error at C:/Program Files/CMake/share/cmake-3.9/Modules/FindBoost.cmake:1877 (message):
+    Unable to find the requested Boost libraries.
+  
+    Unable to find the Boost header files.  Please set BOOST_ROOT to the root
+    directory containing Boost or BOOST_INCLUDEDIR to the directory containing
+    Boost's headers.
+  Call Stack (most recent call first):
+    src/CMakeLists.txt:21 (find_package)
+  
+  
+CUSTOMBUILD : CMake error : The following variables are used in this project, but they are set to NOTFOUND.
+  Please set them or make sure they are set and tested correctly in the CMake files:
+  Boost_INCLUDE_DIR (ADVANCED)
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM/src
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM/src
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM/src
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM/src
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM/src
+  -- Configuring incomplete, errors occurred!
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM/src
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM/src
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM/src
+  See also "C:/Users/ry87/Documents/CppVSProject/TBABM/CMakeFiles/CMakeOutput.log".
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM/tests
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM/tests
+     used as include directory in directory C:/Users/ry87/Documents/CppVSProject/TBABM/tests
+  
