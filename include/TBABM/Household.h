@@ -24,14 +24,14 @@ public:
 
 		assert(head == idv || spouse == idv || offspring.count(idv) == 1 || other.count(idv) == 1);
 
-		if (idv->householdPosition == HouseholdPosition::Head)
-			assert(head == idv);
-		else if (idv->householdPosition == HouseholdPosition::Spouse)
-			assert(spouse == idv);
-		else if (idv->householdPosition == HouseholdPosition::Offspring)
-			assert(offspring.count(idv) == 1);
-		else if (idv->householdPosition == HouseholdPosition::Other)
-			assert(other.count(idv) == 1);
+		// if (idv->householdPosition == HouseholdPosition::Head)
+		// 	assert(head == idv);
+		// else if (idv->householdPosition == HouseholdPosition::Spouse)
+		// 	assert(spouse == idv);
+		// else if (idv->householdPosition == HouseholdPosition::Offspring)
+		// 	assert(offspring.count(idv) == 1);
+		// else if (idv->householdPosition == HouseholdPosition::Other)
+		// 	assert(other.count(idv) == 1);
 
 		if (head == idv) {
 			head.reset();
@@ -41,14 +41,24 @@ public:
 				head->householdPosition = HouseholdPosition::Head;
 				spouse.reset();
 			} else {
-				if (offspring.size() > 1) {
-					head = *offspring.begin();
-					offspring.erase(offspring.begin());
-					head->householdPosition = HouseholdPosition::Head;
-				} else if (other.size() > 1) {
-					head = *other.begin();
-					other.erase(other.begin());
-					head->householdPosition = HouseholdPosition::Head;
+				if (offspring.size() > 0) {
+					for (auto it = offspring.begin(); it != offspring.end(); it++) {
+						if (*it && !(*it)->dead) {
+							head = *it;
+							head->householdPosition = HouseholdPosition::Head;
+							offspring.erase(*it);
+							break;
+						}
+					}
+				} else if (other.size() > 0) {
+					for (auto it = other.begin(); it != other.end(); it++) {
+						if (*it && !(*it)->dead) {
+							head = *it;
+							head->householdPosition = HouseholdPosition::Head;
+							other.erase(*it);
+							break;
+						}
+					}
 				}
 			}
 		}

@@ -32,8 +32,7 @@ public:
 
 	Pointer<Household> GetHousehold(int hid);
 
-	HouseholdGen(const Distributions d, const Constants cst, const char *file) : 
-		distributions(d), constants(cst), file(file) {
+	HouseholdGen(const char *file) : file(file) {
 			FILE *ifile = fopen(file, "r");
 			int c;
 			int lines = 2;
@@ -103,7 +102,5 @@ public:
 private:
 	std::vector<MicroFamily> families;
 
-	const Distributions distributions;
-	const Constants constants;
 	const char *file;
 };

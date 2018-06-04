@@ -10,8 +10,13 @@
 #include <EventQueue.h>
 #include <PrevalenceTimeSeries.h>
 #include <IncidenceTimeSeries.h>
+#include <IncidencePyramidTimeSeries.h>
 #include <CSVExport.h>
 #include <EventQueue.h>
+
+#include <Param.h>
+#include <DataFrame.h>
+#include <JSONImport.h>
 
 #include "Individual.h"
 #include "Household.h"
@@ -25,14 +30,15 @@ using std::string;
 
 using namespace StatisticalDistributions;
 using namespace SimulationLib;
+using namespace SimulationLib::JSONImport;
 
 template <typename T>
 using Pointer = std::shared_ptr<T>;
 
 class TBABM {
 public:
-	using Distributions = map<string, Pointer<StatisticalDistribution<long double>>>;
-	using Constants = map<string, double>;
+	using Params = map<string, Param>;
+	using Constants = map<string, long double>;
 
 	using EQ = EventQueue<double, bool>;
 	using EventFunc = EQ::EventFunc;
@@ -61,14 +67,16 @@ public:
 		Divorces,
 		Births,
 		Deaths,
-		PopulationSize
+		PopulationSize,
+		Pyramid,
+		Households
 	};
 
-	TBABM(TBABM::Distributions distributions, 
-		  TBABM::Constants constants,
+	TBABM(Params params, 
+		  std::map<string, long double> constants,
 		  const char *householdsFile, 
 		  long seed) : 
-		distributions(distributions),
+		params(params),
 		constants(constants),
 
 		births("births", 0, constants["tMax"], constants["periodLength"]),
@@ -77,16 +85,29 @@ public:
 		divorces("divorces", 0, constants["tMax"], constants["periodLength"]),
 		populationSize("populationSize", constants["tMax"], constants["periodLength"]),
 
+		pyramid("Population pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
+		householdsCount("households", 0, constants["tMax"], 365),
+
 		population({}),
 		households({}),
 
 		maleSeeking({}),
 		femaleSeeking({}),
 
-		householdGen(distributions, constants, householdsFile),
+		householdGen(householdsFile),
 
 		nHouseholds(0),
-		rng(seed) { printf("Finished initing\n"); };
+		rng(seed) {
+			printf("good\n");
+			for (auto it = params.begin(); it != params.end(); it++) {
+				if (it->second.getType() == SimulationLib::Type::file_type) {
+					printf("%s\n", it->second.getFileName().c_str());
+					auto j = JSONImport::fileToJSON(it->second.getFileName());
+					fileData[it->first] = DataFrameFile{j};
+				}
+			}
+			printf("not dead\n");
+		};
 
 	bool Run(void);
 
@@ -98,7 +119,10 @@ private:
 	IncidenceTimeSeries<int> deaths;
 	IncidenceTimeSeries<int> marriages;
 	IncidenceTimeSeries<int> divorces;
-	PrevalenceTimeSeries<int> populationSize;	
+	PrevalenceTimeSeries<int> populationSize;
+
+	IncidencePyramidTimeSeries pyramid;	
+	IncidenceTimeSeries<int> householdsCount;
 
 	////////////////////////////////////////////////////////
 	/// Events
@@ -120,8 +144,7 @@ private:
 							  std::unordered_set<Pointer<Individual>> other);
 
 	// Algorithm S6: Birth
-	EventFunc Birth(int motherHID, Pointer<Individual> mother, 
-								   Pointer<Individual> father);
+	EventFunc Birth(Pointer<Individual> mother, Pointer<Individual> father);
 
 	// Algorithm S7: Joining a household
 	EventFunc JoinHousehold(Pointer<Individual>, long hid);
@@ -143,6 +166,12 @@ private:
 
 	// Algorithm S14: Divorce
 	EventFunc Divorce(Pointer<Individual> m, Pointer<Individual> f);
+
+	// Update the population pyramid
+	EventFunc UpdatePyramid(void);
+
+	// Update households
+	EventFunc UpdateHouseholds(void);
 
 	////////////////////////////////////////////////////////
 	/// Scheduling
@@ -166,7 +195,8 @@ private:
 	/// Data
 	////////////////////////////////////////////////////////
 
-
+	map<string, DataFrameFile> fileData;
+	Params params;
 
 	unordered_set<Pointer<Individual>> population;
 	map<long, Pointer<Household>> households;
@@ -174,7 +204,6 @@ private:
 	unordered_set<Pointer<Individual>> maleSeeking;
 	unordered_set<Pointer<Individual>> femaleSeeking;
 
-	Distributions distributions;
 	Constants constants;
 
 	HouseholdGen householdGen;

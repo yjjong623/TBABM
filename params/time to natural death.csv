@@ -1000,8 +1000,6 @@ year,sex,age,distribution,parameter-description,parameter-1,parameter-2,paramete
 2013,F,40,Exponential,(rate-shift),0.009259863,0,,
 2013,F,45,Exponential,(rate-shift),0.010161793,0,,
 2013,F,50,Exponential,(rate-shift),0.012114063,0,,
-2013,F,50,Exponential,(rate-shift),0.012114063,0,,
-2013,F,55,Exponential,(rate-shift),0.017031094,0,,
 2013,F,55,Exponential,(rate-shift),0.017031094,0,,
 2013,F,60,Exponential,(rate-shift),0.029419908,0,,
 2013,F,65,Exponential,(rate-shift),0.053612925,0,,

@@ -5,76 +5,51 @@
 #include <Uniform.h>
 #include <CSVExport.h>
 #include <RNG.h>
+#include <JSONParameterize.h>
+#include <JSONImport.h>
 
 #include "../include/TBABM/TBABM.h"
 
-using Distributions = TBABM::Distributions;
 using Constants = TBABM::Constants;
 
 using namespace StatisticalDistributions;
+using namespace SimulationLib::JSONImport;
 
 using std::vector;
 
 int main(int argc, char const *argv[])
 {
-	Distributions distributions {};
 	Constants constants {};
 
-	distributions["sex"] = std::make_shared<Uniform>(0, 1);
-
-	// The following are inactive:
-	distributions["coupleFormsNewHousehold"] = std::make_shared<Normal>(1,1);
-	distributions["timeToBirth"]             = std::make_shared<Normal>(1,1);
-
-	// These are active
-	distributions["marriageAgeDifference"]   = std::make_shared<Normal>(7,3.2);
-	distributions["marriageDuration"]        = std::make_shared<Weibull>(1.34,12.91);
-	distributions["leavingHousehold"]        = std::make_shared<Normal>(365*5,2);
-	distributions["timeToLooking"]           = std::make_shared<Exponential>(1,1);
-
-	constants["naturalDeath-0-M"]  = 1./20.;
-	constants["naturalDeath-0-F"]  = 1./20.;
-	constants["naturalDeath-10-M"] = 1./20.;
-	constants["naturalDeath-10-F"] = 1./20.;
-	constants["naturalDeath-20-M"] = 1./20.;
-	constants["naturalDeath-20-F"] = 1./20.;
-	constants["naturalDeath-30-M"] = 1./20.;
-	constants["naturalDeath-30-F"] = 1./20.;
-	constants["naturalDeath-40-M"] = 1./20.;
-	constants["naturalDeath-40-F"] = 1./20.;
-	constants["naturalDeath-50-M"] = 1./20.;
-	constants["naturalDeath-50-F"] = 1./20.;
-	constants["naturalDeath-60-M"] = 1./20.;
-	constants["naturalDeath-60-F"] = 1./20.;
-	constants["naturalDeath-70-M"] = 1./20.;
-	constants["naturalDeath-70-F"] = 1./20.;
-	constants["naturalDeath-80-M"] = 1./20.;
-	constants["naturalDeath-80-F"] = 1./20.;
-	constants["naturalDeath-90-M"] = 1./1.1;
-	constants["naturalDeath-90-F"] = 1./1.1;
 	constants["tMax"] = 365*10;
 	constants["periodLength"] = 30;
 	constants["ageGroupWidth"] = 10;
+	constants["startYear"] = 1990;
 
 	const char *householdsFile = "household_structure.csv";
 
-	int nTrajectories = 5;
+	int nTrajectories = 1;
 
 	RNG rng(std::time(NULL));
 
 	std::vector<std::shared_ptr<TBABM>> trajectories{};
+	std::map<string, Param> params{};
+
+	mapShortNames(fileToJSON("../params/sampleParams.json"), params);
 
 	for (int i = 0; i < nTrajectories; i++)
-		trajectories.push_back(std::make_shared<TBABM>(distributions, constants, householdsFile, rng.mt_()));
+		trajectories.push_back(std::make_shared<TBABM>(params, constants, householdsFile, rng.mt_()));
 
 	for (int i = 0; i < nTrajectories; i++)
 		trajectories[i]->Run();
 
-	TimeSeriesExport<int> births("births.csv");
-	TimeSeriesExport<int> deaths("deaths.csv");
-	TimeSeriesExport<int> populationSize("populationSize.csv");
-	TimeSeriesExport<int> marriages("marriages.csv");
-	TimeSeriesExport<int> divorces("divorces.csv");
+	TimeSeriesExport<int> births("../output/births.csv");
+	TimeSeriesExport<int> deaths("../output/deaths.csv");
+	TimeSeriesExport<int> populationSize("../output/populationSize.csv");
+	TimeSeriesExport<int> marriages("../output/marriages.csv");
+	TimeSeriesExport<int> divorces("../output/divorces.csv");
+	TimeSeriesExport<int> households("../output/householdsCount.csv");
+	PyramidTimeSeriesExport pyramid("../output/populationPyramid.csv");
 
 	using TBABMData = TBABM::TBABMData;
 	for (int i = 0; i < nTrajectories; i++) {
@@ -83,14 +58,21 @@ int main(int argc, char const *argv[])
 		populationSize.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::PopulationSize));
 		marriages.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Marriages));
 		divorces.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Divorces));
+		households.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Households));
 	}
+
+	pyramid.Add(trajectories[0]->GetData<IncidencePyramidTimeSeries>(TBABMData::Pyramid));
 
 	if (births.Write()&&
 	deaths.Write()&&
 	populationSize.Write()&&
 	marriages.Write()&&
-	divorces.Write()) {
+	divorces.Write()&&
+	pyramid.Write()&&
+	households.Write()) {
 		printf("everything was written successfully!\n");
+	} else {
+		printf("Somethihg didn't write correctly\n");
 	}
 
 	return 0;

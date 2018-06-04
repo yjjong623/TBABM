@@ -1,6 +1,9 @@
 #include "../include/TBABM/TBABM.h"
+#include <Uniform.h>
 #include <Empirical.h>
 #include <cassert>
+#include <fstream>
+#include <iostream>
 
 template <typename T>
 using Pointer = std::shared_ptr<T>;
@@ -11,8 +14,6 @@ using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 using Sex = Individual::Sex;
-
-using StatisticalDistributions::Exponential;
 
 using namespace StatisticalDistributions;
 
@@ -40,14 +41,27 @@ TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
         case TBABMData::Deaths:		 return &deaths;
         case TBABMData::PopulationSize: return nullptr;
         case TBABMData::Divorces:    return &divorces;
+        case TBABMData::Households:  return &householdsCount;
+        default:                     return nullptr;
+    }
+}
+
+template <>
+IncidencePyramidTimeSeries*
+TBABM::GetData<IncidencePyramidTimeSeries>(TBABMData field)
+{
+    switch(field) {
+        case TBABMData::Pyramid:     return &pyramid;
         default:                     return nullptr;
     }
 }
 
 bool TBABM::Run(void)
 {
-	Schedule(0, CreatePopulation(100000));
+	Schedule(0, CreatePopulation(1000000));
 	Schedule(1, Matchmaking());
+	Schedule(1, UpdatePyramid());
+	Schedule(1, UpdateHouseholds());
 
 	while (!eq.Empty()) {
 		auto e = eq.Top();
@@ -59,13 +73,15 @@ bool TBABM::Run(void)
 		// delete e;
 		eq.Pop();
 	}
-	printf("Simulation finished!\n");
+	// printf("Simulation finished!\n");
 
 	births.Close();
 	deaths.Close();
 	marriages.Close();
 	populationSize.Close();
 	divorces.Close();
+	pyramid.Close();
+	householdsCount.Close();
 
 	return true;
 }
@@ -116,7 +132,7 @@ void TBABM::DeleteIndividual(Pointer<Individual> idv)
 
 void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPosition newRole)
 {
-	printf("\tChanging household of %ld::%lu\n", idv->householdID, std::hash<Pointer<Individual>>()(idv));
+	// printf("\tChanging household of %ld::%lu\n", idv->householdID, std::hash<Pointer<Individual>>()(idv));
 	int oldHID = idv->householdID;
 
 	auto oldHousehold = households[oldHID];
@@ -182,12 +198,69 @@ void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPositi
 	return;
 }
 
+EventFunc TBABM::UpdatePyramid(void)
+{
+	EventFunc ef = 
+		[this] (double t, SchedulerT scheduler) {
+			for (auto it = population.begin(); it != population.end(); it++) {
+				if (!*it || (*it)->dead)
+					continue;
+
+				int age = (t - (*it)->birthDate) / 365;
+				int sex = (*it)->sex == Sex::Male ? 0 : 1;
+
+				pyramid.UpdateByAge(t, sex, age, +1);
+			}
+
+			if (t == 1) {
+				ofstream f;
+				f.open("../output/histogramT1.csv");
+				for (auto it = households.begin(); it != households.end(); it++) {
+					if (it->second)
+						f << to_string(it->second->size()).c_str() << "\n";
+				}
+				f.close();
+			}
+
+			if (t == 1+365*9) {
+				ofstream f;
+				f.open("../output/histogramT10.csv");
+				for (auto it = households.begin(); it != households.end(); it++)
+					if (it->second && it->second->size() > 0)
+						f << to_string(it->second->size()).c_str() << "\n";
+				f.close();
+			}
+
+			Schedule(t + 365, UpdatePyramid());
+			return true;
+		};
+
+	return ef;
+}
+
+EventFunc TBABM::UpdateHouseholds(void)
+{
+	EventFunc ef = 
+		[this] (double t, SchedulerT scheduler) {
+			for (auto it = households.begin(); it != households.end(); it++) {
+				if (!it->second)
+					continue;
+
+				householdsCount.Record(t, +1);
+			}
+			Schedule(t + 365, UpdateHouseholds());
+			return true;
+		};
+
+	return ef;
+}
+
 // Algorithm S2: Create a population at simulation time 0
 EventFunc TBABM::CreatePopulation(long size)
 {
 	EventFunc ef = 
 		[this, size](double t, SchedulerT scheduler) {
-			printf("[%d] CreatePopulation\n", (int)t);
+			// printf("[%d] CreatePopulation\n", (int)t);
 			int popChange = 0;
 
 			while (popChange < size) {
@@ -206,6 +279,12 @@ EventFunc TBABM::CreatePopulation(long size)
 					population.insert(hh->spouse);
 					assert(hh->spouse->householdID == hid);
 					Schedule(t, ChangeAgeGroup(hh->spouse));
+
+					// Set marriage age
+					double spouseAge = (t - hh->spouse->birthDate)/365.;
+					double headAge = (t - hh->head->birthDate)/365.;
+					hh->spouse->marriageDate = t - fileData["timeInMarriage"].getValue(0,0,spouseAge,rng);
+					hh->head->marriageDate = t - fileData["timeInMarriage"].getValue(0,0,headAge, rng);
 				}
 				for (auto it = hh->offspring.begin(); it != hh->offspring.end(); it++) {
 					popChange++;
@@ -218,6 +297,27 @@ EventFunc TBABM::CreatePopulation(long size)
 					population.insert(*it);
 					assert((*it)->householdID == hid);
 					Schedule(t, ChangeAgeGroup(*it));
+				}
+			}
+
+			// Decide whether each female is pregnant
+			for (auto it = population.begin(); it != population.end(); it++) {
+				auto person = *it;
+				if (person->sex == Sex::Male)
+					continue;
+
+				// bool isPregnant = fileData["probabilityOfPregnant"].getValue(0,0,person->age(t), rng);
+				// if (isPregnant) {
+				// 	auto timeToBirth = Uniform(0, .75*365)(rng.mt_);
+				// 	Schedule(t + timeToBirth, Birth(person, person->spouse));
+				// }
+				if (person->spouse && person->age(t) >= 15) {
+					auto birthDistribution = person->offspring.size() > 0 ? \
+							fileData["timeToSubsequentBirths"] : fileData ["timeToFirstBirth"];
+
+					double yearsToBirth = birthDistribution.getValue(0,0,person->age(t),rng);
+					int daysToFirstBirth = 365 * yearsToBirth;
+					Schedule(t + daysToFirstBirth, Birth(person, person->spouse));
 				}
 			}
 
@@ -236,7 +336,7 @@ EventFunc TBABM::Matchmaking(void)
 {
 	EventFunc ef = 
 		[this](double t, SchedulerT scheduler) {
-			printf("[%d]\tMatchmaking, ms=%lu, fs=%lu\n", (int)t, maleSeeking.size(), femaleSeeking.size());
+			// printf("[%d]\tMatchmaking, ms=%lu, fs=%lu\n", (int)t, maleSeeking.size(), femaleSeeking.size());
 			auto it = maleSeeking.begin();
 			for (; it != maleSeeking.end(); it++) {
 				if (femaleSeeking.size() == 0) {
@@ -255,7 +355,7 @@ EventFunc TBABM::Matchmaking(void)
 					int femaleAge = (t - (*it2)->birthDate) / 365;
 					int ageDifference = std::abs(maleAge-femaleAge);
 
-					long double weight = distributions["marriageAgeDifference"]->pdf(ageDifference);
+					long double weight = params["marriageAgeDifference"].pdf(ageDifference);
 					denominator += weight;
 					weights.push_back(weight);
 
@@ -276,7 +376,7 @@ EventFunc TBABM::Matchmaking(void)
 				assert(*wife);
 
 
-				printf("\t\tM %2d F %2d\n", (int)(t-(*it)->birthDate)/365, (int)(t-(*wife)->birthDate)/365);
+				// printf("\t\tM %2d F %2d\n", (int)(t-(*it)->birthDate)/365, (int)(t-(*wife)->birthDate)/365);
 				Schedule(t, Marriage(*it, *wife));
 
 				femaleSeeking.erase(wife);
@@ -299,7 +399,7 @@ EventFunc TBABM::NewHouseholds(int num)
 {
 	EventFunc ef = 
 		[this, num](double t, SchedulerT scheduler) {
-			printf("[%d] NewHouseholds\n", (int)t);
+			// printf("[%d] NewHouseholds\n", (int)t);
 			int popChange = 0; // Number of people created so far
 
 			while (popChange < num) {
@@ -339,7 +439,7 @@ EventFunc TBABM::CreateHousehold(Pointer<Individual> head,
 {
 	EventFunc ef = 
 		[this, head, spouse, offspring, other](double t, SchedulerT scheduler) {
-			printf("[%d] CreateHousehold\n", (int)t);
+			// printf("[%d] CreateHousehold\n", (int)t);
 			auto household = std::make_shared<Household>(head, spouse, offspring, other);
 			auto individuals = std::vector<Pointer<Individual>>{};
 			long hid = nHouseholds++;
@@ -387,20 +487,18 @@ EventFunc TBABM::CreateHousehold(Pointer<Individual> head,
 
 // Algorithm S6: Birth
 // DRAFT implemented
-EventFunc TBABM::Birth(int motherHID, Pointer<Individual> mother, 
-									  Pointer<Individual> father)
+EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 {
 
 	EventFunc ef = 
-		[this, motherHID, mother, father](double t, SchedulerT scheduler) {
+		[this, mother, father](double t, SchedulerT scheduler) {
 
 			// If mother is dead
 			if (mother->dead)
 				return true;
 
-
 			// Decide properties of baby
-			Sex sex = (*distributions["sex"])(rng.mt_) ?
+			Sex sex = params["sex"].Sample(rng) ?
 					    Sex::Male : Sex::Female; // CHECK to ensure parity!
 
 			HouseholdPosition householdPosition = HouseholdPosition::Offspring;
@@ -408,13 +506,13 @@ EventFunc TBABM::Birth(int motherHID, Pointer<Individual> mother,
 
 			// Construct baby
 			auto baby = std::make_shared<Individual>(
-				motherHID, t, sex,
+				mother->householdID, t, sex,
 				Pointer<Individual>(), mother, father,
 				std::vector<Pointer<Individual>>{}, householdPosition, marriageStatus);
 
-			printf("[%d] Baby born: %d::%lu\n", (int)t, motherHID, std::hash<Pointer<Individual>>()(baby));
+			// printf("[%d] Baby born: %ld::%lu\n", (int)t, mother->householdID, std::hash<Pointer<Individual>>()(baby));
 
-			auto household = households[motherHID];
+			auto household = households[mother->householdID];
 
 			assert(household);
 
@@ -424,9 +522,11 @@ EventFunc TBABM::Birth(int motherHID, Pointer<Individual> mother,
 
 			// Update .livedWithBefore
 			baby->livedWithBefore.push_back(mother);
-			baby->livedWithBefore.push_back(father);
+			if (father && !father->dead)
+				baby->livedWithBefore.push_back(father);
 			mother->livedWithBefore.push_back(baby); // bidirectional
-			father->livedWithBefore.push_back(baby);
+			if (father && !father->dead)
+				father->livedWithBefore.push_back(baby);
 
 			// Update .livedWithBefore w.r.t. 'offspring' and 'other'
 			for (auto it = household->offspring.begin(); it != household->offspring.end(); it++)
@@ -446,6 +546,9 @@ EventFunc TBABM::Birth(int motherHID, Pointer<Individual> mother,
 			populationSize.Record(t, +1);
 			births.Record(t, +1);
 
+			auto timeToNextBirth = fileData["timeToSubsequentBirths"].getValue(0,0,(t-mother->birthDate)/365,rng);
+			Schedule(t + 365*timeToNextBirth, Birth(mother, mother->spouse));
+
 			return true;
 		};
 
@@ -458,7 +561,7 @@ EventFunc TBABM::JoinHousehold(Pointer<Individual> idv, long hid)
 {
 	EventFunc ef = 
 		[this, idv, hid](double t, SchedulerT scheduler) {
-			printf("[%d] JoinHousehold, populationSize=%lu\n, individual: %ld::%lu, newHID: %ld\n", (int)t, population.size(), idv->householdID, std::hash<Pointer<Individual>>()(idv), hid);
+			// printf("[%d] JoinHousehold, populationSize=%lu\n, individual: %ld::%lu, newHID: %ld\n", (int)t, population.size(), idv->householdID, std::hash<Pointer<Individual>>()(idv), hid);
 			if (hid >= nHouseholds)
 				return true;
 			if (idv->dead)
@@ -532,14 +635,16 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			if (!idv || idv->dead)
 				return true;
 
-			printf("[%d] ChangeAgeGroup: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
+			// printf("[%d] ChangeAgeGroup: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 			double timeToNextEvent = ageGroupWidth*365;
 
 			////////////////////////////////////////////////////////
 			/// Natural death
 			////////////////////////////////////////////////////////
-			double deathRate = constants[concoctConstantName(birthDateToAge(idv->birthDate, t), "naturalDeath")];
-			double timeToDeath = 365 * Exponential(deathRate)(rng.mt_);
+			auto startYear = constants["startYear"];
+			int gender = idv->sex == Sex::Male ? 0 : 1;
+			double age = (t - idv->birthDate)/365;
+			double timeToDeath = 365 * fileData["naturalDeath"].getValue(startYear+(int)t/365, 1, age, rng);
 
 			bool scheduledDeath = false;
 			if (timeToDeath < timeToNextEvent) {
@@ -551,9 +656,8 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			////////////////////////////////////////////////////////
 			/// Leaving the current household to form a new household
 			////////////////////////////////////////////////////////
-			int age = birthDateToAge(idv->birthDate, t);
 			bool idvIsHead = idv->householdPosition == HouseholdPosition::Head;
-			double timeToLeave = (*distributions["leavingHousehold"])(rng.mt_);
+			double timeToLeave = params["leavingHousehold"].Sample(rng);
 			if (!idv->spouse && 
 				age >= 18 && 
 				age <= 55 && 
@@ -567,7 +671,7 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			////////////////////////////////////////////////////////
 			/// Change of marital status from single to looking
 			////////////////////////////////////////////////////////
-			double timeToLook = (*distributions["timeToLooking"])(rng.mt_);
+			double timeToLook = 365 * fileData["timeToLooking"].getValue(0,0,(t-idv->birthDate)/365,rng);
 			if ((idv->marriageStatus == MarriageStatus::Single ||
 				 idv->marriageStatus == MarriageStatus::Divorced)
 				&& timeToLook < timeToNextEvent
@@ -610,7 +714,7 @@ EventFunc TBABM::Death(Pointer<Individual> idv)
 			if (idv->dead)
 				return true;
 
-			printf("[%d] Death: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
+			// printf("[%d] Death: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 			if (idv->sex == Sex::Male)
 				maleSeeking.erase(idv);
 			else
@@ -641,7 +745,7 @@ EventFunc TBABM::LeaveHousehold(Pointer<Individual> idv)
 {
 	EventFunc ef = 
 		[this, idv](double t, SchedulerT scheduler) {
-			printf("[%d] LeaveHousehold: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
+			// printf("[%d] LeaveHousehold: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 			if (!idv || idv->dead)
 				return true;
 			
@@ -667,7 +771,7 @@ EventFunc TBABM::SingleToLooking(Pointer<Individual> idv)
 {
 	EventFunc ef = 
 		[this, idv](double t, SchedulerT scheduler) {
-			printf("[%d] SingleToLooking: %s, %ld::%lu\n", (int)t, idv->sex == Sex::Male ? "Male" : "Female", idv->householdID, std::hash<Pointer<Individual>>()(idv));
+			// printf("[%d] SingleToLooking: %s, %ld::%lu\n", (int)t, idv->sex == Sex::Male ? "Male" : "Female", idv->householdID, std::hash<Pointer<Individual>>()(idv));
 			if (idv->dead)
 				return true;
 
@@ -691,11 +795,11 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 		[this, m, f](double t, SchedulerT scheduler) {
 
 			if (population.count(m) != 1 || population.count(f) != 1) {
-				printf("\tA spouse is dead!\n");
+				// printf("\tA spouse is dead!\n");
 				return true;
 			}
 
-			printf("[%d] Marriage, populationSize=%lu, people: m=%ld::%lu f=%ld::%lu\n", (int)t, population.size(), m->householdID, std::hash<Pointer<Individual>>()(m), f->householdID, std::hash<Pointer<Individual>>()(f));
+			// printf("[%d] Marriage, populationSize=%lu, people: m=%ld::%lu f=%ld::%lu\n", (int)t, population.size(), m->householdID, std::hash<Pointer<Individual>>()(m), f->householdID, std::hash<Pointer<Individual>>()(f));
 			assert(m);
 			assert(f);
 			assert(m != f);
@@ -711,7 +815,7 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 				ChangeHousehold(m, f->householdID, HouseholdPosition::Spouse);
 			} else {
 				// Couple forms new household?
-				if ((*distributions["coupleFormsNewHousehold"])(rng.mt_) == 1) {
+				if (params["coupleFormsNewHousehold"].Sample(rng) == 1) {
 					auto hid = nHouseholds++;
 					households[hid] = std::make_shared<Household>();
 
@@ -725,15 +829,20 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 			m->spouse = f;
 			f->spouse = m;
 
-			// Time to divorce
-			double yearsToDivorce = (*distributions["marriageDuration"])(rng.mt_);
-			int daysToDivorce = 365 * yearsToDivorce;
-			Schedule(t + daysToDivorce, Divorce(m, f));
+			// Will they divorce?
+			if (params["probabilityOfDivorce"].Sample(rng) == 1) {
+				// Time to divorce
+				double coupleAvgAge = (m->age(t) + f->age(t))/(2*365);
+				double yearsToDivorce = fileData["timeInMarriage"].getValue(0,0,coupleAvgAge,rng);
+				int daysToDivorce = 365 * yearsToDivorce;
+				Schedule(t + daysToDivorce, Divorce(m, f));
+			}
+
 
 			// Time to first birth
-			double yearsToFirstBirth = (*distributions["timeToBirth"])(rng.mt_);
+			double yearsToFirstBirth = fileData["timeToFirstBirth"].getValue(0,0,f->age(t),rng);
 			int daysToFirstBirth = 365 * yearsToFirstBirth;
-			Schedule(t + daysToFirstBirth, Birth(m->householdID, m, f));
+			Schedule(t + daysToFirstBirth, Birth(m, f));
 
 			marriages.Record(t, +1);
 
@@ -748,7 +857,7 @@ EventFunc TBABM::Divorce(Pointer<Individual> m, Pointer<Individual> f)
 {
 	EventFunc ef = 
 		[this, m, f](double t, SchedulerT scheduler) {
-			printf("[%d] Divorce, populationSize=%lu, people: m=%ld::%lu f=%ld::%lu\n", (int)t, population.size(), m->householdID, std::hash<Pointer<Individual>>()(m), f->householdID, std::hash<Pointer<Individual>>()(f));
+			// printf("[%d] Divorce, populationSize=%lu, people: m=%ld::%lu f=%ld::%lu\n", (int)t, population.size(), m->householdID, std::hash<Pointer<Individual>>()(m), f->householdID, std::hash<Pointer<Individual>>()(f));
 
 			// If someone is dead they can't divorce
 			if (m->dead || f->dead)

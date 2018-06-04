@@ -31,6 +31,7 @@ public:
 
 	int birthDate; // In units of 't'
 	Sex sex;
+	long double marriageDate;
 
 	Pointer<Individual> spouse;
 	Pointer<Individual> mother;
@@ -45,6 +46,10 @@ public:
 	// TBStatus tbStatus;
 
 	bool dead;
+
+	int age(double t) {
+		return (t - birthDate) / 365;
+	}
 
 	Individual(long householdID, int birthDate, Sex sex,
 			   Pointer<Individual> spouse,
