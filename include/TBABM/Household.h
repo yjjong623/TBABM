@@ -19,19 +19,26 @@ public:
 	std::unordered_set<Pointer<Individual>> other;
 
 	void RemoveIndividual(Pointer<Individual> idv) {
+		printf("1\n");
 
 		assert(idv);
+		printf("1.5\n");
 
-		assert(head == idv || spouse == idv || offspring.count(idv) == 1 || other.count(idv) == 1);
+		// bool c00 = head.unique();
+		// printf("1.52\n");
+		// bool c0 = head.get() != nullptr;
+		// printf("1.55\n");
+		bool c1 = head == idv;
+		printf("1.6\n");
+		bool c2 = spouse && spouse == idv;
+		printf("1.7\n");
+		bool c3 = offspring.count(idv) == 1;
+		printf("1.8\n");
+		bool c4 = other.count(idv) == 1;
+		printf("1.9\n");
+		assert(c1 || c2 || c3 || c4);
 
-		// if (idv->householdPosition == HouseholdPosition::Head)
-		// 	assert(head == idv);
-		// else if (idv->householdPosition == HouseholdPosition::Spouse)
-		// 	assert(spouse == idv);
-		// else if (idv->householdPosition == HouseholdPosition::Offspring)
-		// 	assert(offspring.count(idv) == 1);
-		// else if (idv->householdPosition == HouseholdPosition::Other)
-		// 	assert(other.count(idv) == 1);
+		printf("2\n");
 
 		if (head == idv) {
 			head.reset();
@@ -40,33 +47,38 @@ public:
 				head = spouse;
 				head->householdPosition = HouseholdPosition::Head;
 				spouse.reset();
-			} else {
-				if (offspring.size() > 0) {
+		printf("3\n");
+			} else if (offspring.size() > 0) {
 					for (auto it = offspring.begin(); it != offspring.end(); it++) {
 						if (*it && !(*it)->dead) {
 							head = *it;
 							head->householdPosition = HouseholdPosition::Head;
 							offspring.erase(*it);
+							printf("4\n");
 							break;
 						}
 					}
-				} else if (other.size() > 0) {
-					for (auto it = other.begin(); it != other.end(); it++) {
-						if (*it && !(*it)->dead) {
-							head = *it;
-							head->householdPosition = HouseholdPosition::Head;
-							other.erase(*it);
-							break;
-						}
+			} else if (other.size() > 0) {
+				for (auto it = other.begin(); it != other.end(); it++) {
+					printf("5\n");
+					if (*it && !(*it)->dead) {
+						head = *it;
+						head->householdPosition = HouseholdPosition::Head;
+						other.erase(*it);
+						printf("6\n");
+						break;
 					}
 				}
+			} else {
+				// There is nobody to replace the head.
 			}
 		}
 		if (spouse == idv)
 			spouse.reset();
-
+printf("6\n");
 		offspring.erase(idv);
 		other.erase(idv);
+		printf("7\n");
 	}
 
 	void PrintHousehold(int t) {
