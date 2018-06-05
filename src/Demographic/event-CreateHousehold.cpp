@@ -26,7 +26,7 @@ EventFunc TBABM::CreateHousehold(Pointer<Individual> head,
 {
 	EventFunc ef = 
 		[this, head, spouse, offspring, other](double t, SchedulerT scheduler) {
-			printf("[%d] CreateHousehold\n", (int)t);
+			// printf("[%d] CreateHousehold\n", (int)t);
 			auto household = std::make_shared<Household>(head, spouse, offspring, other);
 			auto individuals = std::vector<Pointer<Individual>>{};
 			long hid = nHouseholds++;

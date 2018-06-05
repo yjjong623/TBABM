@@ -22,7 +22,7 @@ EventFunc TBABM::Matchmaking(void)
 {
 	EventFunc ef = 
 		[this](double t, SchedulerT scheduler) {
-			printf("[%d]\tMatchmaking, ms=%lu, fs=%lu\n", (int)t, maleSeeking.size(), femaleSeeking.size());
+			// printf("[%d]\tMatchmaking, ms=%lu, fs=%lu\n", (int)t, maleSeeking.size(), femaleSeeking.size());
 			auto it = maleSeeking.begin();
 			for (; it != maleSeeking.end(); it++) {
 				if (femaleSeeking.size() == 0) {

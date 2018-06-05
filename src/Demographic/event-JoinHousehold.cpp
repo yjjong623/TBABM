@@ -23,7 +23,7 @@ EventFunc TBABM::JoinHousehold(Pointer<Individual> idv, long hid)
 {
 	EventFunc ef = 
 		[this, idv, hid](double t, SchedulerT scheduler) {
-			printf("[%d] JoinHousehold, populationSize=%lu\n, individual: %ld::%lu, newHID: %ld\n", (int)t, population.size(), idv->householdID, std::hash<Pointer<Individual>>()(idv), hid);
+			// printf("[%d] JoinHousehold, populationSize=%lu\n, individual: %ld::%lu, newHID: %ld\n", (int)t, population.size(), idv->householdID, std::hash<Pointer<Individual>>()(idv), hid);
 			if (hid >= nHouseholds)
 				return true;
 			if (idv->dead)

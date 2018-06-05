@@ -22,7 +22,7 @@ EventFunc TBABM::LeaveHousehold(Pointer<Individual> idv)
 {
 	EventFunc ef = 
 		[this, idv](double t, SchedulerT scheduler) {
-			printf("[%d] LeaveHousehold: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
+			// printf("[%d] LeaveHousehold: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 			if (!idv || idv->dead)
 				return true;
 			

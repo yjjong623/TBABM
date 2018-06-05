@@ -25,7 +25,7 @@ EventFunc TBABM::Death(Pointer<Individual> idv)
 			if (idv->dead)
 				return true;
 
-			printf("[%d] Death: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
+			// printf("[%d] Death: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 			if (idv->sex == Sex::Male)
 				maleSeeking.erase(idv);
 			else
@@ -35,9 +35,7 @@ EventFunc TBABM::Death(Pointer<Individual> idv)
 
 			idv->dead = true;
 
-			printf("about to blow up?\n");
 			assert(household);
-			printf("didn't blow up\n");
 
 			DeleteIndividual(idv);
 

@@ -41,10 +41,9 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			if (!idv || idv->dead)
 				return true;
 
-			printf("[%d] ChangeAgeGroup: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
+			// printf("[%d] ChangeAgeGroup: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 			double timeToNextEvent = ageGroupWidth*365;
 
-			printf("....1\n");
 			////////////////////////////////////////////////////////
 			/// Natural death
 			////////////////////////////////////////////////////////
@@ -59,7 +58,6 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 				Schedule(t + timeToDeath, Death(idv));
 			}
 
-			printf("....2\n");
 			////////////////////////////////////////////////////////
 			/// Leaving the current household to form a new household
 			////////////////////////////////////////////////////////
@@ -74,7 +72,6 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 				Schedule(t + timeToLeave, LeaveHousehold(idv));
 			}
 
-			printf("....3\n");
 			////////////////////////////////////////////////////////
 			/// Change of marital status from single to looking
 			////////////////////////////////////////////////////////
@@ -86,17 +83,12 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 				Schedule(t + timeToLook, SingleToLooking(idv));
 			}
 
-			printf("....4\n");
 			////////////////////////////////////////////////////////
 			/// Joining a household
 			////////////////////////////////////////////////////////
-			printf("....4.5\n");
 			auto household = households[idv->householdID];
-			printf("....4.6\n");
 			if (age >= 65 && household->size() == 1) {
-				printf("....4.7\n");
 				for (size_t i = 0; i < idv->livedWithBefore.size(); i++) {
-					printf("....4.8\n");
 					if (!idv->livedWithBefore[i] || idv->livedWithBefore[i]->dead)
 						continue;
 					int hid = idv->livedWithBefore[i]->householdID;
@@ -107,7 +99,6 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 				}
 			}
 
-			printf("....5\n");
 			if (!scheduledDeath)
 				Schedule(t + timeToNextEvent, ChangeAgeGroup(idv));
 

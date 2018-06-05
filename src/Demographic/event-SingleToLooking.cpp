@@ -22,7 +22,7 @@ EventFunc TBABM::SingleToLooking(Pointer<Individual> idv)
 {
 	EventFunc ef = 
 		[this, idv](double t, SchedulerT scheduler) {
-			printf("[%d] SingleToLooking: %s, %ld::%lu\n", (int)t, idv->sex == Sex::Male ? "Male" : "Female", idv->householdID, std::hash<Pointer<Individual>>()(idv));
+			// printf("[%d] SingleToLooking: %s, %ld::%lu\n", (int)t, idv->sex == Sex::Male ? "Male" : "Female", idv->householdID, std::hash<Pointer<Individual>>()(idv));
 			if (idv->dead)
 				return true;
 

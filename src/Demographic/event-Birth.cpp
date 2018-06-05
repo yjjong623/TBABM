@@ -41,7 +41,7 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 				Pointer<Individual>(), mother, father,
 				std::vector<Pointer<Individual>>{}, householdPosition, marriageStatus);
 
-			printf("[%d] Baby born: %ld::%lu\n", (int)t, mother->householdID, std::hash<Pointer<Individual>>()(baby));
+			// printf("[%d] Baby born: %ld::%lu\n", (int)t, mother->householdID, std::hash<Pointer<Individual>>()(baby));
 
 			auto household = households[mother->householdID];
 

@@ -22,7 +22,7 @@ EventFunc TBABM::NewHouseholds(int num)
 {
 	EventFunc ef = 
 		[this, num](double t, SchedulerT scheduler) {
-			printf("[%d] NewHouseholds\n", (int)t);
+			// printf("[%d] NewHouseholds\n", (int)t);
 			int popChange = 0; // Number of people created so far
 
 			while (popChange < num) {

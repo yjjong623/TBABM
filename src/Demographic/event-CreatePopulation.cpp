@@ -22,7 +22,7 @@ EventFunc TBABM::CreatePopulation(long size)
 {
 	EventFunc ef = 
 		[this, size](double t, SchedulerT scheduler) {
-			printf("[%d] CreatePopulation\n", (int)t);
+			// printf("[%d] CreatePopulation\n", (int)t);
 			int popChange = 0;
 
 			while (popChange < size) {

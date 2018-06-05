@@ -28,7 +28,7 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 				return true;
 			}
 
-			printf("[%d] Marriage, populationSize=%lu, people: m=%ld::%lu f=%ld::%lu\n", (int)t, population.size(), m->householdID, std::hash<Pointer<Individual>>()(m), f->householdID, std::hash<Pointer<Individual>>()(f));
+			// printf("[%d] Marriage, populationSize=%lu, people: m=%ld::%lu f=%ld::%lu\n", (int)t, population.size(), m->householdID, std::hash<Pointer<Individual>>()(m), f->householdID, std::hash<Pointer<Individual>>()(f));
 			assert(m);
 			assert(f);
 			assert(m != f);
