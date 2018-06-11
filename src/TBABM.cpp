@@ -58,7 +58,7 @@ TBABM::GetData<IncidencePyramidTimeSeries>(TBABMData field)
 
 bool TBABM::Run(void)
 {
-	Schedule(0, CreatePopulation(100000));
+	Schedule(0, CreatePopulation(1000000));
 	Schedule(1, Matchmaking());
 	Schedule(1, UpdatePyramid());
 	Schedule(1, UpdateHouseholds());
