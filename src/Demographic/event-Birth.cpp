@@ -78,8 +78,11 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 			populationSize.Record(t, +1);
 			births.Record(t, +1);
 
+			mother->pregnant = false;
+
 			// Schedule the next birth
 			auto timeToNextBirth = fileData["timeToSubsequentBirths"].getValue(0,0,(t-mother->birthDate)/365,rng);
+			Schedule(t + 365*timeToNextBirth - 9*30, Pregnancy(mother));
 			Schedule(t + 365*timeToNextBirth, Birth(mother, mother->spouse));
 
 			return true;

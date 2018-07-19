@@ -94,19 +94,18 @@ public:
 		maleSeeking({}),
 		femaleSeeking({}),
 
+		seekingART({}),
+
 		householdGen(householdsFile),
 
 		nHouseholds(0),
 		rng(seed) {
-			printf("good\n");
 			for (auto it = params.begin(); it != params.end(); it++) {
 				if (it->second.getType() == SimulationLib::Type::file_type) {
-					printf("%s\n", it->second.getFileName().c_str());
 					auto j = JSONImport::fileToJSON(it->second.getFileName());
 					fileData[it->first] = DataFrameFile{j};
 				}
 			}
-			printf("not dead\n");
 		};
 
 	bool Run(void);
@@ -125,7 +124,7 @@ private:
 	IncidenceTimeSeries<int> householdsCount;
 
 	////////////////////////////////////////////////////////
-	/// Events
+	/// Demographic Events
 	////////////////////////////////////////////////////////
 
 	// Algorithm S2: Create a population at simulation time 0
@@ -167,6 +166,8 @@ private:
 	// Algorithm S14: Divorce
 	EventFunc Divorce(Pointer<Individual> m, Pointer<Individual> f);
 
+	EventFunc Pregnancy(Pointer<Individual> f);
+
 	// Update the population pyramid
 	EventFunc UpdatePyramid(void);
 
@@ -174,14 +175,7 @@ private:
 	EventFunc UpdateHouseholds(void);
 
 	////////////////////////////////////////////////////////
-	/// Scheduling
-	////////////////////////////////////////////////////////
-	EventQueue<> eq;
-
-	void Schedule(int t, EventQueue<>::EventFunc ef);
-
-	////////////////////////////////////////////////////////
-	/// Utility
+	/// Demographic Utilities
 	////////////////////////////////////////////////////////
 	void PurgeReferencesToIndividual(Pointer<Individual> host,
 										    Pointer<Individual> idv);
@@ -190,6 +184,28 @@ private:
 
 	void ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPosition newRole);
 
+	////////////////////////////////////////////////////////
+	/// HIV Events
+	////////////////////////////////////////////////////////
+	EventFunc ARTGuidelineChange(void);
+	EventFunc ARTInitiate(Pointer<Individual>);
+	EventFunc HIVInfection(Pointer<Individual>);
+	EventFunc MortalityCheck(Pointer<Individual>);
+	EventFunc VCTDiagnosis(Pointer<Individual>);
+
+	////////////////////////////////////////////////////////
+	/// HIV Utilities
+	////////////////////////////////////////////////////////
+
+	bool ARTEligible(int t, Pointer<Individual> idv);
+	void HIVInfectionCheck(int t, Pointer<Individual> idv);
+
+	////////////////////////////////////////////////////////
+	/// Scheduling
+	////////////////////////////////////////////////////////
+	EventQueue<> eq;
+
+	void Schedule(int t, EventQueue<>::EventFunc ef);
 
 	////////////////////////////////////////////////////////
 	/// Data
@@ -203,6 +219,8 @@ private:
 
 	unordered_set<Pointer<Individual>> maleSeeking;
 	unordered_set<Pointer<Individual>> femaleSeeking;
+
+	unordered_set<Pointer<Individual>> seekingART; // Individuals seeking ART
 
 	Constants constants;
 

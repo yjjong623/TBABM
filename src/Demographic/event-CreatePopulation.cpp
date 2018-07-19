@@ -79,11 +79,13 @@ EventFunc TBABM::CreatePopulation(long size)
 
 					double yearsToBirth = birthDistribution.getValue(0,0,person->age(t),rng);
 					int daysToFirstBirth = 365 * yearsToBirth;
+					Schedule(t + daysToFirstBirth - 9*30, Pregnancy(person));
 					Schedule(t + daysToFirstBirth, Birth(person, person->spouse));
 				}
 			}
 
 			populationSize.Record(t, popChange);
+			printf("Population size: %d\n", populationSize(t));
 
 			return true;
 		};

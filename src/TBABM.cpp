@@ -58,10 +58,11 @@ TBABM::GetData<IncidencePyramidTimeSeries>(TBABMData field)
 
 bool TBABM::Run(void)
 {
-	Schedule(0, CreatePopulation(1000000));
+	Schedule(0, CreatePopulation(10000));
 	Schedule(1, Matchmaking());
 	Schedule(1, UpdatePyramid());
 	Schedule(1, UpdateHouseholds());
+	// Schedule(1, ARTGuidelineChange());
 
 	while (!eq.Empty()) {
 		auto e = eq.Top();
@@ -70,10 +71,8 @@ bool TBABM::Run(void)
 			break;
 
 		e.run();
-		// delete e;
 		eq.Pop();
 	}
-	// printf("Simulation finished!\n");
 
 	births.Close();
 	deaths.Close();
@@ -210,6 +209,15 @@ void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPositi
 #include "Demographic/event-Marriage.cpp"
 #include "Demographic/event-Matchmaking.cpp"
 #include "Demographic/event-NewHouseholds.cpp"
+#include "Demographic/event-Pregnancy.cpp"
 #include "Demographic/event-SingleToLooking.cpp"
 #include "Demographic/event-UpdateHouseholds.cpp"
 #include "Demographic/event-UpdatePyramid.cpp"
+
+#include "HIV/event-ARTGuidelineChange.cpp"
+#include "HIV/event-MortalityCheck.cpp"
+#include "HIV/event-ARTInitiate.cpp"
+#include "HIV/event-VCTDiagnosis.cpp"
+#include "HIV/event-HIVInfection.cpp"
+#include "HIV/helper-ARTEligible.cpp"
+#include "HIV/helper-HIVInfectionCheck.cpp"
