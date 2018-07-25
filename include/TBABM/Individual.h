@@ -113,6 +113,7 @@ public:
 	  marriageStatus(marriageStatus),
 	  onART(false),
 	  hivStatus(HIVStatus::Negative),
+	  tbStatus(TBStatus::Susceptible),
 	  dead(false) {};
 	
 	Individual(long hid, int birthDate, Sex sex, HouseholdPosition householdPosition,

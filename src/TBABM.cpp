@@ -22,12 +22,20 @@ PrevalenceTimeSeries<int> *
 TBABM::GetData<PrevalenceTimeSeries<int>>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::Marriages:   return nullptr;
-        case TBABMData::Births:      return nullptr;
-        case TBABMData::Deaths:		 return nullptr;
-        case TBABMData::PopulationSize: return &populationSize;
-        case TBABMData::Divorces:    return nullptr;
-        default:                     return nullptr;
+        case TBABMData::Marriages:       return nullptr;
+        case TBABMData::Births:          return nullptr;
+        case TBABMData::Deaths:		     return nullptr;
+        case TBABMData::PopulationSize:  return &populationSize;
+        case TBABMData::Divorces:        return nullptr;
+ 
+        case TBABMData::HIVNegative:     return &hivNegative;
+        case TBABMData::HIVPositive:     return &hivPositive;
+        case TBABMData::HIVPositiveART:  return &hivPositiveART;
+ 
+        case TBABMData::HIVDiagnosed:    return &hivDiagnosed;
+        case TBABMData::HIVDiagnosedVCT: return &hivDiagnosedVCT;
+ 
+        default:                         return nullptr;
     }
 }
 
@@ -42,6 +50,10 @@ TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
         case TBABMData::PopulationSize: return nullptr;
         case TBABMData::Divorces:    return &divorces;
         case TBABMData::Households:  return &householdsCount;
+
+        case TBABMData::HIVInfections: return &hivInfections;
+        case TBABMData::HIVDiagnosesVCT: return &hivDiagnosesVCT;
+
         default:                     return nullptr;
     }
 }
@@ -58,11 +70,11 @@ TBABM::GetData<IncidencePyramidTimeSeries>(TBABMData field)
 
 bool TBABM::Run(void)
 {
-	Schedule(0, CreatePopulation(10000));
+	CreatePopulation(0, 100);
 	Schedule(1, Matchmaking());
 	Schedule(1, UpdatePyramid());
 	Schedule(1, UpdateHouseholds());
-	// Schedule(1, ARTGuidelineChange());
+	Schedule(1, ARTGuidelineChange());
 
 	while (!eq.Empty()) {
 		auto e = eq.Top();
@@ -79,8 +91,19 @@ bool TBABM::Run(void)
 	marriages.Close();
 	populationSize.Close();
 	divorces.Close();
+
 	pyramid.Close();
 	householdsCount.Close();
+
+	hivNegative.Close();
+	hivPositive.Close();
+	hivPositiveART.Close();
+
+	hivDiagnosed.Close();
+	hivDiagnosedVCT.Close();
+
+	hivInfections.Close();
+	hivDiagnosesVCT.Close();
 
 	return true;
 }

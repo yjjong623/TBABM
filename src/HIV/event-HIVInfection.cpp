@@ -32,8 +32,13 @@ EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 			idv->initialCD4 = params["CD4"].Sample(rng);
 			idv->kgamma = params["kGamma"].Sample(rng);
 			idv->t_HIV_infection = t;
+			idv->hivDiagnosed = false;
 
 			Schedule(t, VCTDiagnosis(idv));
+
+			hivPositive.Record(t, +1);
+			hivNegative.Record(t, -1);
+			hivInfections.Record(t, +1);
 
 			return true;
 		};

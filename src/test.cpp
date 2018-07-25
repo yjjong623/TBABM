@@ -23,12 +23,12 @@ int main(int argc, char const *argv[])
 
 	constants["tMax"] = 365*10;
 	constants["periodLength"] = 30;
-	constants["ageGroupWidth"] = 10;
+	constants["ageGroupWidth"] = 5;
 	constants["startYear"] = 1990;
 
 	const char *householdsFile = "household_structure.csv";
 
-	int nTrajectories = 1;
+	int nTrajectories = 50;
 
 	RNG rng(std::time(NULL));
 
@@ -49,28 +49,61 @@ int main(int argc, char const *argv[])
 	TimeSeriesExport<int> marriages("../output/marriages.csv");
 	TimeSeriesExport<int> divorces("../output/divorces.csv");
 	TimeSeriesExport<int> households("../output/householdsCount.csv");
+
+	TimeSeriesExport<int> hivNegative("../output/hivNegative.csv");
+	TimeSeriesExport<int> hivPositive("../output/hivPositive.csv");
+	TimeSeriesExport<int> hivPositiveART("../output/hivPositiveART.csv");
+
+	TimeSeriesExport<int> hivInfections("../output/hivInfections.csv");
+	TimeSeriesExport<int> hivDiagnosed("../output/hivDiagnosed.csv");
+	TimeSeriesExport<int> hivDiagnosedVCT("../output/hivDiagnosedVCT.csv");
+	TimeSeriesExport<int> hivDiagnosesVCT("../output/hivDiagnosesVCT.csv");
+
 	PyramidTimeSeriesExport pyramid("../output/populationPyramid.csv");
 
 	using TBABMData = TBABM::TBABMData;
+
+	bool success = true;
 	for (int i = 0; i < nTrajectories; i++) {
-		births.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Births));
-		deaths.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Deaths));
-		populationSize.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::PopulationSize));
-		marriages.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Marriages));
-		divorces.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Divorces));
-		households.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Households));
+		success &= births.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Births));
+		success &= deaths.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Deaths));
+		success &= populationSize.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::PopulationSize));
+		success &= marriages.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Marriages));
+		success &= divorces.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Divorces));
+		success &= households.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Households));
+		
+		success &= hivNegative.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::HIVNegative));
+		success &= hivPositive.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::HIVPositive));
+		success &= hivPositiveART.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::HIVPositiveART));
+
+		success &= hivInfections.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::HIVInfections));
+		success &= hivDiagnosed.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::HIVDiagnosed));
+		success &= hivDiagnosedVCT.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::HIVDiagnosedVCT));
+		success &= hivDiagnosesVCT.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::HIVDiagnosesVCT));
 	}
 
-	pyramid.Add(trajectories[0]->GetData<IncidencePyramidTimeSeries>(TBABMData::Pyramid));
+	success &= pyramid.Add(trajectories[0]->GetData<IncidencePyramidTimeSeries>(TBABMData::Pyramid));
 
-	if (births.Write()&&
-	deaths.Write()&&
-	populationSize.Write()&&
-	marriages.Write()&&
-	divorces.Write()&&
-	pyramid.Write()&&
-	households.Write()) {
-		printf("everything was written successfully!\n");
+	if (!success) {
+		printf("An attempt to add a data source to the CSV exporter failed. Quitting.\n");
+		return 0;
+	}
+
+	if (births.Write()          &&
+		deaths.Write()          &&
+		populationSize.Write()  &&
+		marriages.Write()       &&
+		divorces.Write()        &&
+		pyramid.Write()         &&
+		households.Write()      &&
+		hivNegative.Write()     &&
+		hivPositive.Write()     &&
+		hivPositiveART.Write()  &&
+		hivInfections.Write()   &&
+		hivDiagnosed.Write()    &&
+		hivDiagnosedVCT.Write() &&
+		hivDiagnosesVCT.Write() ) {
+		printf("Everything was written successfully!\n");
 	} else {
 		printf("Somethihg didn't write correctly\n");
 	}

@@ -18,6 +18,7 @@ EventFunc TBABM::ARTGuidelineChange(void)
 {
 	EventFunc ef = 
 		[this](double t, SchedulerT scheduler) {
+			printf("[%d] ARTGuidelineChange\n", (int)t);
 			for (auto it = seekingART.begin(); it != seekingART.end();) {
 				if (!*it || (*it)->dead) {
 					it++; continue;

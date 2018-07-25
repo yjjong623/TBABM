@@ -26,8 +26,10 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 
 			// Make sure the individual is not dead, and has not
 			// already been diagnosed
-			if (!idv || idv->dead || idv->hivDiagnosed)
+			if (!idv || idv->dead || idv->hivDiagnosed) {
+				printf("\tDead or already diagnosed\n");
 				return true;
+			}
 
 			// Get constant parameter m_30 and CD4
 			double m_30 = params["HIV_m_30"].Sample(rng);
@@ -48,17 +50,34 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 			else
 				initiateART = fileData["HIV_p_art"].getValue(0, 0, CD4, rng);
 
+			printf("\tInitiateART: %d\n", (int)initiateART);
+			printf("\tCD4: %d\n", (int)idv->CD4count(t, m_30));
+
 			if (timeToDiagnosis < ageGroupWidth && idv->hivStatus == HIVStatus::Positive) {
+
 				idv->hivDiagnosed = true;
-				if (ARTEligible(t, idv) && initiateART)
+				hivDiagnosed.Record(t, +1);
+				hivDiagnosedVCT.Record(t, +1);
+				hivDiagnosesVCT.Record(t, +1);
+
+				if (ARTEligible(t, idv) && initiateART) {
+					printf("\tART eligible\n");
 					Schedule(t, ARTInitiate(idv));
-				else if (!ARTEligible(t, idv))
+				}
+				else if (!ARTEligible(t, idv)) {
+					printf("\tART ineligible\n");
 					seekingART.insert(idv);
+				}
+				else {
+					printf("\tART eligible, but not initiating\n");
+				}
 				// Right now this means that those who don't get 'chosen' (i.e., 
 				//   initiateART is false) will never initiate ART
 			}
-			else
-				Schedule(t + ageGroupWidth, VCTDiagnosis(idv));
+			else {
+				printf("\tNot diagnosed during this period\n");
+				Schedule(t + 365*ageGroupWidth, VCTDiagnosis(idv));
+			}
 
 			return true;
 		};

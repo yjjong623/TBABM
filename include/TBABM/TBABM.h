@@ -45,11 +45,16 @@ public:
 	using SchedulerT = EQ::SchedulerT;
 
 	enum class TBABMData {
-		// HIVNegative, 
+		HIVNegative, 
 		// HIVPositiveNIC, 
 		// HIVPositiveIC, 
-		// HIVPositiveART, 
-		// HIVPositive,
+		HIVPositiveART, 
+		HIVPositive,
+
+		HIVInfections,
+		HIVDiagnosed,
+		HIVDiagnosedVCT,
+		HIVDiagnosesVCT,
 		
 		// TBSusceptible,
 		// TBLatentTN, 
@@ -84,6 +89,15 @@ public:
 		marriages("marriages", 0, constants["tMax"], constants["periodLength"]),
 		divorces("divorces", 0, constants["tMax"], constants["periodLength"]),
 		populationSize("populationSize", constants["tMax"], constants["periodLength"]),
+
+		hivNegative("hivNegative", constants["tMax"], constants["periodLength"]),
+		hivPositive("hivPositive", constants["tMax"], constants["periodLength"]),
+		hivPositiveART("hivPositiveART", constants["tMax"], constants["periodLength"]),
+
+		hivInfections("hivInfections", 0, constants["tMax"], constants["periodLength"]),
+		hivDiagnosed("hivDiagnosed", constants["tMax"], constants["periodLength"]),
+		hivDiagnosedVCT("hivDiagnosedVCT", constants["tMax"], constants["periodLength"]),
+		hivDiagnosesVCT("hivDiagnosesVCT", 0, constants["tMax"], constants["periodLength"]),
 
 		pyramid("Population pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
 		householdsCount("households", 0, constants["tMax"], 365),
@@ -123,12 +137,20 @@ private:
 	IncidencePyramidTimeSeries pyramid;	
 	IncidenceTimeSeries<int> householdsCount;
 
+	PrevalenceTimeSeries<int> hivNegative;
+	IncidenceTimeSeries<int>  hivInfections;
+	PrevalenceTimeSeries<int> hivPositive;
+	PrevalenceTimeSeries<int> hivPositiveART;
+	PrevalenceTimeSeries<int> hivDiagnosed;
+	PrevalenceTimeSeries<int> hivDiagnosedVCT;
+	IncidenceTimeSeries<int>  hivDiagnosesVCT;
+
 	////////////////////////////////////////////////////////
 	/// Demographic Events
 	////////////////////////////////////////////////////////
 
 	// Algorithm S2: Create a population at simulation time 0
-	EventFunc CreatePopulation(long size);
+	void CreatePopulation(int t, long size);
 
 	// Algorithm S3: Match making
 	EventFunc Matchmaking(void);

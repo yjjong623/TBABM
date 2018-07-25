@@ -20,7 +20,7 @@ bool TBABM::ARTEligible(int t, Pointer<Individual> idv)
 	int CD4       = idv->CD4count(t, m_30);
 	bool pregnant = idv->pregnant;
 
-	if (1999 <= year && year < 2009)
+	if (1990 <= year && year < 2009)
 		return CD4 < 200;
 	
 	else if (2009 == year)

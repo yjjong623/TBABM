@@ -102,7 +102,7 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			////////////////////////////////////////////////////////
 			/// HIV infection check
 			////////////////////////////////////////////////////////
-			// HIVInfectionCheck(t, idv);
+			HIVInfectionCheck(t, idv);
 
 			if (!scheduledDeath)
 				Schedule(t + timeToNextEvent, ChangeAgeGroup(idv));
