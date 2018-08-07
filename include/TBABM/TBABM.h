@@ -3,6 +3,8 @@
 #include <map>
 #include <string>
 #include <ctime>
+#include <fstream>
+#include <iostream>
 
 #include <StatisticalDistribution.h>
 #include <Exponential.h>
@@ -120,6 +122,10 @@ public:
 					fileData[it->first] = DataFrameFile{j};
 				}
 			}
+
+			// Open file for mean survival time
+			meanSurvivalTime.open("../output/meanSurvivalTimeNoART.csv", ios_base::app);
+			meanSurvivalTime << "years lived,age at infection\n";
 		};
 
 	bool Run(void);
@@ -251,4 +257,6 @@ private:
 	long nHouseholds;
 
 	RNG rng;
+
+	ofstream meanSurvivalTime;
 };

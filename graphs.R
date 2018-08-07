@@ -3,38 +3,92 @@ library(tidyverse)
 outputLocation <- "/Users/marcusrussi/Desktop/Yaesoubi-Cohen-Lab/repos/TBABM/output/"
 
 CSVLoaderGen <- function(prefix) {
-  function(name) {
-    read.csv(paste(prefix, name, ".csv", sep=""))
-  }
+  function(name) read.csv(paste(prefix, name, ".csv", sep="")) %>% tbl_df()
 }
 
 Load <- CSVLoaderGen(outputLocation)
 
-Graph <- function(name, x, y) {
-  data <- Load(name)
-  cols <- colnames(data)
-  colsOfInterest <- cols[2:length(cols)]
+Graph_impl <- function(data, x, y) {
+  ylim <- 1.1 * max(data$value, na.rm=TRUE)
   
-  plot.ts(data[,colsOfInterest], plot.type=c("single"), xlab=x, ylab=y)
   ggplot(data, aes(period, value, group=trajectory)) +
     geom_line(aes(color=trajectory)) +
-    scale_color_brewer(type='div', palette=4) +
-    xlab(x) + ylab(y)
+    xlab(x) + ylab(y) +
+    coord_cartesian(ylim=c(0, ylim))
 }
 
-Graph("births", "Time (weeks)", "Births")
-Graph("deaths", "Time (weeks)", "Deaths")
-Graph("marriages", "Time (weeks)", "Marriages")
-Graph("divorces", "Time (weeks)", "Divorces")
-Graph("populationSize", "Time (weeks)", "Population size")
-Graph("householdsCount", "Time (weeks)", "# Households")
-Graph("hivDiagnosed", "Time (Weeks)", "HIV Diagnosed")
-Graph("hivDiagnosedVCT", "Time (Weeks)", "HIV Diagnosed – VCT")
-Graph("hivDiagnosesVCT", "Time (Weeks)", "HIV Diagnoses – VCT")
-Graph("hivInfections", "Time (Weeks)", "HIV Infections")
-Graph("hivNegative", "Time (Weeks)", "HIV Negative")
-Graph("hivPositive", "Time (Weeks)", "HIV Positive")
-Graph("hivPositiveART", "Time (Weeks)", "HIV Positive + ART")
+Graph <- function(name, x, y) {
+  data <- Load(name)
+  Graph_impl(data, x, y)
+}
+
+Hist <- function(name, col, x) {
+  data <- Load(name)
+  ggplot(data, aes_string(col)) +
+    geom_histogram() +
+    xlab(x)
+}
+
+JoinTimeSeries <- function(x, y, preserveNames=FALSE) {
+  xName <- enquo(x) %>% quo_name()
+  yName <- enquo(y) %>% quo_name()
+  
+  by <- c("period", "trajectory")
+  joined <- left_join(x, y, by, copy=TRUE)
+  
+  if (preserveNames) {
+    joined <- rename(joined, !!xName := value.x, !!yName := value.y)
+  }
+  
+  joined
+}
+
+JoinAndDivide <- function(num, den, by, newColName, scale = 1) {
+  JoinTimeSeries(num, den) %>%
+    mutate(
+      !!newColName := scale*value.x/value.y,
+      value.x := NULL,
+      value.y := NULL
+    )
+}
+
+JoinAndDivideTimeSeries <- function(num, den, newColName, scale = 1) {
+  JoinAndDivide(num, den, c("period", "trajectory"), newColName, scale)
+}
+
+RateTimeSeries <- function(n, d, name) JoinAndDivideTimeSeries(n,d,name)
+
+RateTimeSeriesPerN <- function(n, d, name, scale) JoinAndDivideTimeSeries(n,d,name,scale)
+
+RateTimeSeries(births, populationSize, "birthRate")
+RateTimeSeriesPerN(births, populationSize, "birthRate", 1e3)
+
+births <- Load("births")
+populationSize <- Load("populationSize")
+
+
+Graph("births", "Time (months)", "Births")
+Graph("deaths", "Time (months)", "Deaths")
+Graph("marriages", "Time (months)", "Marriages")
+Graph("divorces", "Time (months)", "Divorces")
+Graph("populationSize", "Time (months)", "Population size")
+Graph("householdsCount", "Time (months)", "# Households")
+Graph("hivDiagnosed", "Time (months)", "HIV Diagnosed")
+Graph("hivDiagnosedVCT", "Time (months)", "HIV Diagnosed – VCT")
+Graph("hivDiagnosesVCT", "Time (months)", "HIV Diagnoses – VCT")
+Graph("hivInfections", "Time (months)", "HIV Infections")
+Graph("hivNegative", "Time (months)", "HIV Negative")
+Graph("hivPositive", "Time (months)", "HIV Positive")
+Graph("hivPositiveART", "Time (months)", "HIV Positive + ART")
+Hist("meanSurvivalTimeNoART", "age.at.infection", "Age at Infection")
+Hist("meanSurvivalTimeNoART", "years.lived", "Years lived with HIV, no ART")
+
+meanSurvivalTimeNoART <- Load("meanSurvivalTimeNoART")
+
+mean(meanSurvivalTimeNoART[,2])
+mean(meanSurvivalTimeNoART[,1])
+
+sort(meanSurvivalTimeNoART[,2])
 
 # histT0 <- read.csv("/Users/marcusrussi/Desktop/Yaesoubi-Cohen-Lab/repos/TBABM/output/histogramT1.csv")
 # histT10 <- read.csv("/Users/marcusrussi/Desktop/Yaesoubi-Cohen-Lab/repos/TBABM/output/histogramT10.csv")

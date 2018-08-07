@@ -41,7 +41,7 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			if (!idv || idv->dead)
 				return true;
 
-			printf("[%d] ChangeAgeGroup: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
+			// printf("[%d] ChangeAgeGroup: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 			double timeToNextEvent = ageGroupWidth*365;
 
 			////////////////////////////////////////////////////////
@@ -55,6 +55,8 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			bool scheduledDeath = false;
 			if (timeToDeath < timeToNextEvent) {
 				scheduledDeath = true;
+				// if (idv->hivStatus == Individual::HIVStatus::Positive)
+					// printf("natural\t%2d\n", idv->age(t));
 				Schedule(t + timeToDeath, Death(idv));
 			}
 

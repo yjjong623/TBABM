@@ -30,15 +30,17 @@ void TBABM::CreatePopulation(int t, long size)
 
 		assert(hh->head);
 
+		auto offset = Uniform(0, constants["ageGroupWidth"]*365);
+
 		// Insert all members of the household into the population
 		population.insert(hh->head); popChange++;
 		assert(hh->head->householdID == hid);
-		Schedule(t, ChangeAgeGroup(hh->head));
+		Schedule(t + offset(rng.mt_), ChangeAgeGroup(hh->head));
 		if (hh->spouse) {
 			popChange++;
 			population.insert(hh->spouse);
 			assert(hh->spouse->householdID == hid);
-			Schedule(t, ChangeAgeGroup(hh->spouse));
+			Schedule(t + offset(rng.mt_), ChangeAgeGroup(hh->spouse));
 
 			// Set marriage age
 			double spouseAge = (t - hh->spouse->birthDate)/365.;
@@ -50,13 +52,13 @@ void TBABM::CreatePopulation(int t, long size)
 			popChange++;
 			population.insert(*it);
 			assert((*it)->householdID == hid);
-			Schedule(t, ChangeAgeGroup(*it));
+			Schedule(t + offset(rng.mt_), ChangeAgeGroup(*it));
 		}
 		for (auto it = hh->other.begin(); it != hh->other.end(); it++) {
 			popChange++;
 			population.insert(*it);
 			assert((*it)->householdID == hid);
-			Schedule(t, ChangeAgeGroup(*it));
+			Schedule(t + offset(rng.mt_), ChangeAgeGroup(*it));
 		}
 	}
 
@@ -67,10 +69,10 @@ void TBABM::CreatePopulation(int t, long size)
 			continue;
 
 		if (person->spouse && person->age(t) >= 15) {
-			auto birthDistribution = person->offspring.size() > 0 ? \
+			auto birthDistribution = (person->offspring.size() > 0) ? \
 					fileData["timeToSubsequentBirths"] : fileData ["timeToFirstBirth"];
 
-			double yearsToBirth = birthDistribution.getValue(0,0,person->age(t),rng);
+			double yearsToBirth = birthDistribution.getValue(0, 0, person->age(t), rng);
 			int daysToFirstBirth = 365 * yearsToBirth;
 			Schedule(t + daysToFirstBirth - 9*30, Pregnancy(person));
 			Schedule(t + daysToFirstBirth, Birth(person, person->spouse));

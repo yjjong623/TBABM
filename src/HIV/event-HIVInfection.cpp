@@ -21,10 +21,12 @@ EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 		[this, idv](double t, SchedulerT scheduler) {
 			using HIVStatus = Individual::HIVStatus;
 
-			printf("[%d] HIVInfection: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
+			// printf("[%d] HIVInfection: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 
 			if (!idv || idv->dead || idv->hivStatus == HIVStatus::Positive)
 				return true;
+
+			// printf("infection\t\tage: %d\n", idv->age(t));
 
 			idv->hivStatus = HIVStatus::Positive;
 
@@ -35,6 +37,7 @@ EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 			idv->hivDiagnosed = false;
 
 			Schedule(t, VCTDiagnosis(idv));
+			Schedule(t, MortalityCheck(idv));
 
 			hivPositive.Record(t, +1);
 			hivNegative.Record(t, -1);

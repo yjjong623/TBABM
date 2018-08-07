@@ -14,6 +14,7 @@ using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 using Sex = Individual::Sex;
+using HIVStatus = Individual::HIVStatus;
 
 using namespace StatisticalDistributions;
 
@@ -22,7 +23,7 @@ EventFunc TBABM::Death(Pointer<Individual> idv)
 {
 	EventFunc ef = 
 		[this, idv](double t, SchedulerT scheduler) {
-			if (idv->dead)
+			if (!idv || idv->dead)
 				return true;
 
 			// printf("[%d] Death: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));

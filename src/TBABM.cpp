@@ -70,7 +70,7 @@ TBABM::GetData<IncidencePyramidTimeSeries>(TBABMData field)
 
 bool TBABM::Run(void)
 {
-	CreatePopulation(0, 100);
+	CreatePopulation(0, 10000);
 	Schedule(1, Matchmaking());
 	Schedule(1, UpdatePyramid());
 	Schedule(1, UpdateHouseholds());
@@ -79,10 +79,10 @@ bool TBABM::Run(void)
 	while (!eq.Empty()) {
 		auto e = eq.Top();
 
-		if (e.t > constants["tMax"])
+		if (e->t > constants["tMax"])
 			break;
 
-		e.run();
+		e->run();
 		eq.Pop();
 	}
 
@@ -104,6 +104,8 @@ bool TBABM::Run(void)
 
 	hivInfections.Close();
 	hivDiagnosesVCT.Close();
+
+	meanSurvivalTime.close();
 
 	return true;
 }

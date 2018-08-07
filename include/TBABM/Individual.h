@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <algorithm>
 
 template <typename T>
 using Pointer = std::shared_ptr<T>;
@@ -71,12 +72,12 @@ public:
 		double t = onART ? ARTInitTime : t_cur;
 
 		double gender   = (sex == Sex::Female) ? 0.9 : 1.0;
-		double m_a      = m_30 * pow(1+kgamma,(age(t)-30)/10);
+		double m_a      = m_30 * pow(1+kgamma,(age(t)-18)/10);
 		double t_HIV    = (t - t_HIV_infection - 3*14) / 365;
 		double CD4NoART = std::max(0., initialCD4 - gender*m_a*t_HIV);
 
 		if (!onART)
-			return CD4NoART;
+			return std::min(5000., CD4NoART);
 
 		double nYears = (t_cur - ARTInitTime)/365;
 		double increase;
@@ -91,7 +92,7 @@ public:
 		else if (500 <= initialCD4)
 			increase = 956 - 366/std::pow(2, nYears/1.15) - 592;
 
-		return CD4NoART + increase;
+		return std::min(5000., std::max(CD4NoART + increase, 0.));
 	}
 
 	Individual(long householdID, int birthDate, Sex sex,

@@ -20,7 +20,7 @@ EventFunc TBABM::MortalityCheck(Pointer<Individual> idv)
 {
 	EventFunc ef = 
 		[this, idv](double t, SchedulerT scheduler) {
-			printf("[%d] MortalityCheck: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
+			// printf("[%d] MortalityCheck: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 
 			double ageGroupWidth = constants["ageGroupWidth"];
 
@@ -44,8 +44,18 @@ EventFunc TBABM::MortalityCheck(Pointer<Individual> idv)
 			// it occurs before next MortalityCheck and CD4 count is low
 			double timeToMortality = Exponential(M_c)(rng.mt_);
 
-			if (timeToMortality < 365*ageGroupWidth && CD4 < 350)
-				Schedule(t, Death(idv));
+			// printf("timeToMortality=%f, m=%f, p=%f, m_30=%f, CD4=%f\n", timeToMortality/365, m, p, m_30, CD4);
+
+			if (timeToMortality < ageGroupWidth && CD4 < 350) {
+				// printf("unnatural\t%2d\n", idv->age(t + timeToMortality));
+
+				if (idv->onART == false) {
+					double yearsLivedInfected = (t + 365*timeToMortality - idv->t_HIV_infection)/365;
+					meanSurvivalTime << to_string(yearsLivedInfected) << "," << to_string(idv->age(idv->t_HIV_infection)) << "\n";
+				}
+
+				Schedule(t + 365*timeToMortality, Death(idv));
+			}
 			else
 				Schedule(t + 365*ageGroupWidth, MortalityCheck(idv));
 			

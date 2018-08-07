@@ -21,14 +21,14 @@ int main(int argc, char const *argv[])
 {
 	Constants constants {};
 
-	constants["tMax"] = 365*10;
+	constants["tMax"] = 365*30;
 	constants["periodLength"] = 30;
 	constants["ageGroupWidth"] = 5;
 	constants["startYear"] = 1990;
 
 	const char *householdsFile = "household_structure.csv";
 
-	int nTrajectories = 50;
+	int nTrajectories = 1;
 
 	RNG rng(std::time(NULL));
 

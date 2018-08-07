@@ -19,7 +19,7 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 {
 	EventFunc ef = 
 		[this, idv](double t, SchedulerT scheduler) {
-			printf("[%d] VCTDiagnosis: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
+			// printf("[%d] VCTDiagnosis: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 
 			int startYear     = constants["startYear"];
 			int ageGroupWidth = constants["ageGroupWidth"];
@@ -27,7 +27,7 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 			// Make sure the individual is not dead, and has not
 			// already been diagnosed
 			if (!idv || idv->dead || idv->hivDiagnosed) {
-				printf("\tDead or already diagnosed\n");
+				// printf("\tDead or already diagnosed\n");
 				return true;
 			}
 
@@ -42,6 +42,7 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 
 			// Calculate rate of diagnosis and time to diagnosis
 			double D_c = a_t_i*exp(-1 * sig_i * CD4);
+			// printf("CD4: %f\t\ta_t_i: %f\t\tD_c: %f\n", CD4, a_t_i, D_c);
 			double timeToDiagnosis = Exponential(D_c)(rng.mt_);
 
 			bool initiateART;
@@ -50,8 +51,8 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 			else
 				initiateART = fileData["HIV_p_art"].getValue(0, 0, CD4, rng);
 
-			printf("\tInitiateART: %d\n", (int)initiateART);
-			printf("\tCD4: %d\n", (int)idv->CD4count(t, m_30));
+			// printf("\tInitiateART: %d\n", (int)initiateART);
+			// printf("\tCD4: %d\n", (int)idv->CD4count(t, m_30));
 
 			if (timeToDiagnosis < ageGroupWidth && idv->hivStatus == HIVStatus::Positive) {
 
@@ -61,21 +62,22 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 				hivDiagnosesVCT.Record(t, +1);
 
 				if (ARTEligible(t, idv) && initiateART) {
-					printf("\tART eligible\n");
+					// printf("\tART eligible\n");
 					Schedule(t, ARTInitiate(idv));
 				}
 				else if (!ARTEligible(t, idv)) {
-					printf("\tART ineligible\n");
+					// printf("\tART ineligible\n");
 					seekingART.insert(idv);
 				}
 				else {
-					printf("\tART eligible, but not initiating\n");
+					// printf("\tART eligible, but not initiating\n");
+					seekingART.insert(idv);
 				}
 				// Right now this means that those who don't get 'chosen' (i.e., 
 				//   initiateART is false) will never initiate ART
 			}
 			else {
-				printf("\tNot diagnosed during this period\n");
+				// printf("\tNot diagnosed during this period\n");
 				Schedule(t + 365*ageGroupWidth, VCTDiagnosis(idv));
 			}
 

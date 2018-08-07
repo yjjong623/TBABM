@@ -21,8 +21,8 @@ EventFunc TBABM::ARTInitiate(Pointer<Individual> idv)
 		[this, idv](double t, SchedulerT scheduler) {
 			double m_30   = params["HIV_m_30"].Sample(rng);
 			int CD4       = idv->CD4count(t, m_30);
-			printf("[%d] ARTInitiate: %ld::%lu, CD4=%d\n", (int)t, idv->householdID, \
-														std::hash<Pointer<Individual>>()(idv), CD4);
+			// printf("[%d] ARTInitiate: %ld::%lu, CD4=%d\n", (int)t, idv->householdID, \
+														// std::hash<Pointer<Individual>>()(idv), CD4);
 
 			if (!idv || idv->dead || idv->hivStatus != HIVStatus::Positive)
 				return true;
