@@ -22,7 +22,12 @@ EventFunc TBABM::Matchmaking(void)
 {
 	EventFunc ef = 
 		[this](double t, SchedulerT scheduler) {
-			// printf("[%d]\tMatchmaking, ms=%lu, fs=%lu\n", (int)t, maleSeeking.size(), femaleSeeking.size());
+
+
+			int msSize = maleSeeking.size();
+			int fsSize = femaleSeeking.size();
+			int marriages = 0;
+
 			auto it = maleSeeking.begin();
 			for (; it != maleSeeking.end(); it++) {
 				if (femaleSeeking.size() == 0) {
@@ -62,8 +67,8 @@ EventFunc TBABM::Matchmaking(void)
 				assert(*wife);
 
 
-				// printf("\t\tM %2d F %2d\n", (int)(t-(*it)->birthDate)/365, (int)(t-(*wife)->birthDate)/365);
 				Schedule(t, Marriage(*it, *wife));
+				marriages++;
 
 				femaleSeeking.erase(wife);
 			}
@@ -71,6 +76,7 @@ EventFunc TBABM::Matchmaking(void)
 			// Erase males who have been matched to a female
 			maleSeeking.erase(maleSeeking.begin(), it);
 
+			printf("%d,%d,%d,%d\n",(int)t,marriages,msSize, fsSize);
 			Schedule(t + 30, Matchmaking());
 
 			return true;

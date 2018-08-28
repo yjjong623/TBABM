@@ -61,8 +61,13 @@ public:
 
 	bool dead;
 
-	int age(double t) {
+	template <class T = int>
+	T age(double t) {
 		return (t - birthDate) / 365;
+	}
+
+	int numOffspring() {
+		return offspring.size();
 	}
 
 	double CD4count(double t_cur, double m_30) {
@@ -95,6 +100,22 @@ public:
 		return std::min(5000., std::max(CD4NoART + increase, 0.));
 	}
 
+	void LivedWith(Pointer<Individual> idv) {
+		if (!idv || idv->dead)
+			return;
+
+		idv->livedWithBefore.push_back(idv);
+	}
+
+	void Widowed() {
+		if (dead) return;
+
+		spouse.reset();
+		marriageStatus = MarriageStatus::Single;
+
+		return;
+	}
+
 	Individual(long householdID, int birthDate, Sex sex,
 			   Pointer<Individual> spouse,
 			   Pointer<Individual> mother,
@@ -117,8 +138,19 @@ public:
 	  tbStatus(TBStatus::Susceptible),
 	  dead(false) {};
 	
-	Individual(long hid, int birthDate, Sex sex, HouseholdPosition householdPosition,
+	Individual(long hid, 
+			   int birthDate, 
+			   Sex sex, 
+			   HouseholdPosition householdPosition,
 			   MarriageStatus marriageStatus) :
-	  Individual(hid, birthDate, sex, Pointer<Individual>(), Pointer<Individual>(), Pointer<Individual>(), {}, householdPosition, marriageStatus) {};
+	  Individual(hid, 
+	  			 birthDate, 
+	  			 sex, 
+	             Pointer<Individual>(), 
+	             Pointer<Individual>(), 
+	             Pointer<Individual>(), 
+	             {}, 
+	             householdPosition, 
+	             marriageStatus) {};
 private:
 };

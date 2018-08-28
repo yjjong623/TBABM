@@ -28,44 +28,20 @@ EventFunc TBABM::CreateHousehold(Pointer<Individual> head,
 		[this, head, spouse, offspring, other](double t, SchedulerT scheduler) {
 			// printf("[%d] CreateHousehold\n", (int)t);
 			auto household = std::make_shared<Household>(head, spouse, offspring, other);
-			auto individuals = std::vector<Pointer<Individual>>{};
 			long hid = nHouseholds++;
-
-			// Head
-			assert(head);
-			head->householdID = hid;
-			head->householdPosition = HouseholdPosition::Head;
-			individuals.push_back(head);
-
-			// Spouse
-			if (spouse) {
-				spouse->householdPosition = HouseholdPosition::Spouse;
-				spouse->householdID = hid;
-				individuals.push_back(spouse);
-			}
-
-			// Offspring
-			for (auto it = offspring.begin(); it != offspring.end(); it++) {
-				(*it)->householdPosition = HouseholdPosition::Offspring;
-				(*it)->householdID = hid;
-				individuals.push_back(*it);
-			}
-
-			// Other
-			for (auto it = other.begin(); it != other.end(); it++) {
-				(*it)->householdPosition = HouseholdPosition::Offspring;
-				(*it)->householdID = hid;
-				individuals.push_back(*it);
-			}
-
-			// Update .livedWithBefore for everybody
-			for (size_t i = 0; i < individuals.size(); i++)
-				for (size_t j = 0; j < individuals.size(); j++) {
-					if (individuals[i] != individuals[j])
-						individuals[i]->livedWithBefore.push_back(individuals[j]);
-				}
-
 			households[hid] = household;
+
+			ChangeHousehold(head, hid, HouseholdPosition::Head);
+
+			if (spouse)
+				ChangeHousehold(spouse, hid, HouseholdPosition::Spouse);
+
+			for (auto idv : offspring)
+				ChangeHousehold(idv, hid, HouseholdPosition::Offspring);
+
+			for (auto idv : other)
+				ChangeHousehold(idv, hid, HouseholdPosition::Offspring);
+
 			return true;
 		};
 

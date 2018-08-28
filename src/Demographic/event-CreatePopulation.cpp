@@ -1,5 +1,6 @@
 #include "../../include/TBABM/TBABM.h"
 #include <Uniform.h>
+#include <cmath>
 #include <Empirical.h>
 #include <cassert>
 #include <fstream>
@@ -17,6 +18,11 @@ using Sex = Individual::Sex;
 
 using namespace StatisticalDistributions;
 
+void CheckMortality(Pointer<Individual> idv, double t)
+{
+
+}
+
 // Algorithm S2: Create a population at simulation time 0
 void TBABM::CreatePopulation(int t, long size)
 {
@@ -30,17 +36,20 @@ void TBABM::CreatePopulation(int t, long size)
 
 		assert(hh->head);
 
-		auto offset = Uniform(0, constants["ageGroupWidth"]*365);
+		double dt = constants["ageGroupWidth"] - fmod(hh->head->age<double>(t), constants["ageGroupWidth"]);
 
 		// Insert all members of the household into the population
 		population.insert(hh->head); popChange++;
 		assert(hh->head->householdID == hid);
-		Schedule(t + offset(rng.mt_), ChangeAgeGroup(hh->head));
+		InitialMortalityCheck(hh->head, t, dt);
+		Schedule(t + dt, ChangeAgeGroup(hh->head));
 		if (hh->spouse) {
+			double dt = constants["ageGroupWidth"] - fmod(hh->spouse->age<double>(t), constants["ageGroupWidth"]);
 			popChange++;
 			population.insert(hh->spouse);
 			assert(hh->spouse->householdID == hid);
-			Schedule(t + offset(rng.mt_), ChangeAgeGroup(hh->spouse));
+			InitialMortalityCheck(hh->spouse, t, dt);
+			Schedule(t + dt, ChangeAgeGroup(hh->spouse));
 
 			// Set marriage age
 			double spouseAge = (t - hh->spouse->birthDate)/365.;
@@ -49,16 +58,20 @@ void TBABM::CreatePopulation(int t, long size)
 			hh->head->marriageDate = t - fileData["timeInMarriage"].getValue(0,0,headAge, rng);
 		}
 		for (auto it = hh->offspring.begin(); it != hh->offspring.end(); it++) {
+			double dt = constants["ageGroupWidth"] - fmod((*it)->age<double>(t), constants["ageGroupWidth"]);
 			popChange++;
 			population.insert(*it);
 			assert((*it)->householdID == hid);
-			Schedule(t + offset(rng.mt_), ChangeAgeGroup(*it));
+			Schedule(t + dt, ChangeAgeGroup(*it));
+			InitialMortalityCheck(*it, t, dt);
 		}
 		for (auto it = hh->other.begin(); it != hh->other.end(); it++) {
+			double dt = constants["ageGroupWidth"] - fmod((*it)->age<double>(t), constants["ageGroupWidth"]);
 			popChange++;
 			population.insert(*it);
 			assert((*it)->householdID == hid);
-			Schedule(t + offset(rng.mt_), ChangeAgeGroup(*it));
+			Schedule(t + dt, ChangeAgeGroup(*it));
+			InitialMortalityCheck(*it, t, dt);
 		}
 	}
 
@@ -74,11 +87,15 @@ void TBABM::CreatePopulation(int t, long size)
 
 			double yearsToBirth = birthDistribution.getValue(0, 0, person->age(t), rng);
 			int daysToFirstBirth = 365 * yearsToBirth;
-			Schedule(t + daysToFirstBirth - 9*30, Pregnancy(person));
-			Schedule(t + daysToFirstBirth, Birth(person, person->spouse));
+
+			if (daysToFirstBirth < constants["tMax"]) {
+				Schedule(t + daysToFirstBirth - 9*30, Pregnancy(person));
+				Schedule(t + daysToFirstBirth, Birth(person, person->spouse));
+			}
 		}
 	}
 
+	printf("number of items in 'households': %ld\n", households.size());
 	populationSize.Record(t, popChange);
 	printf("Population size: %d\n", populationSize(t));
 }

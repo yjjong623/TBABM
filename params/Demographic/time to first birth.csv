@@ -1,9 +1,10 @@
 year,sex,age,distribution,parameter-description,parameter-1,parameter-2,parameter-3,parameter-4
 -,-,5,,,,,,
-,,6,,,,,,
-,,10,Exponential,(rate-shift),0.2638,0,,
+,,7,,,,,,
+,,10,Exponential,(rate-shift),0.0001,0,,
 ,,15,Exponential,(rate-shift),0.5428,0,,
 ,,20,Exponential,(rate-shift),0.6710,0,,
 ,,25,Exponential,(rate-shift),0.9614,0,,
 ,,30,Exponential,(rate-shift),1.2178,0,,
 ,,35,Exponential,(rate-shift),1.2210,0,,
+,,40,Exponential,(rate-shift),0.0001,0,,

@@ -13,7 +13,8 @@ using std::vector;
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using Sex = Individual::Sex;
+using Sex 			 = Individual::Sex;
+using MarriageStatus = Individual::MarriageStatus;
 
 using namespace StatisticalDistributions;
 
@@ -58,6 +59,9 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 			m->spouse = f;
 			f->spouse = m;
 
+			m->marriageStatus = MarriageStatus::Married;
+			f->marriageStatus = MarriageStatus::Married;
+
 			// Will they divorce?
 			if (params["probabilityOfDivorce"].Sample(rng) == 1) {
 				// Time to divorce
@@ -71,8 +75,11 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 			// Time to first birth
 			double yearsToFirstBirth = fileData["timeToFirstBirth"].getValue(0,0,f->age(t),rng);
 			int daysToFirstBirth = 365 * yearsToFirstBirth;
-			Schedule(t + daysToFirstBirth - 9*30, Pregnancy(f));
-			Schedule(t + daysToFirstBirth, Birth(m, f));
+
+			if (daysToFirstBirth < constants["tMax"]) {
+				Schedule(t + daysToFirstBirth - 9*30, Pregnancy(f));
+				Schedule(t + daysToFirstBirth, Birth(m, f));
+			}
 
 			marriages.Record(t, +1);
 

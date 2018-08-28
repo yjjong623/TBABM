@@ -25,15 +25,18 @@ EventFunc TBABM::UpdatePyramid(void)
 				if (!*it || (*it)->dead)
 					continue;
 
-				int age = (t - (*it)->birthDate) / 365;
-				int sex = (*it)->sex == Sex::Male ? 0 : 1;
+				auto idv = *it;
 
-				pyramid.UpdateByAge(t, sex, age, +1);
+				int age = idv->age(t);
+				int sex = idv->sex == Sex::Male ? 0 : 1;
+
+				pyramid.UpdateByAge(t-1, sex, age, +1);
 			}
 
 			if (t == 1) {
 				ofstream f;
 				f.open("../output/histogramT1.csv");
+				f << string("household\n");
 				for (auto it = households.begin(); it != households.end(); it++) {
 					if (it->second)
 						f << to_string(it->second->size()).c_str() << "\n";
@@ -44,6 +47,17 @@ EventFunc TBABM::UpdatePyramid(void)
 			if (t == 1+365*9) {
 				ofstream f;
 				f.open("../output/histogramT10.csv");
+				f << string("household\n");
+				for (auto it = households.begin(); it != households.end(); it++)
+					if (it->second && it->second->size() > 0)
+						f << to_string(it->second->size()).c_str() << "\n";
+				f.close();
+			}
+
+			if (t == 1+365*19) {
+				ofstream f;
+				f.open("../output/histogramT19.csv");
+				f << string("household\n");
 				for (auto it = households.begin(); it != households.end(); it++)
 					if (it->second && it->second->size() > 0)
 						f << to_string(it->second->size()).c_str() << "\n";

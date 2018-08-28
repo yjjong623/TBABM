@@ -50,6 +50,7 @@ TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
         case TBABMData::PopulationSize: return nullptr;
         case TBABMData::Divorces:    return &divorces;
         case TBABMData::Households:  return &householdsCount;
+        case TBABMData::SingleToLooking: return &singleToLooking;
 
         case TBABMData::HIVInfections: return &hivInfections;
         case TBABMData::HIVDiagnosesVCT: return &hivDiagnosesVCT;
@@ -63,8 +64,9 @@ IncidencePyramidTimeSeries*
 TBABM::GetData<IncidencePyramidTimeSeries>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::Pyramid:     return &pyramid;
-        default:                     return nullptr;
+        case TBABMData::Pyramid:      return &pyramid;
+        case TBABMData::DeathPyramid: return &deathPyramid;
+        default:                      return nullptr;
     }
 }
 
@@ -75,6 +77,7 @@ bool TBABM::Run(void)
 	Schedule(1, UpdatePyramid());
 	Schedule(1, UpdateHouseholds());
 	Schedule(1, ARTGuidelineChange());
+	Schedule(1, Survey());
 
 	while (!eq.Empty()) {
 		auto e = eq.Top();
@@ -86,13 +89,17 @@ bool TBABM::Run(void)
 		eq.Pop();
 	}
 
+	printf("Size of households at end was %ld\n", households.size());
+
 	births.Close();
 	deaths.Close();
 	marriages.Close();
 	populationSize.Close();
 	divorces.Close();
+	singleToLooking.Close();
 
 	pyramid.Close();
+	deathPyramid.Close();
 	householdsCount.Close();
 
 	hivNegative.Close();
@@ -163,57 +170,11 @@ void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPositi
 	auto newHousehold = households[newHID];
 
 	assert(idv);
-	assert(households[idv->householdID]);
-	assert(households[newHID]);
+	assert(oldHousehold);
+	assert(newHousehold);
 
 	oldHousehold->RemoveIndividual(idv);
-
-	idv->householdPosition = newRole;
-	idv->householdID = newHID;
-
-	// Update livedWithBefore
-	if (newHousehold->head) {
-		newHousehold->head->livedWithBefore.push_back(idv);
-		idv->livedWithBefore.push_back(newHousehold->head);
-	}
-	if (newHousehold->spouse) {
-		newHousehold->spouse->livedWithBefore.push_back(idv);
-		idv->livedWithBefore.push_back(newHousehold->spouse);
-	}
-	for (auto it = newHousehold->offspring.begin(); it != newHousehold->offspring.end(); it++) {
-		if (!*it)
-			continue;
-		(*it)->livedWithBefore.push_back(idv);
-		idv->livedWithBefore.push_back(*it);
-	}
-	for (auto it = newHousehold->other.begin(); it != newHousehold->other.end(); it++) {
-		if (!*it)
-			continue;
-		(*it)->livedWithBefore.push_back(idv);
-		idv->livedWithBefore.push_back(*it);
-	}
-
-	// Insert individual
-	if (newRole == HouseholdPosition::Head) {
-		if (newHousehold->head) {
-			newHousehold->head->householdPosition = HouseholdPosition::Other;
-			newHousehold->other.insert(newHousehold->head);
-		}
-		newHousehold->head = idv;
-	}
-	else if (newRole == HouseholdPosition::Spouse) {
-		if (newHousehold->spouse) {
-			newHousehold->other.insert(newHousehold->spouse);
-			newHousehold->spouse->householdPosition = HouseholdPosition::Other;
-		}
-		newHousehold->spouse = idv;
-	}
-	else if (newRole == HouseholdPosition::Other) {
-		newHousehold->other.insert(idv);
-	}
-	else if (newRole == HouseholdPosition::Offspring) {
-		newHousehold->offspring.insert(idv);
-	}
+	newHousehold->AddIndividual(idv, newRole, newHID);
 
 	// Clear household if there's nobody left in it
 	if (oldHousehold->size() == 0)
@@ -227,9 +188,9 @@ void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPositi
 #include "Demographic/event-ChangeAgeGroup.cpp"
 #include "Demographic/event-CreateHousehold.cpp"
 #include "Demographic/event-CreatePopulation.cpp"
+#include "Demographic/helper-InitialMortalityCheck.cpp"
 #include "Demographic/event-Death.cpp"
 #include "Demographic/event-Divorce.cpp"
-#include "Demographic/event-JoinHousehold.cpp"
 #include "Demographic/event-LeaveHousehold.cpp"
 #include "Demographic/event-Marriage.cpp"
 #include "Demographic/event-Matchmaking.cpp"
@@ -238,6 +199,7 @@ void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPositi
 #include "Demographic/event-SingleToLooking.cpp"
 #include "Demographic/event-UpdateHouseholds.cpp"
 #include "Demographic/event-UpdatePyramid.cpp"
+#include "Demographic/event-Survey.cpp"
 
 #include "HIV/event-ARTGuidelineChange.cpp"
 #include "HIV/event-MortalityCheck.cpp"

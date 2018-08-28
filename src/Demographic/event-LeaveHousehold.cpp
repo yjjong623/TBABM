@@ -26,16 +26,11 @@ EventFunc TBABM::LeaveHousehold(Pointer<Individual> idv)
 			if (!idv || idv->dead)
 				return true;
 			
-			households[idv->householdID]->RemoveIndividual(idv);
-
-			if (households[idv->householdID]->size() == 0)
-				households[idv->householdID].reset();
-
-			idv->householdPosition = HouseholdPosition::Head;
 			
-			auto household = std::make_shared<Household>(idv, Pointer<Individual>(), std::unordered_set<Pointer<Individual>>{}, std::unordered_set<Pointer<Individual>>{});
-			households[nHouseholds++] = household;
-			idv->householdID = nHouseholds - 1;
+			Schedule(t, CreateHousehold(idv, \
+										Pointer<Individual>{}, \
+										{},\
+										{}));
 
 			return true;
 		};

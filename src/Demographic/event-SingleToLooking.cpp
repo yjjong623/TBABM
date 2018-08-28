@@ -33,6 +33,7 @@ EventFunc TBABM::SingleToLooking(Pointer<Individual> idv)
 
 			idv->marriageStatus = MarriageStatus::Looking;
 
+			singleToLooking.Record(t, +1);
 			return true;
 		};
 

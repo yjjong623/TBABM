@@ -105,3 +105,4 @@ ParallelSIRsim
 /SIRlib/ALL_BUILD.vcxproj
 TBABMTestoutput/
 output/
+**/*.xlsx

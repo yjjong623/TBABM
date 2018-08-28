@@ -18,6 +18,59 @@ public:
 	std::unordered_set<Pointer<Individual>> offspring;
 	std::unordered_set<Pointer<Individual>> other;
 
+	void AddIndividual(Pointer<Individual> idv, HouseholdPosition hp, int hid) {
+
+		// Avoid adding a dead individual to the household
+		assert(idv && !idv->dead);
+
+		// Update role and HID for new household member
+		idv->householdPosition = hp;
+		idv->householdID 	   = hid;
+
+		// Update 'livedWithBefore' for new member, and all current residents
+		idv->LivedWith(head);
+		idv->LivedWith(spouse);
+
+		if (head)   head->LivedWith(idv);
+		if (spouse) spouse->LivedWith(idv);
+
+		for (auto it = offspring.begin(); it != offspring.end(); it++) {
+			if (!*it || (*it)->dead) continue;
+			(*it)->LivedWith(idv);
+			idv->LivedWith(*it);
+		}
+
+		for (auto it = other.begin(); it != other.end(); it++) {
+			if (!*it || (*it)->dead) continue;
+			(*it)->LivedWith(idv);
+			idv->LivedWith(*it);
+		}
+
+		// Insert new member into the population
+		if (hp == HouseholdPosition::Head) {
+			if (head) {
+				head->householdPosition = HouseholdPosition::Other;
+				other.insert(head);
+			}
+			head = idv;
+		}
+		else if (hp == HouseholdPosition::Spouse) {
+			if (spouse) {
+				other.insert(spouse);
+				spouse->householdPosition = HouseholdPosition::Other;
+			}
+			spouse = idv;
+		}
+		else if (hp == HouseholdPosition::Other) {
+			other.insert(idv);
+		}
+		else if (hp == HouseholdPosition::Offspring) {
+			offspring.insert(idv);
+		}
+
+		return;
+	}
+
 	void RemoveIndividual(Pointer<Individual> idv) {
 
 		assert(idv);
@@ -85,7 +138,10 @@ public:
 	}
 
 	int size(void) {
-		return (head ? 1:0) + (spouse ? 1:0) + offspring.size() + other.size();
+		return (head   && !head->dead   ? 1:0) + \
+			   (spouse && !spouse->dead ? 1:0) + \
+			   offspring.size() + \
+			   other.size();
 	}
 
 	bool hasMember(Pointer<Individual> idv) {

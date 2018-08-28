@@ -49,6 +49,9 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 
 			// Add baby to household and population
 			household->offspring.insert(baby);
+			mother->offspring.push_back(baby);
+			if (father && !father->dead)
+				father->offspring.push_back(baby);
 			population.insert(baby);
 
 			// Update .livedWithBefore
@@ -82,8 +85,11 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 
 			// Schedule the next birth
 			auto timeToNextBirth = fileData["timeToSubsequentBirths"].getValue(0,0,(t-mother->birthDate)/365,rng);
-			Schedule(t + 365*timeToNextBirth - 9*30, Pregnancy(mother));
-			Schedule(t + 365*timeToNextBirth, Birth(mother, mother->spouse));
+
+			if (timeToNextBirth < constants["tMax"]) {
+				Schedule(t + 365*timeToNextBirth - 9*30, Pregnancy(mother));
+				Schedule(t + 365*timeToNextBirth, Birth(mother, mother->spouse));
+			}
 
 			return true;
 		};

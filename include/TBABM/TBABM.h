@@ -48,8 +48,6 @@ public:
 
 	enum class TBABMData {
 		HIVNegative, 
-		// HIVPositiveNIC, 
-		// HIVPositiveIC, 
 		HIVPositiveART, 
 		HIVPositive,
 
@@ -76,36 +74,46 @@ public:
 		Deaths,
 		PopulationSize,
 		Pyramid,
-		Households
+		DeathPyramid,
+		Households,
+		SingleToLooking
 	};
 
 	TBABM(Params params, 
 		  std::map<string, long double> constants,
 		  const char *householdsFile, 
-		  long seed) : 
+		  long seed,
+		  std::shared_ptr<ofstream> populationSurvey,
+		  std::shared_ptr<ofstream> householdSurvey) : 
+
 		params(params),
 		constants(constants),
 
-		births("births", 0, constants["tMax"], constants["periodLength"]),
-		deaths("deaths", 0, constants["tMax"], constants["periodLength"]),
-		marriages("marriages", 0, constants["tMax"], constants["periodLength"]),
-		divorces("divorces", 0, constants["tMax"], constants["periodLength"]),
-		populationSize("populationSize", constants["tMax"], constants["periodLength"]),
+		births(         "births",          0, constants["tMax"], constants["periodLength"]),
+		deaths(         "deaths",          0, constants["tMax"], constants["periodLength"]),
+		marriages(      "marriages",       0, constants["tMax"], constants["periodLength"]),
+		divorces(       "divorces",        0, constants["tMax"], constants["periodLength"]),
+		populationSize( "populationSize",     constants["tMax"], constants["periodLength"]),
+		singleToLooking("singleToLooking", 0, constants["tMax"], constants["periodLength"]),
 
-		hivNegative("hivNegative", constants["tMax"], constants["periodLength"]),
-		hivPositive("hivPositive", constants["tMax"], constants["periodLength"]),
+		hivNegative(   "hivNegative",    constants["tMax"], constants["periodLength"]),
+		hivPositive(   "hivPositive",    constants["tMax"], constants["periodLength"]),
 		hivPositiveART("hivPositiveART", constants["tMax"], constants["periodLength"]),
 
-		hivInfections("hivInfections", 0, constants["tMax"], constants["periodLength"]),
-		hivDiagnosed("hivDiagnosed", constants["tMax"], constants["periodLength"]),
-		hivDiagnosedVCT("hivDiagnosedVCT", constants["tMax"], constants["periodLength"]),
+		hivInfections(  "hivInfections", 0,   constants["tMax"], constants["periodLength"]),
+		hivDiagnosed(   "hivDiagnosed",       constants["tMax"], constants["periodLength"]),
+		hivDiagnosedVCT("hivDiagnosedVCT",    constants["tMax"], constants["periodLength"]),
 		hivDiagnosesVCT("hivDiagnosesVCT", 0, constants["tMax"], constants["periodLength"]),
 
 		pyramid("Population pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
+		deathPyramid("Death pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
 		householdsCount("households", 0, constants["tMax"], 365),
+
 
 		population({}),
 		households({}),
+		populationSurvey(populationSurvey),
+		householdSurvey(householdSurvey),
 
 		maleSeeking({}),
 		femaleSeeking({}),
@@ -115,6 +123,7 @@ public:
 		householdGen(householdsFile),
 
 		nHouseholds(0),
+		seed(seed),
 		rng(seed) {
 			for (auto it = params.begin(); it != params.end(); it++) {
 				if (it->second.getType() == SimulationLib::Type::file_type) {
@@ -139,8 +148,10 @@ private:
 	IncidenceTimeSeries<int> marriages;
 	IncidenceTimeSeries<int> divorces;
 	PrevalenceTimeSeries<int> populationSize;
+	IncidenceTimeSeries<int> singleToLooking;
 
 	IncidencePyramidTimeSeries pyramid;	
+	IncidencePyramidTimeSeries deathPyramid;
 	IncidenceTimeSeries<int> householdsCount;
 
 	PrevalenceTimeSeries<int> hivNegative;
@@ -202,9 +213,14 @@ private:
 	// Update households
 	EventFunc UpdateHouseholds(void);
 
+	// Population survey
+	EventFunc Survey(void);
+
 	////////////////////////////////////////////////////////
 	/// Demographic Utilities
 	////////////////////////////////////////////////////////
+	void InitialMortalityCheck(Pointer<Individual> idv, double t, double dt);
+
 	void PurgeReferencesToIndividual(Pointer<Individual> host,
 										    Pointer<Individual> idv);
 
@@ -257,6 +273,9 @@ private:
 	long nHouseholds;
 
 	RNG rng;
+	long seed;
 
 	ofstream meanSurvivalTime;
+	std::shared_ptr<ofstream> populationSurvey;
+	std::shared_ptr<ofstream> householdSurvey;
 };

@@ -22,22 +22,9 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 {
 	int ageGroupWidth = constants["ageGroupWidth"]; // Age groups go 0-5, 5-10, etc.
 
-	auto concoctConstantName = [idv, ageGroupWidth] (int t, std::string prefix) {
-		int age = ((double)t - idv->birthDate)/365.;
-
-		std::string constantName = prefix;
-		(constantName += std::string("-")) += std::to_string((age/ageGroupWidth) * ageGroupWidth);
-		(constantName += std::string("-")) += idv->sex == Sex::Male ? std::string("M") : std::string("F");
-
-		return constantName;
-	};
-
-	auto birthDateToAge = [] (int birthDate, int currentT) {
-		return (currentT-birthDate)/365;
-	};
 
 	EventFunc ef = 
-		[this, idv, ageGroupWidth, concoctConstantName, birthDateToAge](double t, SchedulerT scheduler) {
+		[this, idv, ageGroupWidth](double t, SchedulerT scheduler) {
 			if (!idv || idv->dead)
 				return true;
 
@@ -49,20 +36,18 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			////////////////////////////////////////////////////////
 			auto startYear = constants["startYear"];
 			int gender = idv->sex == Sex::Male ? 0 : 1;
-			double age = (t - idv->birthDate)/365;
-			double timeToDeath = 365 * fileData["naturalDeath"].getValue(startYear+(int)t/365, gender, age, rng);
+			double age = idv->age(t);
+			double timeToDeath = 365/12 * fileData["naturalDeath"].getValue(startYear+(int)t/365, gender, age, rng);
 
 			bool scheduledDeath = false;
 			if (timeToDeath < timeToNextEvent) {
 				scheduledDeath = true;
-				// if (idv->hivStatus == Individual::HIVStatus::Positive)
-					// printf("natural\t%2d\n", idv->age(t));
 				Schedule(t + timeToDeath, Death(idv));
 			}
 
-			////////////////////////////////////////////////////////
-			/// Leaving the current household to form a new household
-			////////////////////////////////////////////////////////
+			//////////////////////////////////////////////////////
+			// Leaving the current household to form a new household
+			//////////////////////////////////////////////////////
 			bool idvIsHead = idv->householdPosition == HouseholdPosition::Head;
 			double timeToLeave = params["leavingHousehold"].Sample(rng);
 			if (!idv->spouse && 
@@ -71,13 +56,13 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 				!idvIsHead && 
 				timeToLeave < timeToNextEvent &&
 				timeToLeave < timeToDeath) {
-				Schedule(t + timeToLeave, LeaveHousehold(idv));
+				Schedule(t + 365*timeToLeave, LeaveHousehold(idv));
 			}
 
-			////////////////////////////////////////////////////////
-			/// Change of marital status from single to looking
-			////////////////////////////////////////////////////////
-			double timeToLook = 365 * fileData["timeToLooking"].getValue(0,0,(t-idv->birthDate)/365,rng);
+			//////////////////////////////////////////////////////
+			// Change of marital status from single to looking
+			//////////////////////////////////////////////////////
+			double timeToLook = 365 * fileData["timeToLooking"].getValue(0,gender,(t-idv->birthDate)/365,rng);
 			if ((idv->marriageStatus == MarriageStatus::Single ||
 				 idv->marriageStatus == MarriageStatus::Divorced)
 				&& timeToLook < timeToNextEvent
@@ -85,9 +70,9 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 				Schedule(t + timeToLook, SingleToLooking(idv));
 			}
 
-			////////////////////////////////////////////////////////
-			/// Joining a household
-			////////////////////////////////////////////////////////
+			//////////////////////////////////////////////////////
+			// Joining a household
+			//////////////////////////////////////////////////////
 			auto household = households[idv->householdID];
 			if (age >= 65 && household->size() == 1) {
 				for (size_t i = 0; i < idv->livedWithBefore.size(); i++) {
@@ -101,9 +86,9 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 				}
 			}
 
-			////////////////////////////////////////////////////////
-			/// HIV infection check
-			////////////////////////////////////////////////////////
+			//////////////////////////////////////////////////////
+			// HIV infection check
+			//////////////////////////////////////////////////////
 			HIVInfectionCheck(t, idv);
 
 			if (!scheduledDeath)
