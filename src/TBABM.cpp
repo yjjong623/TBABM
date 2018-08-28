@@ -200,6 +200,7 @@ void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPositi
 #include "Demographic/event-UpdateHouseholds.cpp"
 #include "Demographic/event-UpdatePyramid.cpp"
 #include "Demographic/event-Survey.cpp"
+#include "Demographic/event-ExogenousBirth.cpp"
 
 #include "HIV/event-ARTGuidelineChange.cpp"
 #include "HIV/event-MortalityCheck.cpp"

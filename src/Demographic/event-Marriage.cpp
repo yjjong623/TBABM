@@ -24,6 +24,8 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 	EventFunc ef = 
 		[this, m, f](double t, SchedulerT scheduler) {
 
+			return true;
+
 			if (population.count(m) != 1 || population.count(f) != 1) {
 				// printf("\tA spouse is dead!\n");
 				return true;

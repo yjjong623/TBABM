@@ -8,7 +8,7 @@ EventFunc TBABM::Pregnancy(Pointer<Individual> mother)
 {
 	EventFunc ef = 
 		[this, mother](double t, SchedulerT scheduler) {
-			mother->pregnant = true;
+			// mother->pregnant = true;
 
 			return true;
 		};

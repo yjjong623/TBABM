@@ -22,6 +22,8 @@ EventFunc TBABM::Divorce(Pointer<Individual> m, Pointer<Individual> f)
 {
 	EventFunc ef = 
 		[this, m, f](double t, SchedulerT scheduler) {
+			return true;
+
 			// printf("[%d] Divorce, populationSize=%lu, people: m=%ld::%lu f=%ld::%lu\n", (int)t, population.size(), m->householdID, std::hash<Pointer<Individual>>()(m), f->householdID, std::hash<Pointer<Individual>>()(f));
 
 			// If someone is dead they can't divorce
