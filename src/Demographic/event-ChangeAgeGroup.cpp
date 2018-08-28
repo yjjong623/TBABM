@@ -56,7 +56,7 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 				!idvIsHead && 
 				timeToLeave < timeToNextEvent &&
 				timeToLeave < timeToDeath) {
-				Schedule(t + 365*timeToLeave, LeaveHousehold(idv));
+				// Schedule(t + 365*timeToLeave, LeaveHousehold(idv));
 			}
 
 			//////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 				 idv->marriageStatus == MarriageStatus::Divorced)
 				&& timeToLook < timeToNextEvent
 				&& timeToLook < timeToDeath) {
-				Schedule(t + timeToLook, SingleToLooking(idv));
+				// Schedule(t + timeToLook, SingleToLooking(idv));
 			}
 
 			//////////////////////////////////////////////////////
