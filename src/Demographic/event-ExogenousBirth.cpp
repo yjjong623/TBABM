@@ -1,10 +1,13 @@
 #include <Poisson.h>
+#include <UniformDiscrete.h>
+#include <RNG.h>
+
 #include "../../include/TBABM/TBABM.h"
 
 template <typename T>
 using Pointer = std::shared_ptr<T>;
 
-using std::vector;
+using std::pair;
 
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
@@ -15,48 +18,58 @@ using namespace StatisticalDistributions;
 
 EventFunc TBABM::ExogenousBirth(void)
 {
-	using Couple = std::pair<Pointer<Individual>, Pointer<Individual>>;
+	using IPt = Pointer<Individual>;
+	using Couple = pair<IPt, IPt>;
+
 	auto sampleSpouse = 
-		[this] (void) -> Couple {
+		[this] (void) -> Pointer<Couple> {
 			
 			// Get the length of the population array. Note this is different
-			// from the number of alive individuals (at least as large).
+			// from the number of individuals (at least as large).
 			size_t populationArrayLength = population.size();
 
 			// Sampler for population index
-			auto idx = Uniform(0, populationArrayLength);
+			auto idxGen	= UniformDiscrete(populationArrayLength - 1);
 
 			// The empty std::pair which will eventually hold the couple
-			Couple couple {Pointer<Individual>{}, Pointer<Individual>{}};
+			auto couple = std::make_shared<Couple>(IPt{}, IPt{});
 
 			// Exit flag for loop
-			bool exit = false;
+			bool flag = false;
+			int nTries = 0;
 
-			while (!exit) {
+			while (!flag) {
 				// "Index" of first couple member (but not really because
 				//   the underlying data structure is a set)
-				int firstIdx = idx(rng.mt_);
+				long firstIdx = idxGen(rng.mt_);
 
-
+				size_t i = 0;
 				auto it = population.begin();
-				for (int i = 0; i != firstIdx && it != population.end(); i++)
-					it++;
+				for(; it != population.end(); i++, it++)
+					if (i == firstIdx)
+						break;
 
-				couple.first = *it;
+				couple->first = *it;
 				
-				if (couple.first)
-					couple.second = couple.first->spouse;
+				if (couple->first)
+					couple->second = couple->first->spouse;
 
-				if (couple.first  && !couple.first->dead &&\
-					couple.second && !couple.second->dead)
-					exit = true;
+				if (couple->first  && !couple->first->dead &&\
+					couple->second && !couple->second->dead)
+					flag = true;
+
+				nTries++;
 			}
+
+			printf("nTries = %d\n", nTries);
 
 			return couple;
 		};
 
 	EventFunc ef = 
-		[this, &sampleSpouse](double t, SchedulerT scheduler) {
+		[this, sampleSpouse](double t, SchedulerT scheduler) {
+
+			printf("The year is %d\n", static_cast<int>(t/355));
 
 			// Grab the current population size
 			int n = populationSize(t);
@@ -75,17 +88,19 @@ EventFunc TBABM::ExogenousBirth(void)
 			// must cast to integer to get exact number of births
 			int nBirths = static_cast<int>(dist(rng.mt_));
 
+
 			for (int i = 0; i < nBirths; i++) {
 
 				// Find a random couple from the population
 				auto couple = sampleSpouse();
 
-				auto mother = couple.first->sex == Sex::Female ? couple.first  : couple.second;
-				auto father = couple.first->sex == Sex::Female ? couple.second : couple.first;
+				auto mother = couple->first->sex == Sex::Female ? couple->first  : couple->second;
+				auto father = couple->first->sex == Sex::Female ? couple->second : couple->first;
 
 				// Immediately schedule birth
 				Schedule(t, Birth(mother, father));
 			}
+			printf("Found %d households\n", nBirths);
 
 			Schedule(t + 30, ExogenousBirth());
 

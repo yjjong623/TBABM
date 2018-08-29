@@ -78,6 +78,8 @@ bool TBABM::Run(void)
 	Schedule(1, UpdateHouseholds());
 	Schedule(1, ARTGuidelineChange());
 	Schedule(1, Survey());
+	
+	Schedule(1, ExogenousBirth());
 
 	while (!eq.Empty()) {
 		auto e = eq.Top();
