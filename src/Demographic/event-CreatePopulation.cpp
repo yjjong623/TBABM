@@ -76,24 +76,24 @@ void TBABM::CreatePopulation(int t, long size)
 	}
 
 	// Decide whether each female is pregnant
-	for (auto it = population.begin(); it != population.end(); it++) {
-		auto person = *it;
-		if (person->sex == Sex::Male)
-			continue;
+	// for (auto it = population.begin(); it != population.end(); it++) {
+	// 	auto person = *it;
+	// 	if (person->sex == Sex::Male)
+	// 		continue;
 
-		if (person->spouse && person->age(t) >= 15) {
-			auto birthDistribution = (person->offspring.size() > 0) ? \
-					fileData["timeToSubsequentBirths"] : fileData ["timeToFirstBirth"];
+	// 	if (person->spouse && person->age(t) >= 15) {
+	// 		auto birthDistribution = (person->offspring.size() > 0) ? \
+	// 				fileData["timeToSubsequentBirths"] : fileData ["timeToFirstBirth"];
 
-			double yearsToBirth = birthDistribution.getValue(0, 0, person->age(t), rng);
-			int daysToFirstBirth = 365 * yearsToBirth;
+	// 		double yearsToBirth = birthDistribution.getValue(0, 0, person->age(t), rng);
+	// 		int daysToFirstBirth = 365 * yearsToBirth;
 
-			if (daysToFirstBirth < constants["tMax"]) {
-				Schedule(t + daysToFirstBirth - 9*30, Pregnancy(person));
-				Schedule(t + daysToFirstBirth, Birth(person, person->spouse));
-			}
-		}
-	}
+	// 		if (daysToFirstBirth < constants["tMax"]) {
+	// 			Schedule(t + daysToFirstBirth - 9*30, Pregnancy(person));
+	// 			Schedule(t + daysToFirstBirth, Birth(person, person->spouse));
+	// 		}
+	// 	}
+	// }
 
 	printf("number of items in 'households': %ld\n", households.size());
 	populationSize.Record(t, popChange);

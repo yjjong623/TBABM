@@ -23,7 +23,6 @@ EventFunc TBABM::Matchmaking(void)
 	EventFunc ef = 
 		[this](double t, SchedulerT scheduler) {
 
-
 			int msSize = maleSeeking.size();
 			int fsSize = femaleSeeking.size();
 			int marriages = 0;
@@ -76,7 +75,6 @@ EventFunc TBABM::Matchmaking(void)
 			// Erase males who have been matched to a female
 			maleSeeking.erase(maleSeeking.begin(), it);
 
-			printf("%d,%d,%d,%d\n",(int)t,marriages,msSize, fsSize);
 			Schedule(t + 30, Matchmaking());
 
 			return true;

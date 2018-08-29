@@ -22,3 +22,4 @@ kGamma,kGamma,v,Gamma,(shape-scale),1,2.5,,,F
 Base CD4 decline rate,HIV_m_30,v,Constant,(value),45,,,,F
 HIV mortality rate - m,HIV_m,v,Constant,(value),0.8,,,,F
 HIV mortality rate - p,HIV_p,v,Constant,(value),0.005,,,,F
+Exogenous birth rate,annualBirthRate,v,Constant,(value),0.02,,,,F

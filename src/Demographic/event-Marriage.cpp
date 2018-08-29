@@ -24,8 +24,6 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 	EventFunc ef = 
 		[this, m, f](double t, SchedulerT scheduler) {
 
-			return true;
-
 			if (population.count(m) != 1 || population.count(f) != 1) {
 				// printf("\tA spouse is dead!\n");
 				return true;
@@ -75,13 +73,13 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 
 
 			// Time to first birth
-			double yearsToFirstBirth = fileData["timeToFirstBirth"].getValue(0,0,f->age(t),rng);
-			int daysToFirstBirth = 365 * yearsToFirstBirth;
+			// double yearsToFirstBirth = fileData["timeToFirstBirth"].getValue(0,0,f->age(t),rng);
+			// int daysToFirstBirth = 365 * yearsToFirstBirth;
 
-			if (daysToFirstBirth < constants["tMax"]) {
-				Schedule(t + daysToFirstBirth - 9*30, Pregnancy(f));
-				Schedule(t + daysToFirstBirth, Birth(m, f));
-			}
+			// if (daysToFirstBirth < constants["tMax"]) {
+			// 	Schedule(t + daysToFirstBirth - 9*30, Pregnancy(f));
+			// 	Schedule(t + daysToFirstBirth, Birth(m, f));
+			// }
 
 			marriages.Record(t, +1);
 
