@@ -62,6 +62,9 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 			m->marriageStatus = MarriageStatus::Married;
 			f->marriageStatus = MarriageStatus::Married;
 
+			m->marriageDate = t;
+			f->marriageDate = t;
+
 			// Will they divorce?
 			if (params["probabilityOfDivorce"].Sample(rng) == 1) {
 				// Time to divorce

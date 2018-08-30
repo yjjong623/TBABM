@@ -22,10 +22,10 @@ void TBABM::InitialMortalityCheck(Pointer<Individual> idv, double t, double dt)
 	double age = idv->age(t);
 	auto startYear = constants["startYear"];
 
-	double timeToDeath = 365 * fileData["naturalDeath"].getValue(startYear+(int)t/365, gender, age, rng);
+	double timeToDeath = fileData["naturalDeath"].getValue(startYear+(int)t/365, gender, age, rng);
 
 	if (timeToDeath < dt)
-		Schedule(t + timeToDeath, Death(idv));
+		Schedule(t + 365*timeToDeath, Death(idv));
 
 	return;
 }
