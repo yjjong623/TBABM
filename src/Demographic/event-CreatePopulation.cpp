@@ -18,11 +18,6 @@ using Sex = Individual::Sex;
 
 using namespace StatisticalDistributions;
 
-void CheckMortality(Pointer<Individual> idv, double t)
-{
-
-}
-
 // Algorithm S2: Create a population at simulation time 0
 void TBABM::CreatePopulation(int t, long size)
 {
@@ -42,7 +37,7 @@ void TBABM::CreatePopulation(int t, long size)
 		population.insert(hh->head); popChange++;
 		assert(hh->head->householdID == hid);
 		InitialMortalityCheck(hh->head, t, dt);
-		Schedule(t + dt, ChangeAgeGroup(hh->head));
+		Schedule(t + 365*dt, ChangeAgeGroup(hh->head));
 		if (hh->spouse) {
 			double dt = constants["ageGroupWidth"] - fmod(hh->spouse->age<double>(t), constants["ageGroupWidth"]);
 			popChange++;
@@ -54,8 +49,8 @@ void TBABM::CreatePopulation(int t, long size)
 			// Set marriage age
 			double spouseAge = (t - hh->spouse->birthDate)/365.;
 			double headAge = (t - hh->head->birthDate)/365.;
-			hh->spouse->marriageDate = t - fileData["timeInMarriage"].getValue(0,0,spouseAge,rng);
-			hh->head->marriageDate = t - fileData["timeInMarriage"].getValue(0,0,headAge, rng);
+			hh->spouse->marriageDate = t - 365*fileData["timeInMarriage"].getValue(0,0,spouseAge,rng);
+			hh->head->marriageDate = t - 365*fileData["timeInMarriage"].getValue(0,0,headAge, rng);
 		}
 		for (auto it = hh->offspring.begin(); it != hh->offspring.end(); it++) {
 			double dt = constants["ageGroupWidth"] - fmod((*it)->age<double>(t), constants["ageGroupWidth"]);

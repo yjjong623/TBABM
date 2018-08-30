@@ -76,7 +76,7 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 				(*it)->livedWithBefore.push_back(baby);
 			}
 			
-			Schedule(t + 365*5, ChangeAgeGroup(baby));
+			Schedule(t, ChangeAgeGroup(baby));
 
 			populationSize.Record(t, +1);
 			births.Record(t, +1);

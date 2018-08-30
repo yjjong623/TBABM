@@ -37,7 +37,7 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			auto startYear = constants["startYear"];
 			int gender = idv->sex == Sex::Male ? 0 : 1;
 			double age = idv->age(t);
-			double timeToDeath = 365/12 * fileData["naturalDeath"].getValue(startYear+(int)t/365, gender, age, rng);
+			double timeToDeath = 365 * fileData["naturalDeath"].getValue(startYear+(int)t/365, gender, age, rng);
 
 			bool scheduledDeath = false;
 			if (timeToDeath < timeToNextEvent) {
