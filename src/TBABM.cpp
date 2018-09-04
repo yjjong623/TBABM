@@ -182,29 +182,3 @@ void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPositi
 
 	return;
 }
-
-
-#include "Demographic/event-Birth.cpp"
-#include "Demographic/event-ChangeAgeGroup.cpp"
-#include "Demographic/event-CreateHousehold.cpp"
-#include "Demographic/event-CreatePopulation.cpp"
-#include "Demographic/helper-InitialMortalityCheck.cpp"
-#include "Demographic/event-Death.cpp"
-#include "Demographic/event-Divorce.cpp"
-#include "Demographic/event-LeaveHousehold.cpp"
-#include "Demographic/event-Marriage.cpp"
-#include "Demographic/event-Matchmaking.cpp"
-#include "Demographic/event-NewHouseholds.cpp"
-#include "Demographic/event-Pregnancy.cpp"
-#include "Demographic/event-SingleToLooking.cpp"
-#include "Demographic/event-UpdateHouseholds.cpp"
-#include "Demographic/event-UpdatePyramid.cpp"
-#include "Demographic/event-Survey.cpp"
-
-#include "HIV/event-ARTGuidelineChange.cpp"
-#include "HIV/event-MortalityCheck.cpp"
-#include "HIV/event-ARTInitiate.cpp"
-#include "HIV/event-VCTDiagnosis.cpp"
-#include "HIV/event-HIVInfection.cpp"
-#include "HIV/helper-ARTEligible.cpp"
-#include "HIV/helper-HIVInfectionCheck.cpp"

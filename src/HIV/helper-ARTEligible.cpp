@@ -11,6 +11,7 @@ using Sex       = Individual::Sex;
 
 bool TBABM::ARTEligible(int t, Pointer<Individual> idv)
 {
+	// Ensure individual is still alive, and has HIV
 	if (!idv || idv->dead || idv->hivStatus == HIVStatus::Negative)
 		return false;
 
