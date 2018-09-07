@@ -61,15 +61,11 @@ EventFunc TBABM::ExogenousBirth(void)
 				nTries++;
 			}
 
-			printf("nTries = %d\n", nTries);
-
 			return couple;
 		};
 
 	EventFunc ef = 
 		[this, sampleSpouse](double t, SchedulerT scheduler) {
-
-			printf("The year is %d\n", static_cast<int>(t/355));
 
 			// Grab the current population size
 			int n = populationSize(t);
@@ -100,7 +96,6 @@ EventFunc TBABM::ExogenousBirth(void)
 				// Immediately schedule birth
 				Schedule(t, Birth(mother, father));
 			}
-			printf("Found %d households\n", nBirths);
 
 			Schedule(t + 30, ExogenousBirth());
 

@@ -22,6 +22,7 @@ set(demographic ${demographic_path}/event-Birth.cpp
 				${demographic_path}/event-Survey.cpp
 				${demographic_path}/event-UpdateHouseholds.cpp
 				${demographic_path}/event-UpdatePyramid.cpp
+				${demographic_path}/event-ExogenousBirth.cpp
 				${demographic_path}/helper-InitialMortalityCheck.cpp)
 
 set(hiv_path "${TBABM_SOURCE_DIR}/src/HIV")

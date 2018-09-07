@@ -111,30 +111,45 @@ Hist <- function(name, col, x) {
 Pyramid <- function(name, x, y) Pyramid_impl(Load(name), x, y)
 PopulationPyramid <- function(name, x, y) Pyramid_impl(Load(name), x, y)
 
+# Death rate pyramid
+left_join(Load("deathPyramid"), 
+          Load("populationPyramid"), 
+          by=c("period", "trajectory", "age.group", "category")) %>%
+  mutate(value = 1000*value.x / value.y) %>%
+  Pyramid_impl("Deaths/1k/yr", "Age group")
+
+
 Pyramid("populationPyramid")
 Pyramid("deathPyramid")
 GraphRate("births", "populationSize", 12000, "Time (months)", "Birth rate (births/1e3/year)") + 
   geom_smooth() + 
-  geom_hline(yintercept = 19.61)
+  geom_hline(yintercept = 19.61) +
+  ggtitle("Birth rate over 50 years")
 GraphRate("deaths", "populationSize", 12000, "Time (months)", "Death rate (deaths/1e3/year)") + 
   geom_smooth() + 
-  geom_hline(yintercept = 16.99)
+  geom_hline(yintercept = 16.99) +
+  ggtitle("Death rate over 50 years")
 Graph("births", "Time (months)", "Births")
 Graph("deaths", "Time (months)", "Deaths")
 Graph("marriages", "Time (months)", "Marriages")
 GraphRate("marriages", "populationSize", 12000, "Time (months)", "Marriage rate (marriages/1e3/year)") + 
   geom_smooth() + 
-  geom_hline(yintercept = 3)
+  geom_hline(yintercept = 3) +
+  ggtitle("Population size over 50 years")
+
 Graph("divorces", "Time (months)", "Divorces")
 GraphRate("divorces", "populationSize", 12000, "Time (months)", "Divorce rate (divorces/1e3/year)") + 
   geom_smooth() +
-  geom_hline(yintercept = 0.4)
+  geom_hline(yintercept = 0.4) +
+  ggtitle("Divorce rate over 50 years")
+
 Graph("populationSize", "Time (months)", "Population size")
 Graph("householdsCount", "Time (months)", "# Households")
 Graph("singleToLooking", "Time (months)", "Number of events")
 GraphRate("singleToLooking", "populationSize", 12000, "Time (months)", "SingleToLooking rate (events/1e3/year)") +
   geom_smooth() +
   geom_hline(yintercept = 3.0)
+
 Graph("hivDiagnosed", "Time (months)", "HIV Diagnosed")
 Graph("hivDiagnosedVCT", "Time (months)", "HIV Diagnosed – VCT")
 Graph("hivDiagnosesVCT", "Time (months)", "HIV Diagnoses – VCT")
@@ -172,11 +187,21 @@ ps %>%
 
 # Histogram of household size by year, all individuals
 ps %>%
+  filter((((time-1)/365) %% 5) == 0) %>%
   ggplot() +
     geom_histogram(aes(household, fill=marital), binwidth=1) +
     facet_wrap(~(time-1)/365) +
     ggtitle("Histogram of household size by year, all individuals, coupleFormsNewHousehold=0.1") +
     labs(x="Household size", y="Count")
+
+# Histogram of number of children for married females
+ps %>%
+  filter(sex == "female" & 
+           marital == "married" &
+           ((time-1)/365) %% 5 == 0) %>%
+  ggplot(aes(offspring)) +
+    geom_histogram(binwidth = 1) +
+    facet_wrap(~(time-1)/365)
 
 # Marital status by time
 ps %>%
@@ -194,7 +219,7 @@ ps %>%
   ggtitle("Histogram of household size by year, all individuals, coupleFormsNewHousehold=0.1") +
   labs(x="Household size", y="Count")
 
-Lfollow_idvs <- function(data, n_idvs) {
+follow_idvs <- function(data, n_idvs) {
   idvs <- data %>%
     sample_n(n_idvs, replace=FALSE) %>% # Sample n_idvs without replacement. Not perfect
     pull(hash)                          # Pull out the hash column into a vector
@@ -231,15 +256,8 @@ follow_idvs(ps, 500) %>%
 ps %>%
   filter(household == 1) %>%
   ggplot() +
-  geom_histogram(aes(age)) +
+  geom_histogram(aes(age, fill=marital)) +
   facet_wrap(~((time-1)/365))
-
-orphans <- ps %>%
-  follow_idvs(500) %>%
-  filter(age <= 15, household == 1) %>%
-  pull(hash)
-
-unique(orphans) %>% length()
 
 ps %>%
   filter(hash %in% orphans) %>%
@@ -249,15 +267,16 @@ ps %>%
 ps %>%
   group_by(time) %>%
   summarize(populationSize = length(hash),
-            married  = sum(marital == "married") / populationSize,
-            single   = sum(marital == "single") / populationSize,
+            married  = sum(marital == "married")  / populationSize,
+            single   = sum(marital == "single")   / populationSize,
             divorced = sum(marital == "divorced") / populationSize,
-            looking  = sum(marital == "looking") / populationSize) %>%
+            looking  = sum(marital == "looking")  / populationSize) %>%
   select(-populationSize) %>%
   gather("field", "value", 2:5) %>%
   arrange(time, field) %>%
   ggplot(aes(time, value, color=field)) +
-    geom_line()
+    geom_line() +
+    ylim(0, 1.)
     
 ################################################
 # HOUSEHOLD SURVEY GRAPHS
@@ -283,42 +302,28 @@ hs %>%
 hs %>%
   ggplot(aes(size)) +
     facet_wrap(~time) +
-    geom_histogram(binwidth=1) +
-    xlim(0,10)
+    geom_histogram(binwidth=1)
 
-zeroes <- hs %>% filter(size == 0) %>% pull(hash) %>% sample(16)
 hs %>%
-  filter(hash %in% zeroes) %>%
+  filter(size >= 0 & size <= 10) %>%
+  group_by(time, size) %>%
+  summarize(meanKids = mean(directOffspring + otherOffspring),
+            meanOther = mean(other))  %>%
   ggplot(aes(time)) +
-    geom_line(aes(y=head, color="Head")) +
-    geom_line(aes(y=spouse, color="Spouse")) +
-    geom_line(aes(y=directOffspring, color="Offspring")) +
-    geom_line(aes(y=other, color="Other")) +
-    facet_wrap(~hash)
+    facet_wrap(~size) +
+      geom_line(aes(y=meanKids, color="Offspring")) +
+      geom_line(aes(y=meanOther, color="Other"))
+    
 
-View(hs %>% filter(hash %in% zeroes) %>% arrange(hash, time))
 
-hs %>% 
-  group_by(time) %>%
-  summarize(meanSize = mean(size),
-            medianSize = median(size)) %>% View()
 
-# Fraction of households that have zero members
-hs %>%
-  group_by(time) %>%
-  summarize(
-    fracZero = sum(size == 0) / length(size)
-  ) %>%
-  ggplot(aes(time, fracZero)) +
-    geom_point() +
-    ylim(0, 1.0)
 
 # Big households: Differences between married and unparried households
 hs %>%
   filter(size > 70) %>%
   ggplot(aes(time, color=spouse))  +
     geom_point(aes(y=size)) +
-    geom_smooth(aes(y=size, color=spouse))
+    geom_smooth(aes(y=size))
 
 # Portion of offspring who are descendents of head or spouse
 hs %>%

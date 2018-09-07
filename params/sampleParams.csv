@@ -5,9 +5,9 @@ Time to first birth,timeToFirstBirth,f,../params/Demographic/time to first birth
 Time to subsequent births,timeToSubsequentBirths,f,../params/Demographic/time to subsequent births.json,,,,,,
 Marriage age difference,marriageAgeDifference,v,Johnson Su,(shape-shape-location-scale),2.0084,3.9767,-0.5023,1.0690,F
 Time to divorce,timeToDivorce,v,Weibull,(alpha-beta),1.3685,12.5257,,,F
-Probability of divorce,probabilityOfDivorce,v,Bernoulli,p,1.0,,,,T
+Probability of divorce,probabilityOfDivorce,v,Bernoulli,p,0.036,,,,T
 Leaving household,leavingHousehold,v,Exponential,(rate-shift),0.000015,0.0,,,T
-Time to looking,timeToLooking,f,../params/Demographic/time to looking TEST.json,,,,,,
+Time to looking,timeToLooking,f,../params/Demographic/time to looking.json,,,,,,
 Time in marriage,timeInMarriage,f,../params/Demographic/time in marriage.json,,,,,,
 Time to death,naturalDeath,f,../params/Demographic/time to natural death newdata.json,,,,,,
 Probability of being pregnant,probabilityOfPregnant,f,../params/Demographic/probability of pregnant.json,,,,,,
