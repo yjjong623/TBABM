@@ -8,7 +8,7 @@ Time to divorce,timeToDivorce,v,Weibull,(alpha-beta),1.3685,12.5257,,,F
 Probability of divorce,probabilityOfDivorce,v,Bernoulli,p,0.125,,,,T
 Leaving household,leavingHousehold,v,Exponential,(rate-shift),0.000015,0.0,,,T
 Time to looking,timeToLooking,f,../params/Demographic/time to looking.json,,,,,,
-Time to looking – scale,timeToLookingScale,v,Constant,(value),4,,,,F
+Time to looking – scale,timeToLookingScale,v,Constant,(value),4.0,,,,F
 Time in marriage,timeInMarriage,f,../params/Demographic/time in marriage.json,,,,,,
 Time to death,naturalDeath,f,../params/Demographic/time to natural death newdata.json,,,,,,
 Probability of being pregnant,probabilityOfPregnant,f,../params/Demographic/probability of pregnant.json,,,,,,

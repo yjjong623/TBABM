@@ -151,25 +151,22 @@ left_join(LoadLatest("deathPyramid"),
 
 Pyramid("populationPyramid")
 Pyramid("deathPyramid")
+
 GraphRate("births", "populationSize", 1000, "Time (years)", "Birth rate (births/1e3/year)") + 
-  geom_smooth() + 
   geom_hline(yintercept = 19.61) +
   ggtitle("Birth rate over 50 years")
 GraphRate("deaths", "populationSize", 1000, "Time (years)", "Death rate (deaths/1e3/year)") + 
-  geom_smooth() + 
   geom_hline(yintercept = 16.99) +
   ggtitle("Death rate over 50 years")
 Graph("births", "Time (years)", "Births")
 Graph("deaths", "Time (years)", "Deaths")
+
 Graph("marriages", "Time (years)", "Marriages")
-GraphRate("marriages", "populationSize", 1000, "Time (years)", "Marriage rate (marriages/1e3/year)") + 
-  geom_smooth() + 
+GraphRate("marriages", "populationSize", 1000, "Time (years)", "Marriage rate (marriages/1e3/year)") +
   geom_hline(yintercept = 3) +
   ggtitle("Population size over 50 years")
-
 Graph("divorces", "Time (years)", "Divorces")
 GraphRate("divorces", "populationSize", 1000, "Time (years)", "Divorce rate (divorces/1e3/year)") + 
-  geom_smooth() +
   geom_hline(yintercept = 0.4) +
   ggtitle("Divorce rate over 50 years")
 
@@ -177,8 +174,7 @@ Graph("populationSize", "Time (years)", "Population size")
 Graph("householdsCount", "Time (years)", "# Households")
 Graph("singleToLooking", "Time (years)", "Number of events")
 GraphRate("singleToLooking", "populationSize", 1000, "Time (years)", "SingleToLooking rate (events/1e3/year)") +
-  geom_smooth() +
-  geom_hline(yintercept = 3.0)
+  geom_hline(yintercept = 6.0)
 
 Graph("hivDiagnosed", "Time (years)", "HIV Diagnosed")
 Graph("hivDiagnosedVCT", "Time (years)", "HIV Diagnosed – VCT")
@@ -257,21 +253,21 @@ ps %>%
   ggplot() +
   geom_histogram(aes(age, fill=marital)) +
   facet_wrap(~time)
-
+    
 ps %>%
-  group_by(time) %>%
+  group_by(time, trajectory) %>%
   summarize(populationSize = length(hash),
             married  = sum(marital == "married")  / populationSize,
             single   = sum(marital == "single")   / populationSize,
             divorced = sum(marital == "divorced") / populationSize,
-            looking  = sum(marital == "looking")  / populationSize) %>%
-  select(-populationSize) %>%
-  gather("field", "value", 2:5) %>%
-  arrange(time, field) %>%
-  ggplot(aes(time, value, color=field)) +
+            looking  = sum(marital == "looking")  / populationSize) %>% 
+  select(-populationSize) %>% 
+  gather("maritalStatus", "proportion", 3:6) %>%
+  arrange(time, maritalStatus, trajectory) %>%
+  ggplot(aes(time, proportion, color=maritalStatus, group=interaction(trajectory, maritalStatus))) +
     geom_line() +
     ylim(0, 1.)
-    
+
 ################################################
 # HOUSEHOLD SURVEY GRAPHS
 ################################################
@@ -290,10 +286,9 @@ hs %>%
     geom_line(aes(y=medianSize, color="Median")) +
     geom_line(aes(y=maxSize, color="Max")) +
     labs(x="Time (days)", y="Mean household size") +
-    ggtitle("Household size differences between married and unmarried households") +
     ylim(0,10)
 
- hs %>%
+hs %>%
   ggplot(aes(size)) +
     facet_wrap(~time) +
     geom_histogram(binwidth=1)
