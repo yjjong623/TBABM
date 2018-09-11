@@ -59,9 +59,9 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 				// Schedule(t + 365*timeToLeave, LeaveHousehold(idv));
 			}
 
-			//////////////////////////////////////////////////////
+			////////////////////////////////////////////////////
 			// Change of marital status from single to looking
-			//////////////////////////////////////////////////////
+			////////////////////////////////////////////////////
 			double timeToLook = 365 * fileData["timeToLooking"].getValue(0,gender,(t-idv->birthDate)/365,rng);
 			if ((idv->marriageStatus == MarriageStatus::Single ||
 				 idv->marriageStatus == MarriageStatus::Divorced)

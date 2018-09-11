@@ -24,7 +24,7 @@ int main(int argc, char const *argv[])
 	Constants constants {};
 
 	constants["tMax"] = 365*50;
-	constants["periodLength"] = 30;
+	constants["periodLength"] = 365;
 	constants["ageGroupWidth"] = 5;
 	constants["startYear"] = 1990;
 
@@ -32,7 +32,11 @@ int main(int argc, char const *argv[])
 
 	int nTrajectories = 1;
 
-	RNG rng(std::time(NULL));
+	auto timestamp = std::time(NULL);	
+
+	RNG rng(timestamp);
+
+	string outputPrefix = "../output/" + to_string(timestamp) + "_";
 
 	std::vector<std::shared_ptr<TBABM>> trajectories{};
 	std::map<string, Param> params{};
@@ -41,9 +45,8 @@ int main(int argc, char const *argv[])
 
 	string populationHeader = "trajectory,time,hash,age,sex,marital,household,offspring,mom,dad\n";
 	string householdHeader  = "trajectory,time,hash,size,head,spouse,directOffspring,otherOffspring,other\n";
-
-	auto populationSurvey = std::make_shared<ofstream>("../output/populationSurvey.csv", ios_base::out);
-	auto householdSurvey  = std::make_shared<ofstream>("../output/householdSurvey.csv", ios_base::out);
+	auto populationSurvey = std::make_shared<ofstream>(outputPrefix + "populationSurvey.csv", ios_base::out);
+	auto householdSurvey  = std::make_shared<ofstream>(outputPrefix + "householdSurvey.csv", ios_base::out);
 	*populationSurvey << populationHeader;
 	*householdSurvey  << householdHeader;
 
@@ -60,25 +63,25 @@ int main(int argc, char const *argv[])
 	for (int i = 0; i < nTrajectories; i++)
 		trajectories[i]->Run();
 
-	TimeSeriesExport<int> births("../output/births.csv");
-	TimeSeriesExport<int> deaths("../output/deaths.csv");
-	TimeSeriesExport<int> populationSize("../output/populationSize.csv");
-	TimeSeriesExport<int> marriages("../output/marriages.csv");
-	TimeSeriesExport<int> divorces("../output/divorces.csv");
-	TimeSeriesExport<int> households("../output/householdsCount.csv");
-	TimeSeriesExport<int> singleToLooking("../output/singleToLooking.csv");
+	TimeSeriesExport<int> births(outputPrefix + "births.csv");
+	TimeSeriesExport<int> deaths(outputPrefix + "deaths.csv");
+	TimeSeriesExport<int> populationSize(outputPrefix + "populationSize.csv");
+	TimeSeriesExport<int> marriages(outputPrefix + "marriages.csv");
+	TimeSeriesExport<int> divorces(outputPrefix + "divorces.csv");
+	TimeSeriesExport<int> households(outputPrefix + "householdsCount.csv");
+	TimeSeriesExport<int> singleToLooking(outputPrefix + "singleToLooking.csv");
 
-	TimeSeriesExport<int> hivNegative("../output/hivNegative.csv");
-	TimeSeriesExport<int> hivPositive("../output/hivPositive.csv");
-	TimeSeriesExport<int> hivPositiveART("../output/hivPositiveART.csv");
+	TimeSeriesExport<int> hivNegative(outputPrefix + "hivNegative.csv");
+	TimeSeriesExport<int> hivPositive(outputPrefix + "hivPositive.csv");
+	TimeSeriesExport<int> hivPositiveART(outputPrefix + "hivPositiveART.csv");
 
-	TimeSeriesExport<int> hivInfections("../output/hivInfections.csv");
-	TimeSeriesExport<int> hivDiagnosed("../output/hivDiagnosed.csv");
-	TimeSeriesExport<int> hivDiagnosedVCT("../output/hivDiagnosedVCT.csv");
-	TimeSeriesExport<int> hivDiagnosesVCT("../output/hivDiagnosesVCT.csv");
+	TimeSeriesExport<int> hivInfections(outputPrefix + "hivInfections.csv");
+	TimeSeriesExport<int> hivDiagnosed(outputPrefix + "hivDiagnosed.csv");
+	TimeSeriesExport<int> hivDiagnosedVCT(outputPrefix + "hivDiagnosedVCT.csv");
+	TimeSeriesExport<int> hivDiagnosesVCT(outputPrefix + "hivDiagnosesVCT.csv");
 
-	PyramidTimeSeriesExport pyramid("../output/populationPyramid.csv");
-	PyramidTimeSeriesExport deathPyramid("../output/deathPyramid.csv");
+	PyramidTimeSeriesExport pyramid(outputPrefix + "populationPyramid.csv");
+	PyramidTimeSeriesExport deathPyramid(outputPrefix + "deathPyramid.csv");
 
 	using TBABMData = TBABM::TBABMData;
 

@@ -222,7 +222,7 @@ private:
 	////////////////////////////////////////////////////////
 	/// Demographic Utilities
 	////////////////////////////////////////////////////////
-	void InitialMortalityCheck(Pointer<Individual> idv, double t, double dt);
+	void InitialEvents(Pointer<Individual> idv, double t, double dt);
 
 	void PurgeReferencesToIndividual(Pointer<Individual> host,
 										    Pointer<Individual> idv);

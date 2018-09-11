@@ -31,19 +31,20 @@ void TBABM::CreatePopulation(int t, long size)
 
 		assert(hh->head);
 
+		// Unit: years
 		double dt = constants["ageGroupWidth"] - fmod(hh->head->age<double>(t), constants["ageGroupWidth"]);
 
 		// Insert all members of the household into the population
 		population.insert(hh->head); popChange++;
 		assert(hh->head->householdID == hid);
-		InitialMortalityCheck(hh->head, t, dt);
+		InitialEvents(hh->head, t, dt);
 		Schedule(t + 365*dt, ChangeAgeGroup(hh->head));
 		if (hh->spouse) {
 			double dt = constants["ageGroupWidth"] - fmod(hh->spouse->age<double>(t), constants["ageGroupWidth"]);
 			popChange++;
 			population.insert(hh->spouse);
 			assert(hh->spouse->householdID == hid);
-			InitialMortalityCheck(hh->spouse, t, dt);
+			InitialEvents(hh->spouse, t, dt);
 			Schedule(t + dt, ChangeAgeGroup(hh->spouse));
 
 			// Set marriage age
@@ -58,7 +59,7 @@ void TBABM::CreatePopulation(int t, long size)
 			population.insert(*it);
 			assert((*it)->householdID == hid);
 			Schedule(t + dt, ChangeAgeGroup(*it));
-			InitialMortalityCheck(*it, t, dt);
+			InitialEvents(*it, t, dt);
 		}
 		for (auto it = hh->other.begin(); it != hh->other.end(); it++) {
 			double dt = constants["ageGroupWidth"] - fmod((*it)->age<double>(t), constants["ageGroupWidth"]);
@@ -66,7 +67,7 @@ void TBABM::CreatePopulation(int t, long size)
 			population.insert(*it);
 			assert((*it)->householdID == hid);
 			Schedule(t + dt, ChangeAgeGroup(*it));
-			InitialMortalityCheck(*it, t, dt);
+			InitialEvents(*it, t, dt);
 		}
 	}
 
