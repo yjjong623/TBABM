@@ -165,6 +165,9 @@ void TBABM::DeleteIndividual(Pointer<Individual> idv)
 
 void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPosition newRole)
 {
+	if (!idv || idv->dead)
+		return;
+
 	// printf("\tChanging household of %ld::%lu\n", idv->householdID, std::hash<Pointer<Individual>>()(idv));
 	int oldHID = idv->householdID;
 

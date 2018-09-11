@@ -25,7 +25,8 @@ void TBABM::InitialEvents(Pointer<Individual> idv, double t, double dt)
 
 	// Unit of both of these is years
 	double timeToDeath   = fileData["naturalDeath"].getValue(startYear+(int)t/365, gender, age, rng);
-	double timeToLooking = fileData["timeToLooking"].getValue(0, gender, age, rng);
+	double timeToLookingScale = params["timeToLookingScale"].Sample(rng);
+	double timeToLooking = timeToLookingScale * fileData["timeToLooking"].getValue(0, gender, age, rng);
 
 	if (timeToDeath < dt)
 		Schedule(t + 365*timeToDeath, Death(idv));

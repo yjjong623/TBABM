@@ -37,12 +37,28 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 			if (m->dead || f->dead)
 				return true;
 
+			bool canDivorce = true;
+
 			if (households[m->householdID]->size() == 1) {
 				// The female will join the male's household
 				ChangeHousehold(f, m->householdID, HouseholdPosition::Spouse);
+
+				if (f->offspring.size() > 0)
+					canDivorce = false;
+
+				for (auto idv : f->offspring)
+					ChangeHousehold(idv, m->householdID, HouseholdPosition::Offspring);
+
 			} else if (households[f->householdID]->size() == 1) {
 				// Male joins female household
 				ChangeHousehold(m, f->householdID, HouseholdPosition::Spouse);
+
+				if (m->offspring.size() > 0)
+					canDivorce = false;
+
+				for (auto idv : f->offspring)
+					ChangeHousehold(idv, f->householdID, HouseholdPosition::Offspring);
+
 			} else {
 				// Couple forms new household?
 				if (params["coupleFormsNewHousehold"].Sample(rng) == 1) {
@@ -51,8 +67,23 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 
 					ChangeHousehold(m, hid, HouseholdPosition::Head);
 					ChangeHousehold(f, hid, HouseholdPosition::Spouse);
+
+					if (f->offspring.size() > 0 || m->offspring.size() > 0)
+						canDivorce = false;
+
+					for (auto idv : f->offspring)
+						ChangeHousehold(idv, hid, HouseholdPosition::Offspring);
+					for (auto idv : m->offspring)
+						ChangeHousehold(idv, hid, HouseholdPosition::Offspring);
+
 				} else {
 					ChangeHousehold(f, m->householdID, HouseholdPosition::Spouse);
+
+					if (f->offspring.size() > 0)
+						canDivorce = false;
+
+					for (auto idv : f->offspring)
+						ChangeHousehold(idv, m->householdID, HouseholdPosition::Offspring);
 				}
 			}
 
@@ -66,7 +97,7 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 			f->marriageDate = t;
 
 			// Will they divorce?
-			if (params["probabilityOfDivorce"].Sample(rng) == 1) {
+			if (params["probabilityOfDivorce"].Sample(rng) == 1 && canDivorce) {
 				// Time to divorce
 				double coupleAvgAge = (m->age(t) + f->age(t))/(2*365);
 				double yearsToDivorce = fileData["timeInMarriage"].getValue(0,0,coupleAvgAge,rng);

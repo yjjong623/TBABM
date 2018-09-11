@@ -202,32 +202,10 @@ hs <- LoadLatest("householdSurvey")
 # POPULATION SURVEY GRAPHS
 ################################################
 
-ps %>% 
-  group_by(time) %>% 
-  summarize(householdMax    = max(household),
-            householdMean   = mean(household),
-            householdMedian = median(household)) %>%
-  ggplot() +
-    geom_line(aes(time, householdMax), color="blue") +
-    geom_line(aes(time, householdMean), color="red") +
-    geom_line(aes(time, householdMedian), color="black") +
-    ggtitle("Mean, median, max of individual household size") +
-    labs(x="Time (days)", y="Size of household")
-
-# Histogram of household size by year, all individuals
-ps %>%
-  filter((time %% 5) == 0) %>%
-  ggplot() +
-    geom_histogram(aes(household, fill=marital), binwidth=1) +
-    facet_wrap(~time) +
-    ggtitle("Histogram of household size by year, all individuals, coupleFormsNewHousehold=0.1") +
-    labs(x="Household size", y="Count")
-
 # Histogram of number of children for married females
 ps %>%
   filter(sex == "female" & 
-           marital == "married" &
-           (time %% 5 == 0)) %>%
+         marital == "married") %>%
   ggplot(aes(offspring)) +
     geom_histogram(binwidth = 1) +
     facet_wrap(~time)
@@ -238,15 +216,6 @@ ps %>%
   count(marital) %>%
   ggplot(aes(time, n, fill=marital)) +
     geom_area()
-
-# Histogram of household size by year, married individuals
-ps %>%
-  filter(marital == "married")  %>%
-  ggplot() +
-  geom_histogram(aes(household, fill=marital), binwidth=1) +
-  facet_wrap(~(time-1)/365) +
-  ggtitle("Histogram of household size by year, all individuals, coupleFormsNewHousehold=0.1") +
-  labs(x="Household size", y="Count")
 
 follow_idvs <- function(data, n_idvs) {
   idvs <- data %>%
@@ -282,16 +251,12 @@ follow_idvs(ps, 500) %>%
   labs(x="Time (years)", y="Household size") +
   ylim(0,10)
 
+# People who live alone
 ps %>%
   filter(household == 1) %>%
   ggplot() +
   geom_histogram(aes(age, fill=marital)) +
   facet_wrap(~time)
-
-ps %>%
-  filter(hash %in% orphans) %>%
-  arrange(hash, time) %>%
-  View()
 
 ps %>%
   group_by(time) %>%

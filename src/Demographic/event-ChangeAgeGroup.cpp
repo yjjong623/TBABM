@@ -22,7 +22,6 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 {
 	int ageGroupWidth = constants["ageGroupWidth"]; // Age groups go 0-5, 5-10, etc.
 
-
 	EventFunc ef = 
 		[this, idv, ageGroupWidth](double t, SchedulerT scheduler) {
 			if (!idv || idv->dead)
@@ -62,7 +61,9 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			////////////////////////////////////////////////////
 			// Change of marital status from single to looking
 			////////////////////////////////////////////////////
-			double timeToLook = 365 * fileData["timeToLooking"].getValue(0,gender,(t-idv->birthDate)/365,rng);
+			double scale  = params["timeToLookingScale"].Sample(rng);
+			double sample = fileData["timeToLooking"].getValue(0,gender,(t-idv->birthDate)/365,rng);
+			double timeToLook = 365 * scale * sample;
 			if ((idv->marriageStatus == MarriageStatus::Single ||
 				 idv->marriageStatus == MarriageStatus::Divorced)
 				&& timeToLook < timeToNextEvent
