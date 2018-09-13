@@ -253,20 +253,27 @@ ps %>%
   ggplot() +
   geom_histogram(aes(age, fill=marital)) +
   facet_wrap(~time)
-    
-ps %>%
-  group_by(time, trajectory) %>%
-  summarize(populationSize = length(hash),
-            married  = sum(marital == "married")  / populationSize,
-            single   = sum(marital == "single")   / populationSize,
-            divorced = sum(marital == "divorced") / populationSize,
-            looking  = sum(marital == "looking")  / populationSize) %>% 
-  select(-populationSize) %>% 
-  gather("maritalStatus", "proportion", 3:6) %>%
-  arrange(time, maritalStatus, trajectory) %>%
-  ggplot(aes(time, proportion, color=maritalStatus, group=interaction(trajectory, maritalStatus))) +
-    geom_line() +
-    ylim(0, 1.)
+
+with(
+  list(maxTime = (max(ps$time)-1)/365),
+  ps %>%
+    group_by(time, trajectory) %>%
+    summarize(populationSize = length(hash),
+              married  = sum(marital == "married")  / populationSize,
+              single   = sum(marital == "single")   / populationSize,
+              divorced = sum(marital == "divorced") / populationSize,
+              looking  = sum(marital == "looking")  / populationSize) %>% 
+    select(-populationSize) %>% 
+    gather("maritalStatus", "proportion", 3:6) %>%
+    arrange(time, maritalStatus, trajectory) %>%
+    ggplot(aes((time-1)/365, proportion, color=maritalStatus, group=interaction(trajectory, maritalStatus))) +
+      geom_line() +
+      scale_y_continuous(breaks=seq(0,1,0.1), 
+                         limits=c(0,1)) +
+      scale_x_continuous(breaks=seq(0,maxTime, 5),
+                         limits=c(0, maxTime)) +
+      labs(x="Time (years)", y="Proportion", title="Proportion of people by marital status")
+)
 
 ################################################
 # HOUSEHOLD SURVEY GRAPHS
@@ -291,7 +298,8 @@ hs %>%
 hs %>%
   ggplot(aes(size)) +
     facet_wrap(~time) +
-    geom_histogram(binwidth=1)
+    geom_histogram(binwidth=1) +
+    xlim(0,20)
 
 hs %>%
   filter(size >= 0 & size <= 10) %>%
