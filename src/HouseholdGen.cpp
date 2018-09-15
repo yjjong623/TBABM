@@ -47,7 +47,7 @@ HouseholdGen::GetHousehold(const int hid)
 				break;
 			case (HouseholdPosition::Spouse):
 				idv->marriageStatus = MarriageStatus::Married;
-				
+
 				household->spouse = idv;
 				
 				idv->spouse = household->head; // bidirectional

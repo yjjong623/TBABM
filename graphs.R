@@ -154,9 +154,11 @@ Pyramid("deathPyramid")
 
 GraphRate("births", "populationSize", 1000, "Time (years)", "Birth rate (births/1e3/year)") + 
   geom_hline(yintercept = 19.61) +
+  theme_bw()
   ggtitle("Birth rate over 50 years")
 GraphRate("deaths", "populationSize", 1000, "Time (years)", "Death rate (deaths/1e3/year)") + 
   geom_hline(yintercept = 16.99) +
+  theme_bw() +
   ggtitle("Death rate over 50 years")
 Graph("births", "Time (years)", "Births")
 Graph("deaths", "Time (years)", "Deaths")
@@ -164,10 +166,12 @@ Graph("deaths", "Time (years)", "Deaths")
 Graph("marriages", "Time (years)", "Marriages")
 GraphRate("marriages", "populationSize", 1000, "Time (years)", "Marriage rate (marriages/1e3/year)") +
   geom_hline(yintercept = 3) +
-  ggtitle("Population size over 50 years")
+  theme_bw()
+  ggtitle("Marriage rate over 50 years")
 Graph("divorces", "Time (years)", "Divorces")
 GraphRate("divorces", "populationSize", 1000, "Time (years)", "Divorce rate (divorces/1e3/year)") + 
   geom_hline(yintercept = 0.4) +
+  theme_bw() +
   ggtitle("Divorce rate over 50 years")
 
 Graph("populationSize", "Time (years)", "Population size")
@@ -203,7 +207,7 @@ ps %>%
   filter(sex == "female" & 
          marital == "married") %>%
   ggplot(aes(offspring)) +
-    geom_histogram(binwidth = 1) +
+    geom_histogram(aes(y=..density..), binwidth = 1) +
     facet_wrap(~time)
 
 # Marital status by time
@@ -213,39 +217,39 @@ ps %>%
   ggplot(aes(time, n, fill=marital)) +
     geom_area()
 
-follow_idvs <- function(data, n_idvs) {
-  idvs <- data %>%
-    sample_n(n_idvs, replace=FALSE) %>% # Sample n_idvs without replacement. Not perfect
-    pull(hash)                          # Pull out the hash column into a vector
-  
-  data %>%
-    filter(hash %in% idvs) # Filter by sampled individuals
-}
-
-View(follow_idvs(ps, 5))
-
-follow_idvs(ps, 500) %>%
-  ggplot(aes(time, household)) +
-    geom_jitter(aes(color = factor(offspring > 0))) +
-    geom_smooth(aes(color = factor(offspring > 0))) +
-    ggtitle("Differences in household size between those with and without children") +
-    labs(x="Time (years)", y="Household size")
-
-follow_idvs(ps, 500) %>%
-  ggplot(aes(time, household)) +
-  geom_jitter(aes(color = factor(marital))) +
-  geom_smooth(aes(color = factor(marital))) +
-  ggtitle("Differences in household size by marital status") +
-  labs(x="Time (years)", y="Household size") #+
-  # ylim(0,10)
-    
-follow_idvs(ps, 500) %>%
-  ggplot(aes(time, household)) +
-  geom_jitter(aes(color = factor(marital))) +
-  geom_smooth(aes(color = factor(marital))) +
-  ggtitle("Differences in household size by marital status") +
-  labs(x="Time (years)", y="Household size") +
-  ylim(0,10)
+# follow_idvs <- function(data, n_idvs) {
+#   idvs <- data %>%
+#     sample_n(n_idvs, replace=FALSE) %>% # Sample n_idvs without replacement. Not perfect
+#     pull(hash)                          # Pull out the hash column into a vector
+#   
+#   data %>%
+#     filter(hash %in% idvs) # Filter by sampled individuals
+# }
+# 
+# View(follow_idvs(ps, 5))
+# 
+# follow_idvs(ps, 500) %>%
+#   ggplot(aes(time, household)) +
+#     geom_jitter(aes(color = factor(offspring > 0))) +
+#     geom_smooth(aes(color = factor(offspring > 0))) +
+#     ggtitle("Differences in household size between those with and without children") +
+#     labs(x="Time (years)", y="Household size")
+# 
+# follow_idvs(ps, 500) %>%
+#   ggplot(aes(time, household)) +
+#   geom_jitter(aes(color = factor(marital))) +
+#   geom_smooth(aes(color = factor(marital))) +
+#   ggtitle("Differences in household size by marital status") +
+#   labs(x="Time (years)", y="Household size") #+
+#   # ylim(0,10)
+#     
+# follow_idvs(ps, 500) %>%
+#   ggplot(aes(time, household)) +
+#   geom_jitter(aes(color = factor(marital))) +
+#   geom_smooth(aes(color = factor(marital))) +
+#   ggtitle("Differences in household size by marital status") +
+#   labs(x="Time (years)", y="Household size") +
+#   ylim(0,10)
 
 # People who live alone
 ps %>%
@@ -254,6 +258,7 @@ ps %>%
   geom_histogram(aes(age, fill=marital)) +
   facet_wrap(~time)
 
+# Proportion of people by marital status
 with(
   list(maxTime = (max(ps$time)-1)/365),
   ps %>%
@@ -293,13 +298,32 @@ hs %>%
     geom_line(aes(y=medianSize, color="Median")) +
     geom_line(aes(y=maxSize, color="Max")) +
     labs(x="Time (days)", y="Mean household size") +
-    ylim(0,10)
+    scale_y_continuous(breaks=seq(0,10,1), limits=c(0,10))
+
+hs %>%
+  group_by(time, trajectory) %>%
+  count() %>%
+  ggplot(aes(time, n, color=trajectory, group=trajectory)) +
+    geom_line()
 
 hs %>%
   ggplot(aes(size)) +
     facet_wrap(~time) +
-    geom_histogram(binwidth=1) +
-    xlim(0,20)
+    geom_histogram(aes(y=..density.., fill=((directOffspring+otherOffspring)>0)), 
+                   binwidth=1) +
+    xlim(0,20) +
+    theme_bw()
+
+hs %>%
+  filter(size == 2) %>%
+  group_by(time) %>%
+  summarise(meanSpouse = mean(spouse),
+            meanOffspring = mean(directOffspring + otherOffspring),
+            meanOther = mean(other)) %>%
+  gather("memberType", "value", 2:4) %>%
+  arrange(time, memberType) %>%
+  ggplot(aes((time-1)/365)) +
+    geom_line(aes(y=value, color=memberType, group=memberType))
 
 hs %>%
   filter(size >= 0 & size <= 10) %>%
