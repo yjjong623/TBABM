@@ -205,7 +205,7 @@ private:
 	// Algorithm S14: Divorce
 	EventFunc Divorce(Pointer<Individual> m, Pointer<Individual> f);
 
-	EventFunc Pregnancy(Pointer<Individual> f);
+	EventFunc Pregnancy(Pointer<Individual> f, Pointer<Individual> m);
 
 	// Update the population pyramid
 	EventFunc UpdatePyramid(void);

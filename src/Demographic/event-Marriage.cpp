@@ -107,13 +107,10 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 
 
 			// Time to first birth
-			// double yearsToFirstBirth = fileData["timeToFirstBirth"].getValue(0,0,f->age(t),rng);
-			// int daysToFirstBirth = 365 * yearsToFirstBirth;
+			double yearsToFirstBirth = fileData["timeToFirstBirth"].getValue(0,0,f->age(t),rng);
+			int daysToFirstBirth = 365 * yearsToFirstBirth;
 
-			// if (daysToFirstBirth < constants["tMax"]) {
-			// 	Schedule(t + daysToFirstBirth - 9*30, Pregnancy(f));
-			// 	Schedule(t + daysToFirstBirth, Birth(m, f));
-			// }
+			Schedule(t + daysToFirstBirth - 9*30, Pregnancy(m, f));
 
 			marriages.Record(t, +1);
 

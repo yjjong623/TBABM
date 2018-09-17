@@ -79,7 +79,7 @@ bool TBABM::Run(void)
 	Schedule(1, ARTGuidelineChange());
 	Schedule(1, Survey());
 	
-	Schedule(1, ExogenousBirth());
+	// Schedule(1, ExogenousBirth());
 
 	while (!eq.Empty()) {
 		auto e = eq.Top();
@@ -178,7 +178,9 @@ void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPositi
 	assert(oldHousehold);
 	assert(newHousehold);
 
-	oldHousehold->RemoveIndividual(idv);
+	if (oldHousehold != newHousehold)
+		oldHousehold->RemoveIndividual(idv);
+	
 	newHousehold->AddIndividual(idv, newRole, newHID);
 
 	// Clear household if there's nobody left in it
