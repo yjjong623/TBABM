@@ -14,6 +14,7 @@ using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 using Sex = Individual::Sex;
+using MarriageStatus = Individual::MarriageStatus;
 
 using namespace StatisticalDistributions;
 
@@ -25,6 +26,9 @@ EventFunc TBABM::SingleToLooking(Pointer<Individual> idv)
 			// printf("[%d] SingleToLooking: %s, %ld::%lu\n", (int)t, idv->sex == Sex::Male ? "Male" : "Female", idv->householdID, std::hash<Pointer<Individual>>()(idv));
 			if (idv->dead)
 				return true;
+
+			if (idv->marriageStatus == MarriageStatus::Married)
+				return true;	
 
 			if (idv->sex == Sex::Male)
 				maleSeeking.insert(idv);

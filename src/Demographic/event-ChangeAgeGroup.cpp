@@ -9,6 +9,7 @@ template <typename T>
 using Pointer = std::shared_ptr<T>;
 
 using std::vector;
+using std::map;
 
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
@@ -16,6 +17,16 @@ using SchedulerT = EventQueue<double,bool>::SchedulerT;
 using Sex = Individual::Sex;
 
 using namespace StatisticalDistributions;
+
+auto findHousehold = [] (map<long, Pointer<Household>> &households) -> long {
+	for (auto household : households)
+		if (household.second && 
+			household.second->size() > 0 &&
+			household.second->size() < 5)
+			return household.first;
+
+	return -1;
+};
 
 // Algorithm S9: Change of age groups
 EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
@@ -48,14 +59,14 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			// Leaving the current household to form a new household
 			//////////////////////////////////////////////////////
 			bool idvIsHead = idv->householdPosition == HouseholdPosition::Head;
-			double timeToLeave = params["leavingHousehold"].Sample(rng);
+			double timeToLeave = 365*params["leavingHousehold"].Sample(rng);
 			if (!idv->spouse && 
 				age >= 18 && 
 				age <= 55 && 
 				!idvIsHead && 
 				timeToLeave < timeToNextEvent &&
 				timeToLeave < timeToDeath) {
-				// Schedule(t + 365*timeToLeave, LeaveHousehold(idv));
+				Schedule(t + timeToLeave, LeaveHousehold(idv));
 			}
 
 			////////////////////////////////////////////////////
@@ -75,6 +86,7 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			// Joining a household
 			//////////////////////////////////////////////////////
 			auto household = households[idv->householdID];
+			bool changed {false};
 			if (age >= 65 && household->size() == 1) {
 				for (size_t i = 0; i < idv->livedWithBefore.size(); i++) {
 					if (!idv->livedWithBefore[i] || idv->livedWithBefore[i]->dead)
@@ -83,8 +95,11 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 					if (!households[hid])
 						continue;
 					ChangeHousehold(idv, hid, HouseholdPosition::Other);
+					changed = true;
 					break;
 				}
+				if (!changed)
+					ChangeHousehold(idv, findHousehold(households), HouseholdPosition::Other);
 			}
 
 			//////////////////////////////////////////////////////

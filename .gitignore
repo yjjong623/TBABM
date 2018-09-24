@@ -106,3 +106,4 @@ ParallelSIRsim
 TBABMTestoutput/
 output/
 **/*.xlsx
+.Rproj.user

@@ -67,6 +67,33 @@ void TBABM::CreatePopulation(int t, long size)
 			population.insert(*it);
 			assert((*it)->householdID == hid);
 			Schedule(t + dt, ChangeAgeGroup(*it));
+
+			if ((*it)->marriageStatus != MarriageStatus::Married &&
+				params["otherMarried"].Sample(rng) == 1) {
+				auto it2 = it;
+				it2++;
+				for (; it2 != hh->other.end(); it2++)
+					if (*it2 &&
+						!(*it2)->dead &&
+						(*it)->sex != (*it2)->sex &&
+						(*it2)->marriageStatus != MarriageStatus::Married) {
+						
+						auto male = (*it)->sex == Sex::Male ? *it : *it2;
+						auto female = (*it)->sex == Sex::Male ? *it2 : *it;
+						
+						male->spouse = female;
+						male->marriageStatus = MarriageStatus::Married;
+						male->marriageDate = t - 365*fileData["timeInMarriage"].getValue(0,0,male->age(t),rng);
+
+						female->spouse = male;
+						female->marriageStatus = MarriageStatus::Married;
+						female->marriageDate = t - 365*fileData["timeInMarriage"].getValue(0,0,female->age(t),rng);
+
+						printf("Successfully found a mate for an 'other'\n");
+						break;
+					}
+			}
+
 			InitialEvents(*it, t, dt);
 		}
 	}
