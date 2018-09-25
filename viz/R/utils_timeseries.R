@@ -1,3 +1,5 @@
+library(dplyr)
+
 JoinTimeSeries <- function(x, y, preserveNames=FALSE) {
   xName <- enquo(x) %>% quo_name()
   yName <- enquo(y) %>% quo_name()
@@ -44,7 +46,7 @@ AgeRangeToNum <- function(vec) {
 }
 
 CategoryToGender <- function(vec) {
-  mapping <- function(cat) switch(cat, 0 = "Male", 1 = "Female")
+  mapping <- function(cat) switch(cat, "Male", "Female")
   
   map(vec, mapping) %>% unlist()
 }

@@ -1,5 +1,5 @@
 library(tidyverse)
-source("utils_timeseries.R")
+source("R/utils_timeseries.R")
 
 Graph_impl <- function(data, xlab, ylab) {
   ylim <- 1.1 * max(data$value, na.rm=TRUE)
@@ -47,28 +47,27 @@ PopulationPyramidProportion_impl <- function(data, x, y, every) {
 }
 
 # Graph a run. Assumes you want the latest run
-GraphRun <- function(name, x, y, traj="latest") {
-  data <- ifelse(traj=="latest", LoadLatest, Load)(name)
-  Graph_impl(data, x, y)
-}
+Graph <- function(Loader, name, x, y)
+  Graph_impl(Loader(name), x, y)
 
 # Do a rate graph from a particular run 
-GraphRate <- function(name1, name2, scale, x, y, traj="latest") {
-  data1 <- ifelse(traj=="latest", LoadLatest, Load)(name1)
-  data2 <- ifelse(traj=="latest", LoadLatest, Load)(name2)
+GraphRate <- function(Loader, name1, name2, scale, x, y) {
+  data1 <- Loader(name1)
+  data2 <- Loader(name2)
   
   RateTimeSeriesPerN(data1, data2, "value", scale) %>%
     Graph_impl(x, y)
 }
 
-Hist <- function(name, col, xlab) {
-  data <- LoadLatest(name)
+Hist <- function(Loader, name, col, xlab) {
+  data <- Loader(name)
   ggplot(data, aes_string(col)) +
     geom_histogram() +
     labs(x=xlab)
 }
 
 
-Pyramid <- function(name, x, y) Pyramid_impl(LoadLatest(name), x, y)
+Pyramid <- function(Loader, name, x, y) Pyramid_impl(Loader(name), x, y)
 
-ProportionPyramid <- function(name, x, y, every=5) PopulationPyramidProportion_impl(LoadLatest(name), x, y, every)
+ProportionPyramid <- function(Loader, name, x, y, every=5) 
+  PopulationPyramidProportion_impl(Loader(name), x, y, every)
