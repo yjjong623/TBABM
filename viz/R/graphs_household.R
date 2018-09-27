@@ -44,15 +44,3 @@ sizeHist <- function(hs) {
   labs(x="Household size",
        y="Density")
 }
-
-childrenVsOthers <- function(hs) {
-  hs %>%
-  filter(size >= 0 & size <= 10) %>%
-  group_by(time, size) %>%
-  summarize(meanKids = mean(directOffspring + otherOffspring),
-            meanOther = mean(other))  %>%
-  ggplot(aes(time)) +
-  facet_wrap(~size) +
-  geom_line(aes(y=meanKids, color="Offspring")) +
-  geom_line(aes(y=meanOther, color="Other"))
-}

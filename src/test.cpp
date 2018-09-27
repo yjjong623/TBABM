@@ -43,7 +43,7 @@ int main(int argc, char const *argv[])
 
 	mapShortNames(fileToJSON("../params/sampleParams.json"), params);
 
-	string populationHeader = "trajectory,time,hash,age,sex,marital,household,offspring,mom,dad\n";
+	string populationHeader = "trajectory,time,hash,age,sex,marital,household,householdHash,offspring,mom,dad\n";
 	string householdHeader  = "trajectory,time,hash,size,head,spouse,directOffspring,otherOffspring,other\n";
 	auto populationSurvey = std::make_shared<ofstream>(outputPrefix + "populationSurvey.csv", ios_base::out);
 	auto householdSurvey  = std::make_shared<ofstream>(outputPrefix + "householdSurvey.csv", ios_base::out);

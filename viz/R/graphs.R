@@ -22,7 +22,7 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
   hs  <- Loader("householdSurvey")
 
   list(
-    deathRatePyramid      = deathRatePyramid,
+    deathRatePyramid      = function() deathRatePyramid(Loader),
     populationPyramid     = function() Pyramid(Loader, "populationPyramid", "Count", "Age group"),
     deathPyramid          = function() Pyramid(Loader, "deathPyramid"),
     populationProportion  = function() ProportionPyramid(Loader, "populationPyramid", "Age group", "Proportion"),
@@ -44,21 +44,22 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     hivPositive           = function() Graph(Loader, "hivPositive", "Time (years)", "HIV Positive"),
     hivPositiveART        = function() Graph(Loader, "hivPositiveART", "Time (years)", "HIV Positive + ART"),
     
-    meanSurvivalTimeNoART = function() Hist(Loader, "meanSurvivalTimeNoART", "age.at.infection", "Age at Infection"),
-    meanSurvivalTimeNoART = function() Hist(Loader, "meanSurvivalTimeNoART", "years.lived", "Years lived with HIV, no ART"),
+    # ageAtInfection        = function() Hist(Loader, "meanSurvivalTimeNoART", "age.at.infection", "Age at Infection"),
+    # meanSurvivalTimeNoART = function() Hist(Loader, "meanSurvivalTimeNoART", "years.lived", "Years lived with HIV, no ART"),
     
     meanSize              = function() meanSize(hs),
     nHouseholds           = function() nHouseholds(hs),
     sizeHist              = function() sizeHist(hs),
-    childrenVsOthers      = function() childrenVsOthers(hs),
     
+    childrenVsOthers      = function() childrenVsOthers(ps),
     childrenPerWoman      = function() childrenPerWoman(ps),
     livingAlone           = function() livingAlone(ps),
     maritalStatus         = function() maritalStatus(ps)
   )
 }
 
-
+outputLocation <- "/Users/marcusrussi/Desktop/Yaesoubi-Cohen-Lab/repos/TBABM/output/"
+cat <- CreateGraphCatalog(outputLocation)
   # geom_hline(yintercept = 19.61) + BIRTHRATE
   # geom_hline(yintercept = 16.99) + DEATHRATE
   # geom_hline(yintercept = 3) + MARRIAGERATE

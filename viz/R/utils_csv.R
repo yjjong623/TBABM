@@ -1,5 +1,12 @@
 CSVLoaderGen <- function(prefix) {
-  function(name) read.csv(paste(prefix, name, ".csv", sep="")) %>% tbl_df()
+  function(name) {
+    fname <- paste(prefix, name, ".csv", sep="")
+    
+    print("opening..")
+    print(fname)
+    
+    read.csv(fname) %>% tbl_df()
+  }
 }
 
 FindLatestTimestamp <- function(dir) {

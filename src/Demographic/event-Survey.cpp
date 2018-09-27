@@ -54,6 +54,10 @@ EventFunc TBABM::Survey(void)
 				if (!idv || idv->dead)
 					continue;
 
+				auto hh = households[idv->householdID];
+
+				if (!hh || hh->size() == 0) continue;
+
 				string line = to_string(seed) + s \
 							+ to_string(t) + s \
 							+ Ihash(idv) + s \
@@ -61,6 +65,7 @@ EventFunc TBABM::Survey(void)
 							+ sex(idv) + s \
 							+ marital(idv) + s \
 							+ to_string(households[idv->householdID]->size()) + s \
+							+ Hhash(hh) + s \
 							+ numChildren(idv) + s \
 							+ mom(idv) + s
 							+ dad(idv)
@@ -126,6 +131,7 @@ EventFunc TBABM::Survey(void)
 // 	- sex
 // 	- single, married, divorced, or looking
 // 	- household size
+// 	- household hash
 // 	- number of children
 // 	- mom alive?
 // 	- dad alive?
