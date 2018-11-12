@@ -1,9 +1,15 @@
 #pragma once
+#include <vector>
+#include <string>
+#include <cmath>
 #include <memory>
 #include <algorithm>
 
 template <typename T>
 using Pointer = std::shared_ptr<T>;
+
+using std::vector;
+using std::string;
 
 class Individual {
 public:
@@ -27,6 +33,10 @@ public:
 		Susceptible, Latent, Infective
 	};
 
+	enum class DeathCause {
+		Natural, HIV, TB
+	};
+
 	long householdID;
 
 	int birthDate; // In units of 't'
@@ -48,7 +58,8 @@ public:
 	int t_HIV_infection;
 	HIVStatus hivStatus;
 	bool hivDiagnosed;
-	double initialCD4;
+	double initialCD4; // CD4 at time of HIV infection
+	double ART_init_CD4; // CD4 at time of ART initiation
 	double kgamma;
 	bool onART;
 	int ARTInitTime;
@@ -56,7 +67,7 @@ public:
 	// TB stuff
 	TBStatus tbStatus;
 	bool hasTB() {
-		return tbStatus == TBStatus::Infective; 
+		return !(tbStatus == TBStatus::Susceptible); 
 	}
 
 	bool dead;
@@ -77,12 +88,17 @@ public:
 		double t = onART ? ARTInitTime : t_cur;
 
 		double gender   = (sex == Sex::Female) ? 0.9 : 1.0;
-		double m_a      = m_30 * pow(1+kgamma,(age(t)-18)/10);
+		double m_a      = m_30 * pow(1+kgamma,(age(t_HIV_infection)-45)/15);
 		double t_HIV    = (t - t_HIV_infection - 3*14) / 365;
-		double CD4NoART = std::max(0., initialCD4 - gender*m_a*t_HIV);
+
+		double BaseCD4;
+		if (!onART) 
+			BaseCD4 = std::max(0., initialCD4*exp(-1*gender*m_a*t_HIV));
+		else
+			BaseCD4 = std::max(0., initialCD4*exp(-1*gender*m_a*(t_HIV-(t-ARTInitTime)/365.)));
 
 		if (!onART)
-			return std::min(5000., CD4NoART);
+			return std::min(5000., BaseCD4);
 
 		double nYears = (t_cur - ARTInitTime)/365;
 		double increase;
@@ -97,7 +113,7 @@ public:
 		else if (500 <= initialCD4)
 			increase = 956 - 366/std::pow(2, nYears/1.15) - 592;
 
-		return std::min(5000., std::max(CD4NoART + increase, 0.));
+		return std::min(5000., std::max(BaseCD4 + increase, 0.));
 	}
 
 	void LivedWith(Pointer<Individual> idv) {

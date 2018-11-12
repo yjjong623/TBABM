@@ -3,6 +3,7 @@ source("R/utils_csv.R")
 source("R/graphs_general.R")
 source("R/graphs_population.R")
 source("R/graphs_household.R")
+source("R/graphs_death.R")
 
 GetLatestPrefix <- function(location) paste(location, FindLatestTimestamp(location), "_", sep="")
 GetPrefix <- function(location, timestamp) paste(location, timestamp, "_", sep="")
@@ -19,9 +20,14 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
   Loader           <- switch(run, "latest" = CSVLoaderGen(GetLatestPrefix(outputLocation)), 
                              CSVLoaderGen(GetPrefix(outputLocation, traj)))
   ps <- Loader("populationSurvey")
-  hs  <- Loader("householdSurvey")
+  hs <- Loader("householdSurvey")
+  ds <- Loader("deathSurvey")
 
   list(
+    ps                    = ps,
+    hs                    = hs,
+    ds                    = ds,
+    
     deathRatePyramid      = function() deathRatePyramid(Loader),
     populationPyramid     = function() Pyramid(Loader, "populationPyramid", "Count", "Age group"),
     deathPyramid          = function() Pyramid(Loader, "deathPyramid"),
@@ -43,6 +49,10 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     hivNegative           = function() Graph(Loader, "hivNegative", "Time (years)", "HIV Negative"),
     hivPositive           = function() Graph(Loader, "hivPositive", "Time (years)", "HIV Positive"),
     hivPositiveART        = function() Graph(Loader, "hivPositiveART", "Time (years)", "HIV Positive + ART"),
+    
+    hivCD4s               = function(size=100) CD4counts(ps, size),
+    hivSurvivalNoART      = function() hivSurvivalNoART(ds),
+    hivSurvivalWithART    = function() hivSurvivalWithART(ds),
     
     # ageAtInfection        = function() Hist(Loader, "meanSurvivalTimeNoART", "age.at.infection", "Age at Infection"),
     # meanSurvivalTimeNoART = function() Hist(Loader, "meanSurvivalTimeNoART", "years.lived", "Years lived with HIV, no ART"),

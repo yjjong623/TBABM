@@ -46,6 +46,8 @@ public:
 	using EventFunc = EQ::EventFunc;
 	using SchedulerT = EQ::SchedulerT;
 
+	using DeathCause = Individual::DeathCause;
+
 	enum class TBABMData {
 		HIVNegative, 
 		HIVPositiveART, 
@@ -84,7 +86,8 @@ public:
 		  const char *householdsFile, 
 		  long seed,
 		  std::shared_ptr<ofstream> populationSurvey,
-		  std::shared_ptr<ofstream> householdSurvey) : 
+		  std::shared_ptr<ofstream> householdSurvey,
+		  std::shared_ptr<ofstream> deathSurvey) : 
 
 		params(params),
 		constants(constants),
@@ -114,6 +117,7 @@ public:
 		households({}),
 		populationSurvey(populationSurvey),
 		householdSurvey(householdSurvey),
+		deathSurvey(deathSurvey),
 
 		maleSeeking({}),
 		femaleSeeking({}),
@@ -191,7 +195,7 @@ private:
 	EventFunc ChangeAgeGroup(Pointer<Individual>);
 
 	// Algorithm S10: Natural death
-	EventFunc Death(Pointer<Individual>);
+	EventFunc Death(Pointer<Individual>, DeathCause deathCause);
 
 	// Algorithm S11: Leave current household to form new household
 	EventFunc LeaveHousehold(Pointer<Individual>);
@@ -230,6 +234,8 @@ private:
 	void DeleteIndividual(Pointer<Individual> idv);
 
 	void ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPosition newRole);
+
+	void SurveyDeath(Pointer<Individual> idv, int t, DeathCause deathCause);
 
 	////////////////////////////////////////////////////////
 	/// HIV Events
@@ -281,4 +287,5 @@ private:
 	ofstream meanSurvivalTime;
 	std::shared_ptr<ofstream> populationSurvey;
 	std::shared_ptr<ofstream> householdSurvey;
+	std::shared_ptr<ofstream> deathSurvey;
 };

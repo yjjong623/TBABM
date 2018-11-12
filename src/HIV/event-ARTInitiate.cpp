@@ -28,6 +28,7 @@ EventFunc TBABM::ARTInitiate(Pointer<Individual> idv)
 				return true;
 
 			idv->ARTInitTime = t;
+			idv->ART_init_CD4 = CD4;
 			idv->onART = true;
 
 			hivPositiveART.Record(t, +1);

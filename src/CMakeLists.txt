@@ -3,7 +3,8 @@ set(header_path "${TBABM_SOURCE_DIR}/include/TBABM")
 set(header ${header_path}/Individual.h
 		   ${header_path}/Household.h
 		   ${header_path}/HouseholdGen.h
-		   ${header_path}/TBABM.h)
+		   ${header_path}/TBABM.h
+		   ${header_path}/SurveyUtils.h)
 
 # Set Demographic files
 set(demographic_path "${TBABM_SOURCE_DIR}/src/Demographic")
@@ -23,7 +24,8 @@ set(demographic ${demographic_path}/event-Birth.cpp
 				${demographic_path}/event-UpdateHouseholds.cpp
 				${demographic_path}/event-UpdatePyramid.cpp
 				${demographic_path}/event-ExogenousBirth.cpp
-				${demographic_path}/helper-InitialEvents.cpp)
+				${demographic_path}/helper-InitialEvents.cpp
+				${demographic_path}/helper-SurveyUtils.cpp)
 
 set(hiv_path "${TBABM_SOURCE_DIR}/src/HIV")
 set(hiv ${hiv_path}/event-ARTGuidelineChange.cpp

@@ -15,6 +15,7 @@ using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 using Sex = Individual::Sex;
+using DeathCause = Individual::DeathCause;
 
 using namespace StatisticalDistributions;
 
@@ -52,7 +53,7 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			bool scheduledDeath = false;
 			if (timeToDeath < timeToNextEvent) {
 				scheduledDeath = true;
-				Schedule(t + timeToDeath, Death(idv));
+				Schedule(t + timeToDeath, Death(idv, DeathCause::Natural));
 			}
 
 			//////////////////////////////////////////////////////

@@ -26,7 +26,7 @@ childrenStats <- function(ps) {
             maxKids = max(offspring))
 }
 
-# People who live alone
+# People who live alonec
 livingAlone <- function(ps) {
   ps %>%
   filter(household == 1) %>%
@@ -96,4 +96,20 @@ childrenVsOthers <- function(ps) {
     ggplot(aes(time, mean, color=ageGroup, group=interaction(trajectory, ageGroup))) +
     geom_line() + 
     facet_wrap(~size)
+}
+
+CD4counts <- function(ps, size) {
+  infected <- ps %>% 
+    filter(HIV == "true") %>% 
+    pull(hash) %>% 
+    unique()
+  
+  infected_sample <- sample(infected, size, replace=FALSE)
+  
+  sampled_history <- ps %>%
+    filter(hash %in% infected_sample &
+           HIV == "true")
+  
+  ggplot(sampled_history, aes(time, CD4, color=interaction(HIV, ART), group=hash)) +
+    geom_line()
 }

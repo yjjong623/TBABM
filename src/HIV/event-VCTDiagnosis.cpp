@@ -63,7 +63,7 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 
 				if (ARTEligible(t, idv) && initiateART) {
 					// printf("\tART eligible\n");
-					Schedule(t, ARTInitiate(idv));
+					Schedule(t + 365*timeToDiagnosis, ARTInitiate(idv));
 				}
 				else if (!ARTEligible(t, idv)) {
 					// printf("\tART ineligible\n");
@@ -73,8 +73,6 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 					// printf("\tART eligible, but not initiating\n");
 					seekingART.insert(idv);
 				}
-				// Right now this means that those who don't get 'chosen' (i.e., 
-				//   initiateART is false) will never initiate ART
 			}
 			else {
 				// printf("\tNot diagnosed during this period\n");

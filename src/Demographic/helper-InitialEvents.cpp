@@ -14,7 +14,9 @@ using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 using namespace StatisticalDistributions;
+
 using Sex = Individual::Sex;
+using DeathCause = Individual::DeathCause;
 
 // Unit of dt is years
 void TBABM::InitialEvents(Pointer<Individual> idv, double t, double dt)
@@ -29,7 +31,7 @@ void TBABM::InitialEvents(Pointer<Individual> idv, double t, double dt)
 	double timeToLooking = timeToLookingScale * fileData["timeToLooking"].getValue(0, gender, age, rng);
 
 	if (timeToDeath < dt)
-		Schedule(t + 365*timeToDeath, Death(idv));
+		Schedule(t + 365*timeToDeath, Death(idv, DeathCause::Natural));
 
 	if ((idv->marriageStatus == MarriageStatus::Single ||
 		 idv->marriageStatus == MarriageStatus::Divorced) &&

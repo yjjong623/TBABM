@@ -1,43 +1,17 @@
 #include "../../include/TBABM/TBABM.h"
 #include "../../include/TBABM/Individual.h"
+#include "../../include/TBABM/SurveyUtils.h"
 
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-
-
 EventFunc TBABM::Survey(void)
 {
-	using Sex = Individual::Sex;
-	using MS  = Individual::MarriageStatus;
-	using IPt = Pointer<Individual>;
-	using HPt = Pointer<Household>;
-
-	// Get unique hash for each individual
-	auto Ihash = [] (IPt idv) -> string { return to_string(std::hash<IPt>()(idv)); };
-	auto Hhash = [] (HPt hh)  -> string { return to_string(std::hash<HPt>()(hh));  };
-
-	// Translate age to string
-	auto age = [] (IPt idv, auto t) -> string { return to_string(idv->age(t)); };
-
-	// Translate scoped enum to string
-	auto sex = [] (IPt idv) -> string { return idv->sex == Sex::Male ? "male" : "female"; };
-
-	// Translate scoped enum to string
-	auto marital = [] (IPt idv) -> string {
-		switch (idv->marriageStatus) {
-			case MS::Single:   return "single";   break;			
-			case MS::Married:  return "married";  break;
-			case MS::Divorced: return "divorced"; break;
-			case MS::Looking:  return "looking";  break;
-			default:		   return "UNSUPPORTED MARITAL";
-		}
-	};
-
-	auto numChildren = [] (IPt idv) { return to_string(idv->numOffspring()); };
-
-	auto mom = [] (IPt idv) { return (!idv->mother || idv->mother->dead) ? "dead" : "alive"; };
-	auto dad = [] (IPt idv) { return (!idv->father || idv->father->dead) ? "dead" : "alive"; };
+	using Sex       = Individual::Sex;
+	using MS        = Individual::MarriageStatus;
+	using HIVStatus = Individual::HIVStatus;
+	using IPt       = Pointer<Individual>;
+	using HPt       = Pointer<Household>;
 
 
 	EventFunc ef = 
@@ -58,17 +32,20 @@ EventFunc TBABM::Survey(void)
 
 				if (!hh || hh->size() == 0) continue;
 
-				string line = to_string(seed) + s \
-							+ to_string(t) + s \
-							+ Ihash(idv) + s \
-							+ age(idv, t) + s \
-							+ sex(idv) + s \
-							+ marital(idv) + s \
-							+ to_string(households[idv->householdID]->size()) + s \
-							+ Hhash(hh) + s \
-							+ numChildren(idv) + s \
+				string line = to_string(seed) + s
+							+ to_string(t) + s
+							+ Ihash(idv) + s
+							+ age(idv, t) + s
+							+ sex(idv) + s
+							+ marital(idv) + s
+							+ to_string(households[idv->householdID]->size()) + s
+							+ Hhash(hh) + s
+							+ numChildren(idv) + s
 							+ mom(idv) + s
-							+ dad(idv)
+							+ dad(idv) + s
+							+ HIV(idv) + s
+							+ ART(idv) + s
+							+ CD4(idv, t, params["HIV_m_30"].Sample(rng))
 							+ "\n";
 
 				buf += line;
@@ -114,7 +91,7 @@ EventFunc TBABM::Survey(void)
 
 			*householdSurvey << buf;
 
-			Schedule(t + 365, Survey());
+			Schedule(t + 1*365, Survey());
 
 			return true;
 		};
