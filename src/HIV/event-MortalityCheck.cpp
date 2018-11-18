@@ -24,7 +24,7 @@ EventFunc TBABM::MortalityCheck(Pointer<Individual> idv)
 		[this, idv](double t, SchedulerT scheduler) {
 			// printf("[%d] MortalityCheck: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 
-			double ageGroupWidth = constants["ageGroupWidth"];
+			double samplingWidth = 1/12.;
 
 			// Make sure the individual is alive and HIV-positive
 			if (!idv || idv->dead || idv->hivStatus != HIVStatus::Positive)
@@ -47,12 +47,12 @@ EventFunc TBABM::MortalityCheck(Pointer<Individual> idv)
 			// Unit: YEARS
 			double timeToMortality = Exponential(M_c)(rng.mt_);
 
-			// printf("timeToMortality=%f, m=%f, p=%f, m_30=%f, CD4=%f\n", timeToMortality, m, p, m_30, CD4);
-
-			if (timeToMortality < ageGroupWidth && CD4 < 350)
+			if (timeToMortality < samplingWidth) {
+				printf("Scheduled an HIV death. CD4 was %f\n", CD4);
 				Schedule(t + 365*timeToMortality, Death(idv, DeathCause::HIV));
+			}
 			else
-				Schedule(t + 365*ageGroupWidth, MortalityCheck(idv));
+				Schedule(t + 365*samplingWidth, MortalityCheck(idv));
 			
 			return true;
 		};

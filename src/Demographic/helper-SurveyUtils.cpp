@@ -74,6 +74,5 @@ string CD4(IPt idv, double t, double m_30) {
 }
 
 string ART_baseline_CD4(IPt idv, double m_30) {
-	auto initiated = idv->ARTInitTime;
 	return to_string(idv->ART_init_CD4);
 }

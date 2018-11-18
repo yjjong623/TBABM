@@ -89,7 +89,6 @@ void TBABM::CreatePopulation(int t, long size)
 						female->marriageStatus = MarriageStatus::Married;
 						female->marriageDate = t - 365*fileData["timeInMarriage"].getValue(0,0,female->age(t),rng);
 
-						printf("Successfully found a mate for an 'other'\n");
 						break;
 					}
 			}

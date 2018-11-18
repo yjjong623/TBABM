@@ -30,9 +30,6 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 			if (!idv || idv->dead)
 				return true;
 
-			// if (deathCause == DeathCause::HIV)
-				// return true;
-
 			// Look up household, and assert that this household actually exists
 			auto household = households[idv->householdID];
 			assert(household);

@@ -89,39 +89,16 @@ as.tibble(list(x=seq(0,1400,1),
 riskFun     <- function(CD4, m, p) m*exp(-p*CD4)
 CD4         <- function(initCD4, t, m, k, a) initCD4*exp(-m*(1+k)^((a-45)/15)*t)
 
-timeOfDeath <- function(initCD4, risk_m, risk_p, m, k_sh, k_sc, a, ts=seq(0,100,5)) {
+timeOfDeath <- function(initCD4, risk_m, risk_p, m, k_sh, k_sc, a, ts=seq(0,60,1/12)) {
   CD4s    <- CD4(initCD4, ts, m, rgamma(1, shape=k_sh, scale=k_sc), a)
   risks   <- riskFun(CD4s, risk_m, risk_p)
   samples <- rexp(length(ts), risks)
-  dies    <- samples < 5
+  dies    <- samples < 1/12
   
   first(ts[dies==TRUE]) + first(samples[dies==TRUE])
 }
 
-# MASS::truehist(replicate(10000,timeOfDeath(1000, risk_m=0.4, risk_p=0.013, m=0.17, k_sh=45, k_sc=0.0085, a=32)))
-
-with(
-  {
-    risk_m <- 0.62
-    risk_p <- 0.0028
-    m      <- 0.171
-    k_sh   <- 45
-    k_sc   <- 0.0085
-    n_ppl  <- 10000
-    age_dist <- partial(runif, min=15, max=75)
-    age_grps <- c(15, 25, 35, 45, 1e3)
-    CD4_dist <- partial(rlnorm, meanlog=7, sdlog=0.32)
-    people   <- tibble(init.CD4 = CD4_dist(n_ppl),
-                       age      = age_dist(n_ppl))
-  },
-  mutate(people,
-         time.of.death = map2_dbl(init.CD4, age, ~timeOfDeath(.x, risk_m, risk_p, m, k_sh, k_sc, .y)),
-         age.group     = cut(age, age_grps, include.lowest=TRUE)
-  ) %>%
-    group_by(age.group) %>%
-    summarize(tod.mean   = mean(time.of.death),
-              tod.median = median(time.of.death))
-)
+# MASS::truehist(replicate(10000,timeOfDeath(1000, risk_m=0.4, risk_p=0.013, m=0.17, k_sh=45, k_sc=0.0085, a=32))
 
 stub <- function(risk_m, risk_p) with(
   {
@@ -130,7 +107,7 @@ stub <- function(risk_m, risk_p) with(
     m      <- 0.171
     k_sh   <- 100
     k_sc   <- 0.0085
-    n_ppl  <- 2000
+    n_ppl  <- 600
     age_dist <- partial(runif, min=15, max=75)
     age_grps <- c(15, 25, 35, 45, 1e3)
     CD4_dist <- partial(rlnorm, meanlog=7, sdlog=0.32)
@@ -153,14 +130,20 @@ simulator <- function(m_lo, m_hi, p_lo, p_hi, n) {
     reduce(union_all)
 }
 
+goals <- tibble(
+  age.group = c("[15,25]", "(25,35]", "(35,45]", "(45,1e+03]"),
+  targets = c(11.7, 10.5, 9.5, 6.3)
+)
+
 # pretty good: 0.53, 0.63, 0.0029, 0.0033  with k_sh=45, k_sc=0.0085
 # best we got: 0.55, 0.62, 0.0024, 0.00262 with k_sh = 100, k_sc= 0.0085
-simulator(0.55, 0.61, 0.0024, 0.00262, 50) %>%
+simulator(0.46, 0.50, 0.0027, 0.0038, 50) %>%
   ggplot(aes(age.group, 
              tod.mean, 
              color=interaction(risk_m, risk_p), 
              group=interaction(risk_m, risk_p))) + 
   geom_line() + 
+  geom_point(data=goals, aes(age.group, targets), inherit.aes=FALSE) +
   lims(y=c(0, 15))
 
 ################################################################
@@ -181,9 +164,10 @@ good_stuff <- inner_join(cat$ps, hivppl, by="hash") %>%
   group_by(hash) %>%
   mutate(lastObs = max(time),
          initial.CD4 = first(CD4[HIV=="true"]),
-         CD4 = ifelse(HIV=="true", CD4, initial.CD4))
+         CD4 = ifelse(HIV=="true", CD4, initial.CD4),
+         age.at.infection = first(age[HIV=="true"]))
 
-ppl <- good_stuff %>% pull(hash) %>% unique() %>% sample(200)
+ppl <- good_stuff %>% pull(hash) %>% unique() %>% sample(1000)
 
 # Graph of CD4 decline and AIDS development
 good_stuff %>% 
@@ -197,9 +181,8 @@ good_stuff %>%
 good_stuff %>%
   filter(hash %in% ppl) %>%
   ggplot(aes(time_/365, 0.57*exp(-0.0025*CD4), color=interaction(CD4 < 350, ART, HIV), group=hash)) +
-  geom_line(lineend="butt") #+
-  # geom_hline(yintercept = 350) +
-  # geom_hline(yintercept = 100)
+  geom_line(lineend="butt") +
+  facet_wrap(~cut(age.at.infection, c(15, 25, 35, 45, 1e6)))
 
 # Distributions for time to CD4<350,100
 time.to.AIDS <- good_stuff %>%
@@ -230,6 +213,21 @@ cat$ds %>%
   ggplot(aes(year.of.death, years.of.infection, color=cause, size=count)) +
   geom_point() +
   facet_wrap(~age.group)
+
+# This is a plot of HIV-positive people who have died during the simulation of either
+# natural causes, or HIV. It shows, by age group (age at infection), how long these
+# individuals have lived with their infection
+cat$ds %>%
+  filter(HIV == "true" & HIV_date > 365*40) %>%
+  mutate(year.of.death = cut(time/365, seq(0, 50, 1), include.lowest=TRUE, labels=FALSE) + 1990,
+         years.of.infection = (time-HIV_date)/365,
+         age.group = cut(age-HIV_date/365, c(-1e6, 15, 25, 35, 45, 1e6), include.lowest = TRUE)) %>%
+  group_by(trajectory, age.group) %>%
+  mutate(mean.survival.time = mean(years.of.infection)) %>%
+  ggplot(aes(years.of.infection, color=factor(trajectory))) +
+    geom_histogram() +
+    geom_vline(aes(xintercept = mean.survival.time)) +
+    facet_wrap(~interaction(age.group, trajectory))
 
 everybodyWhoGetsHIV <- function(ps) ps %>% filter(HIV=="true") %>% pull(hash) %>% unique()
 
@@ -263,3 +261,7 @@ annotateForHIV <- function(ds) {
 annotateForHIV(cat$ds) %>%
   group_by(age.group) %>%
   summarize(mean.years = mean(years.of.infection))
+
+
+stepfun(x=c(0,1,2,3), y=c(0,10,20,30,40))(3.5)
+
