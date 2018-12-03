@@ -97,7 +97,7 @@ void TBABM::CreatePopulation(int t, long size)
 		}
 	}
 
-	// Decide whether each female is pregnant
+	// Decide whether each female is pregnant, and who has HIV
 	for (auto it = population.begin(); it != population.end(); it++) {
 		auto person = *it;
 
@@ -115,6 +115,12 @@ void TBABM::CreatePopulation(int t, long size)
 		int daysToFirstBirth = 365 * yearsToBirth;
 
 		Schedule(t + daysToFirstBirth - 9*30, Pregnancy(person, person->spouse));
+
+		int gender = person->sex == Sex::Male ? 0 : 1;
+		if (fileData["HIV_prevalence_1990"].getValue(1990, gender, person->age(t), rng) == 1) {
+			printf("HIV infection at initialization\n");
+			Schedule(t, HIVInfection(person));
+		}
 	}
 
 	printf("number of items in 'households': %ld\n", households.size());

@@ -1,28 +1,6 @@
 library(ggplot2)
 library(dplyr)
 
-hivSurvivalNoART <- function(ds) {
-  ageGroups <- c(0, 15, 25, 35, 45, 1e4)
-  
-  noART <- ds %>% filter(HIV == "true" & ART == "false")
-  
-  withAgeGroups <- noART %>%
-    transmute(ageGroup = cut(agecat, ageGroups, include.lowest=TRUE),
-              survivalTime = (time-HIV_date)/365)
-  
-  averageSurvival <- mean(withAgeGroups$survivalTime)
-  
-  averageSurvivalByGroup <- withAgeGroups %>% 
-    group_by(ageGroup) %>% 
-    summarize(meanSurvivalTime = mean(survivalTime))
-  
-  print("HIV Survival -- No ART")
-  print("Mean for all age-groups:")
-  print(averageSurvival)
-  print("Mean by age-group:")
-  print(averageSurvivalByGroup)
-}
-
 hivSurvivalWithART <- function(ds) {
   age_groups <- c(0, 25, 35, 45, 55, 1e4)
   

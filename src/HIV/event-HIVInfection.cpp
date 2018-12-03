@@ -21,7 +21,6 @@ EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 		[this, idv](double t, SchedulerT scheduler) {
 			using HIVStatus = Individual::HIVStatus;
 
-			// printf("[%d] HIVInfection: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 
 			if (!idv || idv->dead || idv->hivStatus == HIVStatus::Positive)
 				return true;
@@ -35,6 +34,9 @@ EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 			idv->kgamma = params["kGamma"].Sample(rng);
 			idv->t_HIV_infection = t;
 			idv->hivDiagnosed = false;
+
+
+			printf("[%d] HIVInfection: %lu:%f:%Lf\n", (int)t, std::hash<Pointer<Individual>>()(idv), idv->initialCD4, params["HIV_m_30"].Sample(rng));
 
 			Schedule(t, VCTDiagnosis(idv));
 			Schedule(t, MortalityCheck(idv));

@@ -88,7 +88,7 @@ public:
 		double t = onART ? ARTInitTime : t_cur;
 
 		double gender   = (sex == Sex::Female) ? 0.9 : 1.0;
-		double m_a      = m_30 * pow(1+kgamma,(age(t_HIV_infection)-45)/15);
+		double m_a      = m_30 * pow(1+kgamma,(age(t_HIV_infection)-80)/15);
 		double t_HIV    = (t - t_HIV_infection - 3*14) / 365;
 
 		double BaseCD4;

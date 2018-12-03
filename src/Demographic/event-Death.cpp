@@ -34,8 +34,6 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 			auto household = households[idv->householdID];
 			assert(household);
 
-			// printf("[%d] Death: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
-
 			// Eliminate from Looking pools
 			if (idv->sex == Sex::Male)
 				maleSeeking.erase(idv);
@@ -93,6 +91,11 @@ void TBABM::SurveyDeath(Pointer<Individual> idv, int t, DeathCause deathCause)
 {
 	string s = ",";
 
+	if (deathCause == DeathCause::HIV) {
+		printf("HIV death: %s:%s\n", Ihash(idv).c_str(), CD4(idv, t, params["m_30"].Sample(rng)).c_str());
+		printf("HIV death time:m_30: %s:%s\n", to_string(t).c_str(), to_string(params["m_30"].Sample(rng)).c_str());
+	}
+
 	string line = to_string(seed) + s
 				+ to_string(t) + s
 				+ Ihash(idv) + s
@@ -103,8 +106,8 @@ void TBABM::SurveyDeath(Pointer<Individual> idv, int t, DeathCause deathCause)
 				+ HIV_date(idv) + s 
 				+ ART(idv) + s 
 				+ ART_date(idv) + s 
-				+ CD4(idv, t, params["m_30"].Sample(rng)) + s
-				+ ART_baseline_CD4(idv, params["m_30"].Sample(rng))
+				+ CD4(idv, t, params["HIV_m_30"].Sample(rng)) + s
+				+ ART_baseline_CD4(idv, params["HIV_m_30"].Sample(rng))
 				+ "\n";
 
 	*deathSurvey << line;

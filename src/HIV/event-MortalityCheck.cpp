@@ -47,12 +47,10 @@ EventFunc TBABM::MortalityCheck(Pointer<Individual> idv)
 			// Unit: YEARS
 			double timeToMortality = Exponential(M_c)(rng.mt_);
 
-			if (timeToMortality < samplingWidth) {
-				printf("Scheduled an HIV death. CD4 was %f\n", CD4);
-				Schedule(t + 365*timeToMortality, Death(idv, DeathCause::HIV));
-			}
+			if (timeToMortality < samplingWidth)
+				Schedule(t + 365.*timeToMortality, Death(idv, DeathCause::HIV));
 			else
-				Schedule(t + 365*samplingWidth, MortalityCheck(idv));
+				Schedule(t + 365.*samplingWidth, MortalityCheck(idv));
 			
 			return true;
 		};

@@ -1,8 +1,6 @@
 #include "../../include/TBABM/TBABM.h"
-#include <Empirical.h>
+#include <Uniform.h>
 #include <cassert>
-#include <fstream>
-#include <iostream>
 
 template <typename T>
 using Pointer = std::shared_ptr<T>;
@@ -20,10 +18,8 @@ void TBABM::HIVInfectionCheck(int t, Pointer<Individual> idv)
 {
 	// printf("[%d] HIVInfectionCheck\n", t);
 
-	if (!idv || idv->dead || idv->hivStatus == HIVStatus::Positive) {
-		// printf("\tPassing over, HIV+\n");
+	if (!idv || idv->dead || idv->hivStatus == HIVStatus::Positive)
 		return;
-	}
 
 	int startYear   = constants["startYear"];
 	int agWidth     = constants["ageGroupWidth"];
@@ -32,23 +28,19 @@ void TBABM::HIVInfectionCheck(int t, Pointer<Individual> idv)
 	int age         = idv->age(t); // in years
 	auto spouse     = idv->spouse;
 
-	double HIVRisk;
-	double timeToInfection; // in years
+	bool getsInfected {false};
+	long double timeToProspectiveInfection {Uniform(0., agWidth)(rng.mt_)}; // in years
 
-	// Different risk profiles for HIV+ and HIV- spouse
+	// Different risk profiles for HIV+ and HIV- spouse. As of 12/03/18, these
+	// profiles are the same, and are drawn from Excel Thembisa 4.1
 	if (spouse && !spouse->dead &&
-		spouse->hivStatus == HIVStatus::Positive) {
-		// printf("Calculating spousal HIV risk for currentYear=%d, gender=%d, age=%d\n", currentYear, gender, age);		
-		HIVRisk = fileData["HIV_risk_spouse"].getValue(currentYear, gender, age, rng);
-	}
-	else {
-		// printf("Calculating non-spousal HIV risk for currentYear=%d, gender=%d, age=%d\n", currentYear, gender, age);
-		HIVRisk = fileData["HIV_risk"].getValue(currentYear, gender, age, rng);
-	}
+		spouse->hivStatus == HIVStatus::Positive)
+		getsInfected = fileData["HIV_risk_spouse"].getValue(currentYear, gender, age, rng);
+	else
+		getsInfected = fileData["HIV_risk"].getValue(currentYear, gender, age, rng);
 
-	// printf("Rate: %f\n", HIVRisk);
-	if ((timeToInfection = Exponential(HIVRisk)(rng.mt_)) < agWidth)
-		Schedule(t + 365*timeToInfection, HIVInfection(idv));
+	if (getsInfected)
+		Schedule(t + 365*timeToProspectiveInfection, HIVInfection(idv));
 
 	return;
 }

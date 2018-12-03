@@ -4,6 +4,7 @@ source("R/graphs_general.R")
 source("R/graphs_population.R")
 source("R/graphs_household.R")
 source("R/graphs_death.R")
+source("R/graphs_HIV.R")
 
 GetLatestPrefix <- function(location) paste(location, FindLatestTimestamp(location), "_", sep="")
 GetPrefix <- function(location, timestamp) paste(location, timestamp, "_", sep="")
@@ -51,8 +52,10 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     hivPositiveART        = function() Graph(Loader, "hivPositiveART", "Time (years)", "HIV Positive + ART"),
     
     hivCD4s               = function(size=100) CD4counts(ps, size),
-    hivSurvivalNoART      = function() hivSurvivalNoART(ds),
     hivSurvivalWithART    = function() hivSurvivalWithART(ds),
+    
+    hivCD4Decline         = function(n_samples) hivCD4Decline(ps, ds, n_samples),
+    hivSurvivalNoART      = function() hivSurvivalNoART(ds),
     
     # ageAtInfection        = function() Hist(Loader, "meanSurvivalTimeNoART", "age.at.infection", "Age at Infection"),
     # meanSurvivalTimeNoART = function() Hist(Loader, "meanSurvivalTimeNoART", "years.lived", "Years lived with HIV, no ART"),
