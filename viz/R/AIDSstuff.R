@@ -121,23 +121,6 @@ time.to.AIDS %>%
   geom_histogram(binwidth = 1) +
   lims(x=c(0,20))
 
-# Histogram of years of infection by age group
-cat$ds %>%
-  filter(HIV == "true" & ART == "false") %>%
-  mutate(year.of.death = cut(time/365, seq(0, 50, 1), include.lowest=TRUE, labels=FALSE) + 1990,
-         years.of.infection = (time-HIV_date)/365,
-         age.group = cut(age-years.of.infection, c(-1, 15, 25, 35, 45, 1e6), include.lowest = TRUE)) %>%
-  ggplot(aes(years.of.infection, y=..density..)) +
-    geom_histogram(aes(fill=age.group)) +
-    geom_label(data=function(d) group_by(d, age.group) %>% summarize(myoi = mean(years.of.infection)),
-               aes(x=myoi, y=0, label=format(myoi, nsmall=1, digits=2)), fontface="bold") +
-    lims(x=c(0, 30)) +
-    labs(x="Years of infection", 
-         y="Density", 
-         fill="Age group",
-         title="Years of infection, by age group",
-         subtitle="HIV-positive, ART-naive individuals") +
-    facet_wrap(~age.group)
 
 cat$ps %>%
   filter(hash %in% (sample_n(cat$ds, 500) %>% pull(hash))) %>%

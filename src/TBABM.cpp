@@ -44,18 +44,18 @@ IncidenceTimeSeries<int> *
 TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::Marriages:   return &marriages;
-        case TBABMData::Births:      return &births;
-        case TBABMData::Deaths:		 return &deaths;
-        case TBABMData::PopulationSize: return nullptr;
-        case TBABMData::Divorces:    return &divorces;
-        case TBABMData::Households:  return &householdsCount;
+        case TBABMData::Marriages:       return &marriages;
+        case TBABMData::Births:          return &births;
+        case TBABMData::Deaths:		     return &deaths;
+        case TBABMData::PopulationSize:  return nullptr;
+        case TBABMData::Divorces:        return &divorces;
+        case TBABMData::Households:      return &householdsCount;
         case TBABMData::SingleToLooking: return &singleToLooking;
 
-        case TBABMData::HIVInfections: return &hivInfections;
+        case TBABMData::HIVInfections:   return &hivInfections;
         case TBABMData::HIVDiagnosesVCT: return &hivDiagnosesVCT;
 
-        default:                     return nullptr;
+        default:                         return nullptr;
     }
 }
 
@@ -64,10 +64,21 @@ IncidencePyramidTimeSeries*
 TBABM::GetData<IncidencePyramidTimeSeries>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::Pyramid:      return &pyramid;
-        case TBABMData::DeathPyramid: return &deathPyramid;
-        default:                      return nullptr;
+        case TBABMData::Pyramid:      		  return &pyramid;
+        case TBABMData::DeathPyramid: 		  return &deathPyramid;
+        case TBABMData::HIVInfectionsPyramid: return &hivInfectionsPyramid;
+        default:                      		  return nullptr;
     }
+}
+
+template <>
+PrevalencePyramidTimeSeries*
+TBABM::GetData<PrevalencePyramidTimeSeries>(TBABMData field)
+{
+	switch(field) {
+		case TBABMData::HIVPositivePyramid: return &hivPositivePyramid;
+		default:						   return nullptr;
+	}
 }
 
 bool TBABM::Run(void)
@@ -91,8 +102,6 @@ bool TBABM::Run(void)
 		eq.Pop();
 	}
 
-	printf("Size of households at end was %ld\n", households.size());
-
 	births.Close();
 	deaths.Close();
 	marriages.Close();
@@ -102,6 +111,8 @@ bool TBABM::Run(void)
 
 	pyramid.Close();
 	deathPyramid.Close();
+	hivInfectionsPyramid.Close();
+	hivPositivePyramid.Close();
 	householdsCount.Close();
 
 	hivNegative.Close();

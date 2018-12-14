@@ -5,7 +5,7 @@ CSVLoaderGen <- function(prefix) {
     print("opening..")
     print(fname)
     
-    read.csv(fname) %>% tbl_df()
+    read_csv(fname) %>% tbl_df()
   }
 }
 

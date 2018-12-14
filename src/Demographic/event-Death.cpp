@@ -91,11 +91,6 @@ void TBABM::SurveyDeath(Pointer<Individual> idv, int t, DeathCause deathCause)
 {
 	string s = ",";
 
-	if (deathCause == DeathCause::HIV) {
-		printf("HIV death: %s:%s\n", Ihash(idv).c_str(), CD4(idv, t, params["m_30"].Sample(rng)).c_str());
-		printf("HIV death time:m_30: %s:%s\n", to_string(t).c_str(), to_string(params["m_30"].Sample(rng)).c_str());
-	}
-
 	string line = to_string(seed) + s
 				+ to_string(t) + s
 				+ Ihash(idv) + s

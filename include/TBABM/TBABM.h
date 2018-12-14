@@ -13,6 +13,7 @@
 #include <PrevalenceTimeSeries.h>
 #include <IncidenceTimeSeries.h>
 #include <IncidencePyramidTimeSeries.h>
+#include <PrevalencePyramidTimeSeries.h>
 #include <CSVExport.h>
 #include <EventQueue.h>
 
@@ -52,8 +53,10 @@ public:
 		HIVNegative, 
 		HIVPositiveART, 
 		HIVPositive,
+		HIVPositivePyramid,
 
 		HIVInfections,
+		HIVInfectionsPyramid,
 		HIVDiagnosed,
 		HIVDiagnosedVCT,
 		HIVDiagnosesVCT,
@@ -102,7 +105,9 @@ public:
 		hivNegative(   "hivNegative",    constants["tMax"], constants["periodLength"]),
 		hivPositive(   "hivPositive",    constants["tMax"], constants["periodLength"]),
 		hivPositiveART("hivPositiveART", constants["tMax"], constants["periodLength"]),
+		hivPositivePyramid("hivPositive pyramid", 0, constants["tMax"], 365, 2, {15, 25, 35, 45, 55, 66}),
 
+		hivInfectionsPyramid("hivInfections pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
 		hivInfections(  "hivInfections", 0,   constants["tMax"], constants["periodLength"]),
 		hivDiagnosed(   "hivDiagnosed",       constants["tMax"], constants["periodLength"]),
 		hivDiagnosedVCT("hivDiagnosedVCT",    constants["tMax"], constants["periodLength"]),
@@ -111,7 +116,6 @@ public:
 		pyramid("Population pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
 		deathPyramid("Death pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
 		householdsCount("households", 0, constants["tMax"], 365),
-
 
 		population({}),
 		households({}),
@@ -158,13 +162,15 @@ private:
 	IncidencePyramidTimeSeries deathPyramid;
 	IncidenceTimeSeries<int> householdsCount;
 
-	PrevalenceTimeSeries<int> hivNegative;
-	IncidenceTimeSeries<int>  hivInfections;
-	PrevalenceTimeSeries<int> hivPositive;
-	PrevalenceTimeSeries<int> hivPositiveART;
-	PrevalenceTimeSeries<int> hivDiagnosed;
-	PrevalenceTimeSeries<int> hivDiagnosedVCT;
-	IncidenceTimeSeries<int>  hivDiagnosesVCT;
+	PrevalenceTimeSeries<int>   hivNegative;
+	IncidenceTimeSeries<int>    hivInfections;
+	PrevalenceTimeSeries<int>   hivPositive;
+	PrevalenceTimeSeries<int>   hivPositiveART;
+	PrevalenceTimeSeries<int>   hivDiagnosed;
+	PrevalenceTimeSeries<int>   hivDiagnosedVCT;
+	IncidenceTimeSeries<int>    hivDiagnosesVCT;
+	PrevalencePyramidTimeSeries hivPositivePyramid;
+	IncidencePyramidTimeSeries  hivInfectionsPyramid;
 
 	////////////////////////////////////////////////////////
 	/// Demographic Events
@@ -242,6 +248,7 @@ private:
 	////////////////////////////////////////////////////////
 	EventFunc ARTGuidelineChange(void);
 	EventFunc ARTInitiate(Pointer<Individual>);
+	EventFunc HIVInfectionCheck(Pointer<Individual>);
 	EventFunc HIVInfection(Pointer<Individual>);
 	EventFunc MortalityCheck(Pointer<Individual>);
 	EventFunc VCTDiagnosis(Pointer<Individual>);

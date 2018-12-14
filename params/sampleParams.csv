@@ -17,7 +17,6 @@ VCT a_t_i,HIV_a_t_i,f,../params/HIV/VCT a_t_i.json,,,,,,
 VCT sig_i,HIV_sig_i,f,../params/HIV/VCT sig_i.json,,,,,,
 HIV infection risk,HIV_risk,f,../params/HIV/infection risk - nospouse.json,,,,,,
 HIV infection risk - spouse,HIV_risk_spouse,f,../params/HIV/infection risk - spouse.json,,,,,,
-HIV seropositive risk,HIV_seropositive_risk,f,../params/HIV/seropositive risk.json,,,,,,
 ART initiation,HIV_p_art,f,../params/HIV/ART - noTB.json,,,,,,
 ART initiation - TB,HIV_p_art_tb,f,../params/HIV/ART - TB.json,,,,,,
 Base CD4 count,CD4,v,Lognormal,(mu-sigma-shift),7,0.32,0,,F

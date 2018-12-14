@@ -39,7 +39,6 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 			if (!idv || idv->dead)
 				return true;
 
-			// printf("[%d] ChangeAgeGroup: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 			double timeToNextEvent = ageGroupWidth*365;
 
 			////////////////////////////////////////////////////////
@@ -103,14 +102,11 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 					ChangeHousehold(idv, findHousehold(households), HouseholdPosition::Other);
 			}
 
-			//////////////////////////////////////////////////////
-			// HIV infection check
-			//////////////////////////////////////////////////////
-			HIVInfectionCheck(t, idv);
-
 			if (!scheduledDeath)
 				Schedule(t + timeToNextEvent, ChangeAgeGroup(idv));
 
+
+			// Schedule(t, HIVInfectionCheck(idv));
 
 			return true;
 		};

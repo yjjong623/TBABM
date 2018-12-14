@@ -5,7 +5,7 @@ library(ggplot2)
 ################################################
 
 meanSize <- function(hs) {
-  hs %>%
+  hs k%>%
   group_by(time) %>%
   summarize(
     medianSize    = median(size),

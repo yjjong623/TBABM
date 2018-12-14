@@ -14,6 +14,7 @@ using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 using namespace StatisticalDistributions;
 using HIVStatus = Individual::HIVStatus;
+using Sex = Individual::Sex;
 
 EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 {
@@ -25,8 +26,6 @@ EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 			if (!idv || idv->dead || idv->hivStatus == HIVStatus::Positive)
 				return true;
 
-			// printf("infection\t\tage: %d\n", idv->age(t));
-
 			idv->hivStatus = HIVStatus::Positive;
 
 			// Decide CD4 count and value of 'k'
@@ -35,15 +34,20 @@ EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 			idv->t_HIV_infection = t;
 			idv->hivDiagnosed = false;
 
-
-			printf("[%d] HIVInfection: %lu:%f:%Lf\n", (int)t, std::hash<Pointer<Individual>>()(idv), idv->initialCD4, params["HIV_m_30"].Sample(rng));
-
 			Schedule(t, VCTDiagnosis(idv));
 			Schedule(t, MortalityCheck(idv));
+
+			int sex {idv->sex == Sex::Male ? 0 : 1};
+			int age {idv->age(t)};
+
+			if (sex == 0)
+				printf("Male got HIV\n");
 
 			hivPositive.Record(t, +1);
 			hivNegative.Record(t, -1);
 			hivInfections.Record(t, +1);
+			hivPositivePyramid.UpdateByAge(t, sex, age, +1);
+			hivInfectionsPyramid.UpdateByAge(t, sex, age, +1);
 
 			return true;
 		};

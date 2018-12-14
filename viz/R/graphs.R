@@ -12,14 +12,14 @@ GetPrefix <- function(location, timestamp) paste(location, timestamp, "_", sep="
 deathRatePyramid <- function (Loader)
   left_join(Loader("deathPyramid"), 
             Loader("populationPyramid"), 
-            by=c("period", "trajectory", "age.group", "category")) %>%
-        mutate(value = 1000*value.x / value.y) %>%
-        Pyramid_impl("Deaths/1k/yr", "Age group")
+            by=c("period", "trajectory", "age group", "category")) %>%
+        mutate(value = 1000*value.x/(value.y + 1)) %>%
+        AveragedPyramid_impl("Age group", "Deaths/1,000/yr")
 
 CreateGraphCatalog <- function(outputLocation, run="latest") {
   
   Loader           <- switch(run, "latest" = CSVLoaderGen(GetLatestPrefix(outputLocation)), 
-                             CSVLoaderGen(GetPrefix(outputLocation, traj)))
+                             CSVLoaderGen(GetPrefix(outputLocation, run)))
   ps <- Loader("populationSurvey")
   hs <- Loader("householdSurvey")
   ds <- Loader("deathSurvey")
@@ -33,20 +33,26 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     populationPyramid     = function() Pyramid(Loader, "populationPyramid", "Count", "Age group"),
     deathPyramid          = function() Pyramid(Loader, "deathPyramid"),
     populationProportion  = function() ProportionPyramid(Loader, "populationPyramid", "Age group", "Proportion"),
-    birthRate             = function() GraphRate(Loader, "births", "populationSize", 1000, "Time (years)", "Birth rate (births/1e3/year)"),
-    deathRate             = function() GraphRate(Loader, "deaths", "populationSize", 1000, "Time (years)", "Death rate (deaths/1e3/year)"),
+    birthRate             = function() GraphRate(Loader, "births", "populationSize", 1000, "Time (years)", "Birth rate (births/1,000/year)") + ggtitle("Birth rate over 50 years"),
+    deathRate             = function() GraphRate(Loader, "deaths", "populationSize", 1000, "Time (years)", "Death rate (deaths/1,000/year)") + ggtitle("Death rate over 50 years"),
     births                = function() Graph(Loader, "births", "Time (years)", "Births"),
     deaths                = function() Graph(Loader, "deaths", "Time (years)", "Deaths"),
     
     marriageRate          = function() GraphRate(Loader, "marriages", "populationSize", 1000, "Time (years)", "Marriage rate (marriages/1e3/year)"),
     divorceRate           = function() GraphRate(Loader, "divorces", "populationSize", 1000, "Time (years)", "Divorce rate (divorces/1e3/year)"),
-    populationSize        = function() Graph(Loader, "populationSize", "Time (years)", "Population size"),
+    populationSize        = function() Graph(Loader, "populationSize", "Time (years)", "Population size") + ggtitle("Population size"),
     
     hivDiagnosed          = function() Graph(Loader, "hivDiagnosed", "Time (years)", "HIV Diagnosed"),
     hivDiagnosedVCT       = function() Graph(Loader, "hivDiagnosedVCT", "Time (years)", "HIV Diagnosed – VCT"),
     hivDiagnosesVCT       = function() Graph(Loader, "hivDiagnosesVCT", "Time (years)", "HIV Diagnoses – VCT"),
     
     hivInfections         = function() Graph(Loader, "hivInfections", "Time (years)", "HIV Infections"),
+    hivInfectionsPyramid  = function() AveragedPyramid(Loader, "hivInfectionsPyramid", "Age Group", "Individuals infected") + ggtitle("HIV infections by age group, absolute count"),
+    hivInfectionsRatePyr  = function() left_join(Loader("hivInfectionsPyramid"), 
+                                                 Loader("populationPyramid"), 
+                                                 by=c("period", "trajectory", "age group", "category")) %>%
+                                       mutate(value = 100000*value.x/(value.y + 1)) %>%
+                                       AveragedPyramid_impl("Age group", "Infections/100,000/yr") + ggtitle("HIV infection rate by age group"),
     hivNegative           = function() Graph(Loader, "hivNegative", "Time (years)", "HIV Negative"),
     hivPositive           = function() Graph(Loader, "hivPositive", "Time (years)", "HIV Positive"),
     hivPositiveART        = function() Graph(Loader, "hivPositiveART", "Time (years)", "HIV Positive + ART"),
@@ -62,7 +68,7 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     
     meanSize              = function() meanSize(hs),
     nHouseholds           = function() nHouseholds(hs),
-    sizeHist              = function() sizeHist(hs),
+    sizeHist              = function() sizeHist(hs) + ggtitle("Histogram of household sizes, by years since simulation start"),
     
     childrenVsOthers      = function() childrenVsOthers(ps),
     childrenPerWoman      = function() childrenPerWoman(ps),

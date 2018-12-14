@@ -86,6 +86,8 @@ int main(int argc, char const *argv[])
 
 	PyramidTimeSeriesExport pyramid(outputPrefix + "populationPyramid.csv");
 	PyramidTimeSeriesExport deathPyramid(outputPrefix + "deathPyramid.csv");
+	PyramidTimeSeriesExport hivInfectionsPyramid(outputPrefix + "hivInfectionsPyramid.csv");
+	PyramidTimeSeriesExport hivPositivePyramid(outputPrefix + "hivPositivePyramid.csv");
 
 	using TBABMData = TBABM::TBABMData;
 
@@ -110,6 +112,8 @@ int main(int argc, char const *argv[])
 
 		success &= pyramid.Add(trajectories[i]->GetData<IncidencePyramidTimeSeries>(TBABMData::Pyramid));
 		success &= deathPyramid.Add(trajectories[i]->GetData<IncidencePyramidTimeSeries>(TBABMData::DeathPyramid));
+		success &= hivInfectionsPyramid.Add(trajectories[i]->GetData<IncidencePyramidTimeSeries>(TBABMData::HIVInfectionsPyramid));
+		success &= hivPositivePyramid.Add(trajectories[i]->GetData<PrevalencePyramidTimeSeries>(TBABMData::HIVPositivePyramid));
 	}
 
 
@@ -118,21 +122,23 @@ int main(int argc, char const *argv[])
 		return 0;
 	}
 
-	if (births.Write()          &&
-		deaths.Write()          &&
-		populationSize.Write()  &&
-		marriages.Write()       &&
-		divorces.Write()        &&
-		singleToLooking.Write() &&
-		pyramid.Write()         &&
-		deathPyramid.Write()    &&
-		households.Write()      &&
-		hivNegative.Write()     &&
-		hivPositive.Write()     &&
-		hivPositiveART.Write()  &&
-		hivInfections.Write()   &&
-		hivDiagnosed.Write()    &&
-		hivDiagnosedVCT.Write() &&
+	if (births.Write()               &&
+		deaths.Write()               &&
+		populationSize.Write()       &&
+		marriages.Write()            &&
+		divorces.Write()             &&
+		singleToLooking.Write()      &&
+		pyramid.Write()              &&
+		deathPyramid.Write()         &&
+		hivInfectionsPyramid.Write() &&
+		hivPositivePyramid.Write()   &&
+		households.Write()           &&
+		hivNegative.Write()          &&
+		hivPositive.Write()          &&
+		hivPositiveART.Write()       &&
+		hivInfections.Write()        &&
+		hivDiagnosed.Write()         &&
+		hivDiagnosedVCT.Write()      &&
 		hivDiagnosesVCT.Write() ) {
 		printf("Everything was written successfully!\n");
 	} else {

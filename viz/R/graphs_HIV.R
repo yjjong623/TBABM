@@ -16,12 +16,12 @@ hivCD4Decline <- function(ps, ds, n_samples) {
            initial.CD4 = first(CD4[HIV=="true"]),
            CD4 = ifelse(HIV=="true", CD4, initial.CD4),
            age.at.infection = first(age[HIV=="true"]),
-           age.group = cut(age.at.infection, c(-1, 15, 25, 35, 45, 1e6)))
+           age.group = cut(age.at.infection, c(-1, 15, 25, 35, 45, 1e6), right=FALSE))
   
   ppl <- good_stuff %>% pull(hash) %>% unique() %>% sample(n_samples)
   
   deaths <- filter(ds, hash %in% ppl) %>%
-    mutate(age.group=cut(age-(time-HIV_date)/365, c(-1, 15, 25, 35, 45, 1e6)))
+    mutate(age.group=cut(age-(time-HIV_date)/365, c(-1, 15, 25, 35, 45, 1e6), right=FALSE)) %>%
   
   # Graph of CD4 decline and AIDS development
   good_stuff %>% 
@@ -52,9 +52,9 @@ hivSurvivalNoART <- function(ds) {
   # Histogram of years of infection by age group
   ds %>%
     filter(HIV == "true" & ART == "false") %>%
-    mutate(year.of.death = cut(time/365, seq(0, 50, 1), include.lowest=TRUE, labels=FALSE) + 1990,
+    mutate(year.of.death = cut(time/365, seq(0, 50, 1), right=FALSE, labels=FALSE) + 1990,
            years.of.infection = (time-HIV_date)/365,
-           age.group = cut(age-years.of.infection, c(-1, 15, 25, 35, 45, 1e6), include.lowest = TRUE)) %>%
+           age.group = cut(age-years.of.infection, c(-1, 15, 25, 35, 45, 1e6), right = FALSE)) %>%
     ggplot(aes(years.of.infection, y=..density..)) +
     geom_histogram(aes(fill=age.group)) +
     geom_label(data=function(d) group_by(d, age.group) %>% summarize(myoi = mean(years.of.infection)),
@@ -67,4 +67,3 @@ hivSurvivalNoART <- function(ds) {
          subtitle="HIV-positive, ART-naive individuals") +
     facet_wrap(~age.group)
 }
-
