@@ -13,14 +13,12 @@ using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 using namespace StatisticalDistributions;
-using HIVStatus = Individual::HIVStatus;
-using Sex = Individual::Sex;
 
 EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 {
 	EventFunc ef = 
 		[this, idv](double t, SchedulerT scheduler) {
-			using HIVStatus = Individual::HIVStatus;
+			
 
 
 			if (!idv || idv->dead || idv->hivStatus == HIVStatus::Positive)

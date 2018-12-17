@@ -1,8 +1,8 @@
 #include "../../include/TBABM/SurveyUtils.h"
 
-using Sex = Individual::Sex;
-using MS  = Individual::MarriageStatus;
-using HIVStatus = Individual::HIVStatus;
+
+using MS = MarriageStatus;
+
 using std::to_string;
 
 string Ihash(IPt idv) {

@@ -13,8 +13,6 @@ using std::vector;
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using Sex = Individual::Sex;
-
 using namespace StatisticalDistributions;
 
 // Algorithm S14: Divorce

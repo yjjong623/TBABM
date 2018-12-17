@@ -14,10 +14,6 @@ using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 using namespace StatisticalDistributions;
 
-using HIVStatus = Individual::HIVStatus;
-using DeathCause = Individual::DeathCause;
-using Sex = Individual::Sex;
-
 EventFunc TBABM::HIVInfectionCheck(Pointer<Individual> idv)
 {
 	EventFunc ef = 

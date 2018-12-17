@@ -4,12 +4,17 @@
 
 #include <Param.h>
 #include <DataFrame.h>
+#include <IncidenceTimeSeries.h>
 
 using std::function;
+using namespace SimulationLib;
 
-using StrainType   = enum class {Unspecified};
-using RecoveryType = enum class {Natural,Treatment};
-using TBStatus     = enum class {Susceptible, Latent, Infectious};
+template <typename T>
+using Pointer = std::shared_ptr<T>;
+
+enum class StrainType {Unspecified};
+enum class RecoveryType {Natural, Treatment};
+using TBStatus = TBStatus;
 
 using Params = std::map<std::string, Param>;
 
@@ -24,6 +29,8 @@ public:
 	using CD4         = double;
 	using HouseholdTB = bool;
 
+	TB(void) {return;}
+
 	TB(SexT sex,
 	   function<Age(Time)> AgeStatus,
 	   function<Alive(void)> AliveStatus,
@@ -32,17 +39,30 @@ public:
 
 	   function<void(Time)> DeathHandler,
 	   
-	   double default_risk_window,
+	   double default_risk_window, // unit: [days]
 	   
-	   IncidenceTimeSeries<int> TBIncidence,
+	   // Pointer<IncidenceTimeSeries<int>> TBIncidence,
 
-	   Params& const params,
-	   map<string, DataFrameFile>& const fileData);
+	   // Pointer<Params> params,
+	   // Pointer<map<string, DataFrameFile>> fileData,
+
+	   TBStatus tb_status = TBStatus::Susceptible) :
+		sex(sex),
+		AgeStatus(AgeStatus),
+		CD4Count(CD4Count),
+		HouseholdStatus(HouseholdStatus),
+		DeathHandler(DeathHandler),
+		default_risk_window(default_risk_window),
+		// TBIncidence(TBIncidence),
+		// params(params)
+		// fileData(fileData),
+		tb_status(tb_status) {}
 
 	~TB(void);
 
-	RiskReeval(void);
-	Investigate(void);
+	TBStatus GetTBStatus(void);
+	void RiskReeval(void);
+	void Investigate(void);
 
 private:
 
@@ -79,4 +99,23 @@ private:
 	void Recovery(Time, RecoveryType);
 
 	double risk_window; // unit: [days]
+
+	TBStatus tb_status;
+
+
+	// All of these are from the constructor
+	SexT sex;
+    function<Age(Time)> AgeStatus;
+    function<Alive(void)> AliveStatus;
+    function<CD4(Time)> CD4Count;
+    function<HouseholdTB(void)> HouseholdStatus;
+ 
+    function<void(Time)> DeathHandler;
+    
+    double default_risk_window;
+    
+    // Pointer<IncidenceTimeSeries<int>> TBIncidence;
+ 
+    // Pointer<Params> params;
+    // Pointer<map<string, DataFrameFile>> fileData;
 };

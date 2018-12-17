@@ -7,11 +7,10 @@ using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 EventFunc TBABM::Survey(void)
 {
-	using Sex       = Individual::Sex;
-	using MS        = Individual::MarriageStatus;
-	using HIVStatus = Individual::HIVStatus;
-	using IPt       = Pointer<Individual>;
-	using HPt       = Pointer<Household>;
+	using MS  = MarriageStatus;
+	
+	using IPt = Pointer<Individual>;
+	using HPt = Pointer<Household>;
 
 
 	EventFunc ef = 

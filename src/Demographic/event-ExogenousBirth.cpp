@@ -12,8 +12,6 @@ using std::pair;
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using Sex = Individual::Sex;
-
 using namespace StatisticalDistributions;
 
 EventFunc TBABM::ExogenousBirth(void)

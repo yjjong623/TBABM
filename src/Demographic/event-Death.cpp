@@ -12,11 +12,6 @@ using std::vector;
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using Sex = Individual::Sex;
-using MarriageStatus = Individual::MarriageStatus;
-using HIVStatus = Individual::HIVStatus;
-using DeathCause = Individual::DeathCause;
-
 using namespace StatisticalDistributions;
 
 

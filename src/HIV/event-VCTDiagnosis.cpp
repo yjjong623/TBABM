@@ -13,7 +13,7 @@ using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 using namespace StatisticalDistributions;
-using HIVStatus = Individual::HIVStatus;
+
 			
 EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 {
@@ -46,7 +46,7 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 			double timeToDiagnosis = Exponential(D_c)(rng.mt_);
 
 			bool initiateART;
-			if (idv->hasTB())
+			if (idv->TB.GetTBStatus() == TBStatus::Infectious)
 				initiateART = fileData["HIV_p_art_tb"].getValue(0, 0, CD4, rng);
 			else
 				initiateART = fileData["HIV_p_art"].getValue(0, 0, CD4, rng);

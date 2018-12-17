@@ -22,9 +22,9 @@
 #include <JSONImport.h>
 
 #include "Individual.h"
+#include "IndividualTypes.h"
 #include "Household.h"
 #include "HouseholdGen.h"
-
 
 using std::map;
 using std::unordered_set;
@@ -47,7 +47,7 @@ public:
 	using EventFunc = EQ::EventFunc;
 	using SchedulerT = EQ::SchedulerT;
 
-	using DeathCause = Individual::DeathCause;
+	
 
 	enum class TBABMData {
 		HIVNegative, 
@@ -128,7 +128,8 @@ public:
 
 		seekingART({}),
 
-		householdGen(householdsFile),
+		householdGen(householdsFile, std::make_shared<Params>(params),
+								     std::make_shared<map<string, DataFrameFile>>(fileData)),
 
 		nHouseholds(0),
 		seed(seed),

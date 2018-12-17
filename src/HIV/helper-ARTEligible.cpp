@@ -6,9 +6,6 @@ using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 using namespace StatisticalDistributions;
 
-using HIVStatus = Individual::HIVStatus;
-using Sex       = Individual::Sex;
-
 bool TBABM::ARTEligible(int t, Pointer<Individual> idv)
 {
 	// Ensure individual is still alive, and has HIV

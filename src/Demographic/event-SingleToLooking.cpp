@@ -13,9 +13,6 @@ using std::vector;
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using Sex = Individual::Sex;
-using MarriageStatus = Individual::MarriageStatus;
-
 using namespace StatisticalDistributions;
 
 // Algorithm S12: Change of marital status from single to looking

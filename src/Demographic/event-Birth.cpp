@@ -9,11 +9,6 @@ using std::vector;
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using Sex = Individual::Sex;
-using HouseholdPosition = Individual::HouseholdPosition;
-
-
-
 // Algorithm S6: Birth
 EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 {
@@ -38,6 +33,7 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 				mother->householdID, t, sex,
 				Pointer<Individual>(), mother, father,
 				vector<Pointer<Individual>>{}, householdPosition, marriageStatus);
+				// std::make_shared<Params>(params), std::make_shared<map<string, DataFrameFile>>(fileData));
 
 			// printf("[%d] Baby born: %ld::%lu\n", (int)t, mother->householdID, std::hash<Pointer<Individual>>()(baby));
 

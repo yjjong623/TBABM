@@ -5,6 +5,9 @@
 #include <memory>
 #include <algorithm>
 
+#include "IndividualTypes.h"
+#include "TB.h"
+
 template <typename T>
 using Pointer = std::shared_ptr<T>;
 
@@ -13,30 +16,13 @@ using std::string;
 
 class Individual {
 public:
-	enum class Sex {
-		Male, Female
-	};
-
-	enum class HouseholdPosition {
-		Head, Spouse, Offspring, Other
-	};
-
-	enum class MarriageStatus {
-		Single, Married, Divorced, Looking
-	};
-
-	enum class HIVStatus {
-		Negative, Positive
-	};
-
-	enum class TBStatus {
-		Susceptible, Latent, Infective
-	};
-
-	enum class DeathCause {
-		Natural, HIV, TB
-	};
-
+	// using Sex = Sex;
+	using HouseholdPosition = HouseholdPosition;
+	using MarriageStatus = MarriageStatus;
+	using HIVStatus = HIVStatus;
+	using TBStatus = TBStatus;
+	using DeathCause = DeathCause;
+	
 	long householdID;
 
 	int birthDate; // In units of 't'
@@ -52,6 +38,7 @@ public:
 	std::vector<Pointer<Individual>> livedWithBefore; // People lived with before
 
 	HouseholdPosition householdPosition;
+
 	MarriageStatus marriageStatus;
 
 	// HIV stuff
@@ -65,12 +52,27 @@ public:
 	int ARTInitTime;
 
 	// TB stuff
-	TBStatus tbStatus;
-	bool hasTB() {
-		return !(tbStatus == TBStatus::Susceptible); 
+	TB<Sex> TB;
+	double DummyCD4count(double t_cur) {
+		return CD4count(t_cur, 0.6);
 	}
 
+	bool DummyHouseholdTBStatus(void) {
+		return false;
+	}
+
+	void DummyDeathHandler(double t) {
+		printf("Individual::DummyDeathHandler\n");
+		return;
+	}
+
+	Pointer<IncidenceTimeSeries<int>> DummyTBIncidence;
+
 	bool dead;
+
+	bool Alive(void) {
+		return !dead;
+	}
 
 	template <class T = int>
 	T age(double t) {
@@ -139,6 +141,8 @@ public:
 			   std::vector<Pointer<Individual>> offspring,
 			   HouseholdPosition householdPosition,
 			   MarriageStatus marriageStatus) :
+			   // Pointer<Params> params,
+			   // Pointer<map<string, DataFrameFile>> fileData) :
 	  householdID(householdID), 
 	  birthDate(birthDate), 
 	  sex(sex), 
@@ -151,14 +155,27 @@ public:
 	  marriageStatus(marriageStatus),
 	  onART(false),
 	  hivStatus(HIVStatus::Negative),
-	  tbStatus(TBStatus::Susceptible),
-	  dead(false) {};
+	  dead(false),
+	  TB(sex,
+		 std::bind(&Individual::age<int>, this, std::placeholders::_1),
+		 std::bind(&Individual::Alive, this),
+		 std::bind(&Individual::DummyCD4count, this, std::placeholders::_1),
+		 std::bind(&Individual::DummyHouseholdTBStatus, this),
+		 std::bind(&Individual::DummyDeathHandler, this, std::placeholders::_1),
+		 365.) {
+		 // DummyTBIncidence) {
+		 // params,
+		 // fileData) {
+	  	printf("constructor BIG\n");
+	  };
 	
 	Individual(long hid, 
 			   int birthDate, 
 			   Sex sex, 
 			   HouseholdPosition householdPosition,
 			   MarriageStatus marriageStatus) :
+			   // Pointer<Params> params,
+			   // Pointer<map<string, DataFrameFile>> fileData) :
 	  Individual(hid, 
 	  			 birthDate, 
 	  			 sex, 
@@ -167,6 +184,10 @@ public:
 	             Pointer<Individual>(), 
 	             {}, 
 	             householdPosition, 
-	             marriageStatus) {};
+	             marriageStatus) {
+	             // params,
+	             // fileData) {
+	  	printf("constructor SMALL\n");
+	  };
 private:
 };

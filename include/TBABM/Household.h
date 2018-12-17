@@ -4,12 +4,10 @@
 #include <cassert>
 
 #include "Individual.h"
+#include "IndividualTypes.h"
 
 template <typename T>
 using Pointer = std::shared_ptr<T>;
-
-using Sex = Individual::Sex;
-using HouseholdPosition = Individual::HouseholdPosition;
 
 class Household {
 public:

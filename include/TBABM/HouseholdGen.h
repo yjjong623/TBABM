@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdio>
 #include <iostream>
 #include <map>
@@ -5,17 +7,17 @@
 
 #include "Household.h"
 #include "Individual.h"
+#include "IndividualTypes.h"
 
 #include <StatisticalDistribution.h>
-
-using HouseholdPosition = Individual::HouseholdPosition;
-using Sex               = Individual::Sex;
-using MarriageStatus    = Individual::MarriageStatus;
 
 using std::map;
 using std::string;
 
 using namespace StatisticalDistributions;
+
+template <typename T>
+using Pointer = std::shared_ptr<T>;
 
 class HouseholdGen {
 public:
@@ -32,7 +34,9 @@ public:
 
 	Pointer<Household> GetHousehold(int hid);
 
-	HouseholdGen(const char *file) : file(file) {
+	HouseholdGen(const char *file,
+                 Pointer<Params> params,
+                 Pointer<map<string, DataFrameFile>> fileData) : file(file), params(params), fileData(fileData) {
 			FILE *ifile = fopen(file, "r");
 			int c;
 			int lines = 2;
@@ -101,6 +105,9 @@ public:
 		};
 private:
 	std::vector<MicroFamily> families;
+
+	Pointer<Params> params;
+    Pointer<map<string, DataFrameFile>> fileData;
 
 	const char *file;
 };

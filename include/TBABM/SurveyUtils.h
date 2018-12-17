@@ -5,8 +5,6 @@
 using IPt = Pointer<Individual>;
 using HPt = Pointer<Household>;
 
-using DeathCause = Individual::DeathCause;
-
 string Ihash(IPt idv); // Hash of individual
 string Hhash(HPt hh);  // Hash of household
 

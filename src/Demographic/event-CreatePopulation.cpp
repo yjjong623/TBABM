@@ -14,8 +14,6 @@ using std::vector;
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using Sex = Individual::Sex;
-
 using namespace StatisticalDistributions;
 
 // Algorithm S2: Create a population at simulation time 0

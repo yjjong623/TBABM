@@ -13,7 +13,6 @@ using EventFunc  = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 using namespace StatisticalDistributions;
-using HIVStatus = Individual::HIVStatus;
 
 EventFunc TBABM::ARTInitiate(Pointer<Individual> idv)
 {

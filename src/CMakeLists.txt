@@ -4,7 +4,8 @@ set(header ${header_path}/Individual.h
 		   ${header_path}/Household.h
 		   ${header_path}/HouseholdGen.h
 		   ${header_path}/TBABM.h
-		   ${header_path}/SurveyUtils.h)
+		   ${header_path}/SurveyUtils.h
+		   ${header_path}/TB.h)
 
 # Set Demographic files
 set(demographic_path "${TBABM_SOURCE_DIR}/src/Demographic")
@@ -34,10 +35,13 @@ set(hiv ${hiv_path}/event-ARTGuidelineChange.cpp
 		${hiv_path}/event-MortalityCheck.cpp
 		${hiv_path}/event-VCTDiagnosis.cpp
 		${hiv_path}/helper-ARTEligible.cpp
-		${hiv_path}/helper-HIVInfectionCheck.cpp)		
+		${hiv_path}/helper-HIVInfectionCheck.cpp)
+
+set(tb_path "${TBABM_SOURCE_DIR}/src/TB")
+set(tb ${tb_path}/TB.cpp)
 
 # Set source files
-set(src TBABM.cpp ${demographic} ${hiv} HouseholdGen.cpp)
+set(src TBABM.cpp ${demographic} ${hiv} ${tb} HouseholdGen.cpp)
 
 # Require C++14 compilation
 set(CMAKE_CXX_STANDARD 14)

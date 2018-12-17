@@ -14,9 +14,6 @@ using std::map;
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using Sex = Individual::Sex;
-using DeathCause = Individual::DeathCause;
-
 using namespace StatisticalDistributions;
 
 auto findHousehold = [] (map<long, Pointer<Household>> &households) -> long {

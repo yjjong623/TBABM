@@ -15,9 +15,6 @@ using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
 using namespace StatisticalDistributions;
 
-using Sex = Individual::Sex;
-using DeathCause = Individual::DeathCause;
-
 // Unit of dt is years
 void TBABM::InitialEvents(Pointer<Individual> idv, double t, double dt)
 {
