@@ -1,6 +1,7 @@
 #include "../../include/TBABM/IndividualTypes.h"
 #include "../../include/TBABM/TB.h"
 
+using SchedulerT = EQ::SchedulerT;
 
 template <typename T>
 TB<T>::~TB(void)
@@ -11,9 +12,24 @@ TB<T>::~TB(void)
 
 template <typename T>
 TBStatus
-TB<T>::GetTBStatus(void)
+TB<T>::GetTBStatus(Time t)
 {
-	printf("TB<T>::GetTBStatus\n");
+	printf("[%d] GetTBStatus: ", (int)t);
+
+	switch(tb_status) {
+		case (TBStatus::Susceptible) : printf("Susceptible\n"); break;
+		case (TBStatus::Latent)      : printf("Latent\n"); break;
+		case (TBStatus::Infectious)  : printf("Infectious\n"); break;
+		default					     : printf("UNSUPPORTED TB type!\n");
+	}
+
+	auto pretend_event = [] (Time t, SchedulerT scheduler) -> bool {
+		printf("\t[%d] Pretend, yay!\n", (int)t);
+		return true;
+	};
+
+	event_queue.QuickSchedule(t, pretend_event);
+
 	return tb_status;
 }
 
@@ -21,7 +37,9 @@ template <typename T>
 void
 TB<T>::RiskReeval(void)
 {
-	printf("TB<T>::RiskReeval\n");
+	printf("RiskReeval\n");
+
+
 	return;
 }
 
@@ -46,11 +64,18 @@ TB<T>::Investigate(void)
 // When scheduling an infection, the only StrainType
 // supported right now is 'Unspecified'.
 template <typename T>
-void
-TB<T>::InfectionRiskEvaluate(Time)
+bool
+TB<T>::InfectionRiskEvaluate(Time t)
 {
-	printf("TB<T>::InfectionRiskEvaluate\n");
-	return;
+	printf("[%d] InfectionRiskEvaluate:\n", (int)t);
+		printf("\t%d years old\n", AgeStatus(t));
+		printf("\t%d CD4 count\n", (int)CD4Count(t));
+		printf("\t%d household status\n", (int)HouseholdStatus());
+		printf("\t%d HIV status\n", HIVStatus() == HIVStatus::Positive);
+
+	// event_queue.QuickSchedule(t + risk_window, [this] (auto t, auto sched) -> bool { return InfectionRiskEvaluate(t); });
+
+	return true;
 }
 
 // Marks an individual as infected and may or may not

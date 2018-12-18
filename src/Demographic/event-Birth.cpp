@@ -7,7 +7,7 @@ using Pointer = std::shared_ptr<T>;
 using std::vector;
 
 using EventFunc = TBABM::EventFunc;
-using SchedulerT = EventQueue<double,bool>::SchedulerT;
+using SchedulerT = EQ::SchedulerT;
 
 // Algorithm S6: Birth
 EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
@@ -30,6 +30,7 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 
 			// Construct baby
 			auto baby = std::make_shared<Individual>(
+				eq,
 				mother->householdID, t, sex,
 				Pointer<Individual>(), mother, father,
 				vector<Pointer<Individual>>{}, householdPosition, marriageStatus);

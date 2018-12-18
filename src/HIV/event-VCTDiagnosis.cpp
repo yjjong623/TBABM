@@ -46,7 +46,7 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 			double timeToDiagnosis = Exponential(D_c)(rng.mt_);
 
 			bool initiateART;
-			if (idv->TB.GetTBStatus() == TBStatus::Infectious)
+			if (idv->TB.GetTBStatus(t) == TBStatus::Infectious)
 				initiateART = fileData["HIV_p_art_tb"].getValue(0, 0, CD4, rng);
 			else
 				initiateART = fileData["HIV_p_art"].getValue(0, 0, CD4, rng);

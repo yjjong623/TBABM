@@ -25,9 +25,7 @@ HouseholdGen::GetHousehold(const int hid)
 	//   household; create an Individual using the smaller
 	//   constructor
 	MicroIndividual _head = family[0];
-	printf("alive1\n");
-	auto head = std::make_shared<Individual>(hid, 0-365*_head.age, _head.sex, _head.role, MarriageStatus::Single); //, params, fileData);
-	printf("alive2\n");
+	auto head = std::make_shared<Individual>(event_queue, hid, 0-365*_head.age, _head.sex, _head.role, MarriageStatus::Single); //, params, fileData);
 	auto newIndividuals = std::vector<Pointer<Individual>>{head};
 
 	// Add this object to the household as the head
@@ -41,7 +39,7 @@ HouseholdGen::GetHousehold(const int hid)
 	for (int i = 1; i < family.size(); ++i)
 	{
 		MicroIndividual midv = family[i];
-		auto idv = std::make_shared<Individual>(hid, 0-365*midv.age, midv.sex, midv.role, MarriageStatus::Single); //, params, fileData);
+		auto idv = std::make_shared<Individual>(event_queue, hid, 0-365*midv.age, midv.sex, midv.role, MarriageStatus::Single); //, params, fileData);
 		newIndividuals.push_back(idv);
 		switch (idv->householdPosition) {
 			case (HouseholdPosition::Head):

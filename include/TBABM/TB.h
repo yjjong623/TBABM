@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 
+#include <EventQueue.h>
 #include <Param.h>
 #include <DataFrame.h>
 #include <IncidenceTimeSeries.h>
@@ -18,6 +19,8 @@ using TBStatus = TBStatus;
 
 using Params = std::map<std::string, Param>;
 
+using EQ = EventQueue<double, bool>;
+
 template <typename SexT>
 class TB
 {
@@ -29,17 +32,17 @@ public:
 	using CD4         = double;
 	using HouseholdTB = bool;
 
-	TB(void) {return;}
-
 	TB(SexT sex,
+	   EQ& event_queue,
 	   function<Age(Time)> AgeStatus,
 	   function<Alive(void)> AliveStatus,
 	   function<CD4(Time)> CD4Count,
 	   function<HouseholdTB(void)> HouseholdStatus,
+	   function<HIVStatus(void)> HIVStatus,
 
 	   function<void(Time)> DeathHandler,
 	   
-	   double default_risk_window, // unit: [days]
+	   double risk_window, // unit: [days]
 	   
 	   // Pointer<IncidenceTimeSeries<int>> TBIncidence,
 
@@ -48,19 +51,24 @@ public:
 
 	   TBStatus tb_status = TBStatus::Susceptible) :
 		sex(sex),
+		event_queue(event_queue),
 		AgeStatus(AgeStatus),
 		CD4Count(CD4Count),
 		HouseholdStatus(HouseholdStatus),
+		HIVStatus(HIVStatus),
 		DeathHandler(DeathHandler),
-		default_risk_window(default_risk_window),
+		risk_window(risk_window),
 		// TBIncidence(TBIncidence),
 		// params(params)
 		// fileData(fileData),
-		tb_status(tb_status) {}
+		tb_status(tb_status)
+	{
+		InfectionRiskEvaluate(1); // Do not leave this in!!!!!!
+	}
 
 	~TB(void);
 
-	TBStatus GetTBStatus(void);
+	TBStatus GetTBStatus(Time);
 	void RiskReeval(void);
 	void Investigate(void);
 
@@ -78,7 +86,7 @@ private:
 	// 
 	// When scheduling an infection, the only StrainType
 	// supported right now is 'Unspecified'.
-	void InfectionRiskEvaluate(Time);
+	bool InfectionRiskEvaluate(Time);
 
 	// Marks an individual as infected and may or may not
 	// schedule the beginning of treatment.
@@ -105,15 +113,17 @@ private:
 
 	// All of these are from the constructor
 	SexT sex;
+
+	EQ& event_queue;
+
     function<Age(Time)> AgeStatus;
     function<Alive(void)> AliveStatus;
     function<CD4(Time)> CD4Count;
     function<HouseholdTB(void)> HouseholdStatus;
+    function<HIVStatus(void)> HIVStatus;
  
     function<void(Time)> DeathHandler;
-    
-    double default_risk_window;
-    
+        
     // Pointer<IncidenceTimeSeries<int>> TBIncidence;
  
     // Pointer<Params> params;

@@ -81,13 +81,13 @@ TBABM::GetData<PrevalencePyramidTimeSeries>(TBABMData field)
 
 bool TBABM::Run(void)
 {
-	CreatePopulation(0, 10000);
+	CreatePopulation(0, 20);
 	Schedule(1, Matchmaking());
 	Schedule(1, UpdatePyramid());
 	Schedule(1, UpdateHouseholds());
 	Schedule(1, ARTGuidelineChange());
 	Schedule(1, Survey());
-	
+
 	// Schedule(1, ExogenousBirth());
 
 	while (!eq.Empty()) {
@@ -98,6 +98,7 @@ bool TBABM::Run(void)
 
 		e->run();
 		eq.Pop();
+		// delete e;
 	}
 
 	births.Close();

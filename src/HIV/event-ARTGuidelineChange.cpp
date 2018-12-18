@@ -30,7 +30,7 @@ EventFunc TBABM::ARTGuidelineChange(void)
 				double CD4 = idv->CD4count(t, m_30);
 
 				// [0,1] is cast to bool here
-				if (idv->TB.GetTBStatus() == TBStatus::Infectious)
+				if (idv->TB.GetTBStatus(t) == TBStatus::Infectious)
 					initiateART = fileData["HIV_p_art_tb"].getValue(0, 0, CD4, rng);
 				else
 					initiateART = fileData["HIV_p_art"].getValue(0, 0, CD4, rng);

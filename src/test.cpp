@@ -30,7 +30,7 @@ int main(int argc, char const *argv[])
 
 	const char *householdsFile = "household_structure.csv";
 
-	int nTrajectories = 5;
+	int nTrajectories = 1;
 
 	auto timestamp = std::time(NULL);	
 

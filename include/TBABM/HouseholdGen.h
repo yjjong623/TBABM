@@ -10,6 +10,7 @@
 #include "IndividualTypes.h"
 
 #include <StatisticalDistribution.h>
+#include <EventQueue.h>
 
 using std::map;
 using std::string;
@@ -18,6 +19,8 @@ using namespace StatisticalDistributions;
 
 template <typename T>
 using Pointer = std::shared_ptr<T>;
+
+using EQ = EventQueue<double, bool>;
 
 class HouseholdGen {
 public:
@@ -36,7 +39,9 @@ public:
 
 	HouseholdGen(const char *file,
                  Pointer<Params> params,
-                 Pointer<map<string, DataFrameFile>> fileData) : file(file), params(params), fileData(fileData) {
+                 Pointer<map<string, DataFrameFile>> fileData,
+                 EQ& event_queue) : file(file), params(params), fileData(fileData), 
+									event_queue(event_queue) {
 			FILE *ifile = fopen(file, "r");
 			int c;
 			int lines = 2;
@@ -108,6 +113,8 @@ private:
 
 	Pointer<Params> params;
     Pointer<map<string, DataFrameFile>> fileData;
+
+    EQ& event_queue;
 
 	const char *file;
 };

@@ -5,6 +5,8 @@
 #include <memory>
 #include <algorithm>
 
+#include <EventQueue.h>
+
 #include "IndividualTypes.h"
 #include "TB.h"
 
@@ -13,6 +15,8 @@ using Pointer = std::shared_ptr<T>;
 
 using std::vector;
 using std::string;
+
+using EQ = EventQueue<double, bool>;
 
 class Individual {
 public:
@@ -64,6 +68,10 @@ public:
 	void DummyDeathHandler(double t) {
 		printf("Individual::DummyDeathHandler\n");
 		return;
+	}
+
+	HIVStatus GetHIVStatus(void) {
+		return hivStatus;
 	}
 
 	Pointer<IncidenceTimeSeries<int>> DummyTBIncidence;
@@ -134,7 +142,8 @@ public:
 		return;
 	}
 
-	Individual(long householdID, int birthDate, Sex sex,
+	Individual(EQ& event_queue,
+			   long householdID, int birthDate, Sex sex,
 			   Pointer<Individual> spouse,
 			   Pointer<Individual> mother,
 			   Pointer<Individual> father,
@@ -143,6 +152,7 @@ public:
 			   MarriageStatus marriageStatus) :
 			   // Pointer<Params> params,
 			   // Pointer<map<string, DataFrameFile>> fileData) :
+	  event_queue(event_queue),
 	  householdID(householdID), 
 	  birthDate(birthDate), 
 	  sex(sex), 
@@ -157,26 +167,30 @@ public:
 	  hivStatus(HIVStatus::Negative),
 	  dead(false),
 	  TB(sex,
+	  	 event_queue,
 		 std::bind(&Individual::age<int>, this, std::placeholders::_1),
 		 std::bind(&Individual::Alive, this),
 		 std::bind(&Individual::DummyCD4count, this, std::placeholders::_1),
 		 std::bind(&Individual::DummyHouseholdTBStatus, this),
+		 std::bind(&Individual::GetHIVStatus, this),
 		 std::bind(&Individual::DummyDeathHandler, this, std::placeholders::_1),
-		 365.) {
+		 365) {
 		 // DummyTBIncidence) {
 		 // params,
 		 // fileData) {
-	  	printf("constructor BIG\n");
+
 	  };
 	
-	Individual(long hid, 
+	Individual(EQ& event_queue,
+			   long hid, 
 			   int birthDate, 
 			   Sex sex, 
 			   HouseholdPosition householdPosition,
 			   MarriageStatus marriageStatus) :
 			   // Pointer<Params> params,
 			   // Pointer<map<string, DataFrameFile>> fileData) :
-	  Individual(hid, 
+	  Individual(event_queue,
+	  			 hid, 
 	  			 birthDate, 
 	  			 sex, 
 	             Pointer<Individual>(), 
@@ -187,7 +201,8 @@ public:
 	             marriageStatus) {
 	             // params,
 	             // fileData) {
-	  	printf("constructor SMALL\n");
 	  };
 private:
+
+	EQ& event_queue;
 };

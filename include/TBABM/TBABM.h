@@ -129,7 +129,8 @@ public:
 		seekingART({}),
 
 		householdGen(householdsFile, std::make_shared<Params>(params),
-								     std::make_shared<map<string, DataFrameFile>>(fileData)),
+								     std::make_shared<map<string, DataFrameFile>>(fileData),
+								     eq),
 
 		nHouseholds(0),
 		seed(seed),
