@@ -5,7 +5,8 @@ set(header ${header_path}/Individual.h
 		   ${header_path}/HouseholdGen.h
 		   ${header_path}/TBABM.h
 		   ${header_path}/SurveyUtils.h
-		   ${header_path}/TB.h)
+		   ${header_path}/TB.h
+		   ${header_path}/Names.h)
 
 # Set Demographic files
 set(demographic_path "${TBABM_SOURCE_DIR}/src/Demographic")

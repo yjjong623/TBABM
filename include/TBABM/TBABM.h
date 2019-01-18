@@ -23,8 +23,12 @@
 
 #include "Individual.h"
 #include "IndividualTypes.h"
+#include "Names.h"
+
 #include "Household.h"
 #include "HouseholdGen.h"
+
+#include "utils/termcolor.h"
 
 using std::map;
 using std::unordered_set;
@@ -128,13 +132,16 @@ public:
 
 		seekingART({}),
 
-		householdGen(householdsFile, std::make_shared<Params>(params),
-								     std::make_shared<map<string, DataFrameFile>>(fileData),
-								     eq),
-
 		nHouseholds(0),
 		seed(seed),
-		rng(seed) {
+		rng(seed),
+		householdGen(householdsFile, 
+					 std::make_shared<Params>(params),
+					 std::make_shared<map<string, DataFrameFile>>(fileData),
+					 eq,
+					 seed + 1, // Little bit of a hack
+					 name_gen),
+		name_gen(rng) {
 			for (auto it = params.begin(); it != params.end(); it++) {
 				if (it->second.getType() == SimulationLib::Type::file_type) {
 					auto j = JSONImport::fileToJSON(it->second.getFileName());
@@ -244,6 +251,8 @@ private:
 	void ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPosition newRole);
 
 	void SurveyDeath(Pointer<Individual> idv, int t, DeathCause deathCause);
+
+	Names name_gen;
 
 	////////////////////////////////////////////////////////
 	/// HIV Events

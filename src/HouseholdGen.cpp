@@ -5,7 +5,7 @@
 #include "../include/TBABM/HouseholdGen.h"
 
 Pointer<Household>
-HouseholdGen::GetHousehold(const int hid)
+HouseholdGen::GetHousehold(const int current_time, const int hid)
 {
 	// Create a blank Household object
 	auto household = std::make_shared<Household>();
@@ -25,7 +25,7 @@ HouseholdGen::GetHousehold(const int hid)
 	//   household; create an Individual using the smaller
 	//   constructor
 	MicroIndividual _head = family[0];
-	auto head = std::make_shared<Individual>(event_queue, hid, 0-365*_head.age, _head.sex, _head.role, MarriageStatus::Single); //, params, fileData);
+	auto head = std::make_shared<Individual>(current_time, event_queue, rng, name_gen.getName(), hid, 0-365*_head.age, _head.sex, _head.role, MarriageStatus::Single); //, params, fileData);
 	auto newIndividuals = std::vector<Pointer<Individual>>{head};
 
 	// Add this object to the household as the head
@@ -39,7 +39,7 @@ HouseholdGen::GetHousehold(const int hid)
 	for (int i = 1; i < family.size(); ++i)
 	{
 		MicroIndividual midv = family[i];
-		auto idv = std::make_shared<Individual>(event_queue, hid, 0-365*midv.age, midv.sex, midv.role, MarriageStatus::Single); //, params, fileData);
+		auto idv = std::make_shared<Individual>(current_time, event_queue, rng, name_gen.getName(), hid, 0-365*midv.age, midv.sex, midv.role, MarriageStatus::Single); //, params, fileData);
 		newIndividuals.push_back(idv);
 		switch (idv->householdPosition) {
 			case (HouseholdPosition::Head):

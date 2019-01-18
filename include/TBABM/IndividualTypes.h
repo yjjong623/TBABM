@@ -20,6 +20,10 @@ enum class TBStatus {
 	Susceptible, Latent, Infectious
 };
 
+enum class TBTreatmentStatus {
+	None, Incomplete, Complete
+};
+
 enum class DeathCause {
 	Natural, HIV, TB
 };

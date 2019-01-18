@@ -24,7 +24,7 @@ void TBABM::CreatePopulation(int t, long size)
 
 	while (popChange < size) {
 		long hid = nHouseholds++;
-		Pointer<Household> hh = householdGen.GetHousehold(hid);
+		Pointer<Household> hh = householdGen.GetHousehold(t, hid);
 		households[hid] = hh;
 
 		assert(hh->head);

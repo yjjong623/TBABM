@@ -1,5 +1,10 @@
+#include <iostream>
+
+#include <Bernoulli.h>
+
 #include "../../include/TBABM/IndividualTypes.h"
 #include "../../include/TBABM/TB.h"
+#include "../../include/TBABM/utils/termcolor.h"
 
 using SchedulerT = EQ::SchedulerT;
 
@@ -14,31 +19,37 @@ template <typename T>
 TBStatus
 TB<T>::GetTBStatus(Time t)
 {
-	printf("[%d] GetTBStatus: ", (int)t);
+	std::cout << termcolor::on_red << "[" << (int)t << "] GetTBStatus" << termcolor::reset;
 
 	switch(tb_status) {
-		case (TBStatus::Susceptible) : printf("Susceptible\n"); break;
-		case (TBStatus::Latent)      : printf("Latent\n"); break;
-		case (TBStatus::Infectious)  : printf("Infectious\n"); break;
-		default					     : printf("UNSUPPORTED TB type!\n");
+		case (TBStatus::Susceptible): std::cout << " Susceptible\n"; break;
+		case (TBStatus::Latent):      std::cout << " Latent\n"; break;
+		case (TBStatus::Infectious):  std::cout << " Infectious\n"; break;
+		default:				      std::cout << " UNSUPPORTED TB type!\n";
 	}
 
-	auto pretend_event = [] (Time t, SchedulerT scheduler) -> bool {
-		printf("\t[%d] Pretend, yay!\n", (int)t);
-		return true;
-	};
-
-	event_queue.QuickSchedule(t, pretend_event);
+	std::cout << termcolor::reset;
 
 	return tb_status;
 }
 
 template <typename T>
 void
-TB<T>::RiskReeval(void)
+TB<T>::RiskReeval(Time t)
 {
+	auto old_risk_window = risk_window;
+
 	printf("RiskReeval\n");
 
+	// CONDITIONS THAT MAY CHANGE RISK WINDOW
+	if (HIVStatus() == HIVStatus::Positive)
+		risk_window = 365;
+
+	// /END CONDITIONS THAT MAY CHANGE RISK WINDOW
+
+	risk_window_id += 1;
+
+	InfectionRiskEvaluate(t, risk_window_id);
 
 	return;
 }
@@ -65,15 +76,34 @@ TB<T>::Investigate(void)
 // supported right now is 'Unspecified'.
 template <typename T>
 bool
-TB<T>::InfectionRiskEvaluate(Time t)
+TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 {
-	printf("[%d] InfectionRiskEvaluate:\n", (int)t);
-		printf("\t%d years old\n", AgeStatus(t));
-		printf("\t%d CD4 count\n", (int)CD4Count(t));
-		printf("\t%d household status\n", (int)HouseholdStatus());
-		printf("\t%d HIV status\n", HIVStatus() == HIVStatus::Positive);
+	if (risk_window_local != risk_window_id) {
+		std::cout << termcolor::on_magenta << "[" << std::left << std::setw(8) << name << std::setw(5) << std::right << (int)t << "] InfectionRiskEvaluate aborted\n" << termcolor::reset;
+		return true;
+	}
 
-	// event_queue.QuickSchedule(t + risk_window, [this] (auto t, auto sched) -> bool { return InfectionRiskEvaluate(t); });
+	if (!AliveStatus())
+		return true;
+
+	// printf("[%s %d] InfectionRiskEvaluate:\n", name.c_str(), (int)t);
+	// 	printf("\t%d years old\n", AgeStatus(t));
+	// 	printf("\t%d CD4 count\n", (int)CD4Count(t));
+		// printf("\t%d household status\n", (int)HouseholdStatus());
+		// printf("\t%d HIV status\n", HIVStatus() == HIVStatus::Positive);
+
+	std::cout << termcolor::on_blue << "[" << std::left << std::setw(8) \
+			  << name << std::setw(5) << std::right \
+			  << (int)t << "] InfectionRiskEvaluate" << termcolor::reset << std::endl \
+			  << "\t" << AgeStatus(t) << " years old" << std::endl \
+			  << "\t" << (int)CD4Count(t) << " cells/ml" << std::endl \
+			  << "\t" << (int)HouseholdStatus() << " household status\n" \
+			  << "\t" << (int)(HIVStatus() == HIVStatus::Positive) << " HIV status" << std::endl;
+
+	event_queue.QuickSchedule(t + risk_window, 
+		[this, risk_window_local] 
+		(auto t_new, auto sched) -> bool 
+		{ return InfectionRiskEvaluate(t_new, risk_window_local); });
 
 	return true;
 }
@@ -84,9 +114,22 @@ TB<T>::InfectionRiskEvaluate(Time t)
 // If no treatment, recovery or death is scheduled.
 template <typename T>
 void
-TB<T>::Infect(Time, StrainType)
+TB<T>::Infect(Time t, StrainType)
 {
-	printf("TB<T>::Infect\n");
+	if (tb_status == TBStatus::Infectious)
+		printf("Warning: TB::Infect: Individual is already infected. Multiple infections not supported. Behavior undefined\n");
+
+	// Mark as infectious
+	tb_status = TBStatus::Infectious;
+
+	// Decide whether individual will enter treatment
+	if (Bernoulli(0.5)(rng.mt_))
+		TreatmentBegin(t);
+	else if (Bernoulli(0.5)(rng.mt_)) // Decide whether recovers or dies
+		Recovery(t, RecoveryType::Natural);
+	else
+		DeathHandler(t);
+	
 	return;
 }
 
@@ -95,26 +138,40 @@ TB<T>::Infect(Time, StrainType)
 // out. Schedules either event.
 template <typename T>
 void
-TB<T>::TreatmentBegin(Time)
+TB<T>::TreatmentBegin(Time t)
 {
-	printf("TB::TreatmentBegin\n");
+	if (tb_status != TBStatus::Infectious) {
+		printf("Error: Cannot begin treatment for non-infectious TB\n");
+		return;
+	}
+
+	tb_treatment_status = TBTreatmentStatus::Incomplete;
+
+	if (Bernoulli(0.5)(rng.mt_)) // Will they complete treatment?
+		TreatmentComplete(t);
+	else
+		TreatmentDropout(t);
+
 	return;
 }
-
 
 template <typename T>
 void
 TB<T>::TreatmentDropout(Time)
 {
-	printf("TB::TreatmentDropout\n");
+	tb_treatment_status = TBTreatmentStatus::Incomplete;
+	
 	return;
 }
 
 template <typename T>
 void
-TB<T>::TreatmentComplete(Time)
+TB<T>::TreatmentComplete(Time t)
 {
-	printf("TB::TreatmentComplete\n");
+	tb_treatment_status = TBTreatmentStatus::Complete;
+
+	Recovery(t, RecoveryType::Treatment);
+	
 	return;
 }
 
@@ -123,6 +180,7 @@ template <typename T>
 void
 TB<T>::Recovery(Time, RecoveryType)
 {
-	printf("TB::Recovery\n");
+	tb_status = TBStatus::Latent;
+
 	return;
 }

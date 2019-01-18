@@ -25,7 +25,7 @@ EventFunc TBABM::NewHouseholds(int num)
 
 			while (popChange < num) {
 				long hid = nHouseholds++;
-				Pointer<Household> hh = householdGen.GetHousehold(hid);
+				Pointer<Household> hh = householdGen.GetHousehold(t, hid);
 				households[hid] = hh;
 
 				// Insert all members of the household into the population

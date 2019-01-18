@@ -1,5 +1,6 @@
 #include "../../include/TBABM/TBABM.h"
 #include "../../include/TBABM/SurveyUtils.h"
+#include "../../include/TBABM/utils/termcolor.h"
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -24,6 +25,10 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 			// Be sure this individual is alive
 			if (!idv || idv->dead)
 				return true;
+
+			std::cout << termcolor::on_green << "[" << std::left << std::setw(8) \
+			          << idv->Name() << std::setw(5) << std::right \
+			          << (int)t << "] Death" << termcolor::reset << std::endl;
 
 			// Look up household, and assert that this household actually exists
 			auto household = households[idv->householdID];

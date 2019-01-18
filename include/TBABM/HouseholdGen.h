@@ -8,9 +8,11 @@
 #include "Household.h"
 #include "Individual.h"
 #include "IndividualTypes.h"
+#include "Names.h"
 
 #include <StatisticalDistribution.h>
 #include <EventQueue.h>
+#include <RNG.h>
 
 using std::map;
 using std::string;
@@ -35,13 +37,15 @@ public:
 
 	using MicroFamily = std::vector<MicroIndividual>;
 
-	Pointer<Household> GetHousehold(int hid);
+	Pointer<Household> GetHousehold(int current_time, int hid);
 
 	HouseholdGen(const char *file,
                  Pointer<Params> params,
                  Pointer<map<string, DataFrameFile>> fileData,
-                 EQ& event_queue) : file(file), params(params), fileData(fileData), 
-									event_queue(event_queue) {
+                 EQ& event_queue,
+                 long seed,
+                 Names& name_gen) : file(file), params(params), fileData(fileData), 
+									event_queue(event_queue), rng(seed), name_gen(name_gen) {
 			FILE *ifile = fopen(file, "r");
 			int c;
 			int lines = 2;
@@ -115,6 +119,8 @@ private:
     Pointer<map<string, DataFrameFile>> fileData;
 
     EQ& event_queue;
+    RNG rng;
+    Names& name_gen;
 
 	const char *file;
 };

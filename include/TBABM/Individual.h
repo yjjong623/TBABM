@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <vector>
 #include <string>
 #include <cmath>
@@ -7,8 +8,10 @@
 
 #include <EventQueue.h>
 
-#include "IndividualTypes.h"
 #include "TB.h"
+#include "IndividualTypes.h"
+
+#include "utils/termcolor.h"
 
 template <typename T>
 using Pointer = std::shared_ptr<T>;
@@ -44,6 +47,8 @@ public:
 	HouseholdPosition householdPosition;
 
 	MarriageStatus marriageStatus;
+
+	string Name(void) {return name;};
 
 	// HIV stuff
 	int t_HIV_infection;
@@ -142,7 +147,10 @@ public:
 		return;
 	}
 
-	Individual(EQ& event_queue,
+	Individual(int current_time,
+			   EQ& event_queue,
+			   RNG &rng,
+			   string name,
 			   long householdID, int birthDate, Sex sex,
 			   Pointer<Individual> spouse,
 			   Pointer<Individual> mother,
@@ -153,6 +161,8 @@ public:
 			   // Pointer<Params> params,
 			   // Pointer<map<string, DataFrameFile>> fileData) :
 	  event_queue(event_queue),
+	  rng(rng),
+	  name(name),
 	  householdID(householdID), 
 	  birthDate(birthDate), 
 	  sex(sex), 
@@ -166,22 +176,28 @@ public:
 	  onART(false),
 	  hivStatus(HIVStatus::Negative),
 	  dead(false),
-	  TB(sex,
+	  TB(current_time,
+	  	 name,
+	  	 sex,
 	  	 event_queue,
+	  	 rng,
 		 std::bind(&Individual::age<int>, this, std::placeholders::_1),
 		 std::bind(&Individual::Alive, this),
 		 std::bind(&Individual::DummyCD4count, this, std::placeholders::_1),
 		 std::bind(&Individual::DummyHouseholdTBStatus, this),
 		 std::bind(&Individual::GetHIVStatus, this),
 		 std::bind(&Individual::DummyDeathHandler, this, std::placeholders::_1),
-		 365) {
+		 10*365) {
 		 // DummyTBIncidence) {
 		 // params,
 		 // fileData) {
-
+  		std::cout << termcolor::on_blue << "[" << std::left << std::setw(8) << name << std::setw(5) << std::right << (int)current_time << "] Initialized\n" << termcolor::reset;
 	  };
 	
-	Individual(EQ& event_queue,
+	Individual(int current_time,
+		       EQ& event_queue,
+		       RNG& rng,
+		       string name,
 			   long hid, 
 			   int birthDate, 
 			   Sex sex, 
@@ -189,7 +205,10 @@ public:
 			   MarriageStatus marriageStatus) :
 			   // Pointer<Params> params,
 			   // Pointer<map<string, DataFrameFile>> fileData) :
-	  Individual(event_queue,
+	  Individual(current_time,
+	  	         event_queue,
+	  	         rng,
+	  	         name,
 	  			 hid, 
 	  			 birthDate, 
 	  			 sex, 
@@ -203,6 +222,7 @@ public:
 	             // fileData) {
 	  };
 private:
-
+	string name;
 	EQ& event_queue;
+	RNG& rng;
 };

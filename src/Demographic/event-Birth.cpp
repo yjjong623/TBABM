@@ -30,7 +30,10 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 
 			// Construct baby
 			auto baby = std::make_shared<Individual>(
+				t,
 				eq,
+				rng,
+				name_gen.getName(),
 				mother->householdID, t, sex,
 				Pointer<Individual>(), mother, father,
 				vector<Pointer<Individual>>{}, householdPosition, marriageStatus);

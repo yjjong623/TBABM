@@ -2,12 +2,17 @@
 #include <map>
 #include <string>
 
+#include <RNG.h>
 #include <EventQueue.h>
 #include <Param.h>
 #include <DataFrame.h>
 #include <IncidenceTimeSeries.h>
 
+#include "IndividualTypes.h"
+
 using std::function;
+using std::string;
+
 using namespace SimulationLib;
 
 template <typename T>
@@ -15,7 +20,9 @@ using Pointer = std::shared_ptr<T>;
 
 enum class StrainType {Unspecified};
 enum class RecoveryType {Natural, Treatment};
+
 using TBStatus = TBStatus;
+using TBTreatmentStatus = TBTreatmentStatus;
 
 using Params = std::map<std::string, Param>;
 
@@ -32,8 +39,11 @@ public:
 	using CD4         = double;
 	using HouseholdTB = bool;
 
-	TB(SexT sex,
+	TB(int current_time,
+	   string name,
+	   SexT sex,
 	   EQ& event_queue,
+	   RNG& rng,
 	   function<Age(Time)> AgeStatus,
 	   function<Alive(void)> AliveStatus,
 	   function<CD4(Time)> CD4Count,
@@ -50,9 +60,12 @@ public:
 	   // Pointer<map<string, DataFrameFile>> fileData,
 
 	   TBStatus tb_status = TBStatus::Susceptible) :
+		name(name),
 		sex(sex),
 		event_queue(event_queue),
+		rng(rng),
 		AgeStatus(AgeStatus),
+		AliveStatus(AliveStatus),
 		CD4Count(CD4Count),
 		HouseholdStatus(HouseholdStatus),
 		HIVStatus(HIVStatus),
@@ -61,15 +74,18 @@ public:
 		// TBIncidence(TBIncidence),
 		// params(params)
 		// fileData(fileData),
-		tb_status(tb_status)
+		tb_status(tb_status),
+		tb_treatment_status(TBTreatmentStatus::None),
+		risk_window_id(0)
 	{
-		InfectionRiskEvaluate(1); // Do not leave this in!!!!!!
+		printf("Person initialized. About to evaluate infection risk.\n");
+		InfectionRiskEvaluate(current_time);
 	}
 
 	~TB(void);
 
 	TBStatus GetTBStatus(Time);
-	void RiskReeval(void);
+	void RiskReeval(Time);
 	void Investigate(void);
 
 private:
@@ -86,7 +102,7 @@ private:
 	// 
 	// When scheduling an infection, the only StrainType
 	// supported right now is 'Unspecified'.
-	bool InfectionRiskEvaluate(Time);
+	bool InfectionRiskEvaluate(Time, int local_risk_window = 0);
 
 	// Marks an individual as infected and may or may not
 	// schedule the beginning of treatment.
@@ -99,22 +115,30 @@ private:
 	// out. Schedules either event.
 	void TreatmentBegin(Time);
 
-
+	// Sets tb_treatment_status to Incomplete
 	void TreatmentDropout(Time);
+
+	// Sets tb_treatment_status to Complete, and 
+	// calls Recovery
 	void TreatmentComplete(Time);
 
-
+	// Marks the individual as recovered, and sets
+	// status tb_status to Susceptible
 	void Recovery(Time, RecoveryType);
 
 	double risk_window; // unit: [days]
+	int risk_window_id;
 
 	TBStatus tb_status;
+	TBTreatmentStatus tb_treatment_status;
 
 
 	// All of these are from the constructor
+	string name;
 	SexT sex;
 
 	EQ& event_queue;
+	RNG& rng;
 
     function<Age(Time)> AgeStatus;
     function<Alive(void)> AliveStatus;
