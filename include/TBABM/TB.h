@@ -78,7 +78,6 @@ public:
 		tb_treatment_status(TBTreatmentStatus::None),
 		risk_window_id(0)
 	{
-		printf("Person initialized. About to evaluate infection risk.\n");
 		InfectionRiskEvaluate(current_time);
 	}
 
@@ -89,6 +88,8 @@ public:
 	void Investigate(void);
 
 private:
+
+	void Log(Time, string);
 
 	// Evaluates the risk of infection according to age,
 	// sex, year, CD4 count, and household TB presence.
@@ -104,11 +105,17 @@ private:
 	// supported right now is 'Unspecified'.
 	bool InfectionRiskEvaluate(Time, int local_risk_window = 0);
 
-	// Marks an individual as infected and may or may not
+	// Marks an individual as latently infected. May transition
+	// to infectous TB through reactivation.
+	// 
+	// NOTE: Reinfection not implemented
+	void InfectLatent(Time, StrainType);
+
+	// Marks an individual as infectous and may or may not
 	// schedule the beginning of treatment.
 	// 
 	// If no treatment, recovery or death is scheduled.
-	void Infect(Time, StrainType);
+	bool InfectInfectious(Time, StrainType);
 
 	// Marks an individual as having begun treatment.
 	// Decides if they will complete treatment, or drop

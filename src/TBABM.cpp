@@ -22,7 +22,7 @@ TBABM::GetData<PrevalenceTimeSeries<int>>(TBABMData field)
     switch(field) {
         case TBABMData::Marriages:       return nullptr;
         case TBABMData::Births:          return nullptr;
-        case TBABMData::Deaths:		     return nullptr;
+        case TBABMData::Deaths:          return nullptr;
         case TBABMData::PopulationSize:  return &populationSize;
         case TBABMData::Divorces:        return nullptr;
  
@@ -44,7 +44,7 @@ TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
     switch(field) {
         case TBABMData::Marriages:       return &marriages;
         case TBABMData::Births:          return &births;
-        case TBABMData::Deaths:		     return &deaths;
+        case TBABMData::Deaths:          return &deaths;
         case TBABMData::PopulationSize:  return nullptr;
         case TBABMData::Divorces:        return &divorces;
         case TBABMData::Households:      return &householdsCount;
@@ -52,6 +52,8 @@ TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
 
         case TBABMData::HIVInfections:   return &hivInfections;
         case TBABMData::HIVDiagnosesVCT: return &hivDiagnosesVCT;
+
+        case TBABMData::TBInfections:    return &tbInfections;
 
         default:                         return nullptr;
     }
@@ -62,10 +64,10 @@ IncidencePyramidTimeSeries*
 TBABM::GetData<IncidencePyramidTimeSeries>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::Pyramid:      		  return &pyramid;
-        case TBABMData::DeathPyramid: 		  return &deathPyramid;
+        case TBABMData::Pyramid:              return &pyramid;
+        case TBABMData::DeathPyramid:         return &deathPyramid;
         case TBABMData::HIVInfectionsPyramid: return &hivInfectionsPyramid;
-        default:                      		  return nullptr;
+        default:                              return nullptr;
     }
 }
 
@@ -73,129 +75,131 @@ template <>
 PrevalencePyramidTimeSeries*
 TBABM::GetData<PrevalencePyramidTimeSeries>(TBABMData field)
 {
-	switch(field) {
-		case TBABMData::HIVPositivePyramid: return &hivPositivePyramid;
-		default:						   return nullptr;
-	}
+    switch(field) {
+        case TBABMData::HIVPositivePyramid: return &hivPositivePyramid;
+        default:                            return nullptr;
+    }
 }
 
 bool TBABM::Run(void)
 {
-	CreatePopulation(0, 7);
-	Schedule(1, Matchmaking());
-	Schedule(1, UpdatePyramid());
-	Schedule(1, UpdateHouseholds());
-	Schedule(1, ARTGuidelineChange());
-	Schedule(1, Survey());
+    CreatePopulation(0, 7);
+    Schedule(1, Matchmaking());
+    Schedule(1, UpdatePyramid());
+    Schedule(1, UpdateHouseholds());
+    Schedule(1, ARTGuidelineChange());
+    Schedule(1, Survey());
 
-	// Schedule(1, ExogenousBirth());
+    // Schedule(1, ExogenousBirth());
 
-	while (!eq.Empty()) {
-		auto e = eq.Top();
+    while (!eq.Empty()) {
+        auto e = eq.Top();
 
-		if (e->t > constants["tMax"])
-			break;
+        if (e->t > constants["tMax"])
+            break;
 
-		e->run();
-		eq.Pop();
-		// delete e;
-	}
+        e->run();
+        eq.Pop();
+        // delete e;
+    }
 
-	births.Close();
-	deaths.Close();
-	marriages.Close();
-	populationSize.Close();
-	divorces.Close();
-	singleToLooking.Close();
+    births.Close();
+    deaths.Close();
+    marriages.Close();
+    populationSize.Close();
+    divorces.Close();
+    singleToLooking.Close();
 
-	pyramid.Close();
-	deathPyramid.Close();
-	hivInfectionsPyramid.Close();
-	hivPositivePyramid.Close();
-	householdsCount.Close();
+    pyramid.Close();
+    deathPyramid.Close();
+    hivInfectionsPyramid.Close();
+    hivPositivePyramid.Close();
+    householdsCount.Close();
 
-	hivNegative.Close();
-	hivPositive.Close();
-	hivPositiveART.Close();
+    hivNegative.Close();
+    hivPositive.Close();
+    hivPositiveART.Close();
 
-	hivDiagnosed.Close();
-	hivDiagnosedVCT.Close();
+    hivDiagnosed.Close();
+    hivDiagnosedVCT.Close();
 
-	hivInfections.Close();
-	hivDiagnosesVCT.Close();
+    hivInfections.Close();
+    hivDiagnosesVCT.Close();
 
-	meanSurvivalTime.close();
+    tbInfections.Close();
 
-	return true;
+    meanSurvivalTime.close();
+
+    return true;
 }
 
 void TBABM::Schedule(int t, EventQueue<>::EventFunc ef)
 {
-	auto f = eq.MakeScheduledEvent(t, ef);
-	eq.Schedule(f);
-	return;
+    auto f = eq.MakeScheduledEvent(t, ef);
+    eq.Schedule(f);
+    return;
 }
 
 void TBABM::PurgeReferencesToIndividual(Pointer<Individual> host,
-									    Pointer<Individual> idv)
+                                        Pointer<Individual> idv)
 {
-	// Return if host or individual do not exist
-	if (!host || !idv)
-		return;
+    // Return if host or individual do not exist
+    if (!host || !idv)
+        return;
 
-	// Reset pointers for spouse, mother, father (rough equivalent of setting
-	// pointers to NULL)
-	if (host->spouse == idv)
-		host->spouse.reset();
-	if (host->mother == idv)
-		host->mother.reset();
-	if (host->father == idv)
-		host->father.reset();
+    // Reset pointers for spouse, mother, father (rough equivalent of setting
+    // pointers to NULL)
+    if (host->spouse == idv)
+        host->spouse.reset();
+    if (host->mother == idv)
+        host->mother.reset();
+    if (host->father == idv)
+        host->father.reset();
 
-	// Erase 'idv' from offspring
-	for (auto it = host->offspring.begin(); it != host->offspring.end(); it++)
-		if ((*it) == idv) {
-			host->offspring.erase(it);
-			break;
-		}
+    // Erase 'idv' from offspring
+    for (auto it = host->offspring.begin(); it != host->offspring.end(); it++)
+        if ((*it) == idv) {
+            host->offspring.erase(it);
+            break;
+        }
 
-	// Erase 'idv' from list of people 'idv' has lived with before
-	for (auto it = host->livedWithBefore.begin(); it != host->livedWithBefore.end(); it++)
-		if ((*it) == idv) {
-			it = host->livedWithBefore.erase(it);
-			break;
-		}
+    // Erase 'idv' from list of people 'idv' has lived with before
+    for (auto it = host->livedWithBefore.begin(); it != host->livedWithBefore.end(); it++)
+        if ((*it) == idv) {
+            it = host->livedWithBefore.erase(it);
+            break;
+        }
 }
 
 void TBABM::DeleteIndividual(Pointer<Individual> idv)
 {
-	for (size_t i = 0; i < idv->livedWithBefore.size(); i++)
-		PurgeReferencesToIndividual(idv->livedWithBefore[i], idv);
+    for (size_t i = 0; i < idv->livedWithBefore.size(); i++)
+        PurgeReferencesToIndividual(idv->livedWithBefore[i], idv);
 }
 
 void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPosition newRole)
 {
-	if (!idv || idv->dead)
-		return;
+    if (!idv || idv->dead)
+        return;
 
-	// printf("\tChanging household of %ld::%lu\n", idv->householdID, std::hash<Pointer<Individual>>()(idv));
-	int oldHID = idv->householdID;
+    // printf("\tChanging household of %ld::%lu\n", idv->householdID, std::hash<Pointer<Individual>>()(idv));
+    int oldHID = idv->householdID;
 
-	auto oldHousehold = households[oldHID];
-	auto newHousehold = households[newHID];
+    auto oldHousehold = households[oldHID];
+    auto newHousehold = households[newHID];
 
-	assert(idv);
-	assert(oldHousehold);
-	assert(newHousehold);
+    assert(idv);
+    assert(oldHousehold);
+    assert(newHousehold);
 
-	if (oldHousehold != newHousehold)
-		oldHousehold->RemoveIndividual(idv);
-	
-	newHousehold->AddIndividual(idv, newRole, newHID);
+    if (oldHousehold != newHousehold)
+        oldHousehold->RemoveIndividual(idv);
+    
+    newHousehold->AddIndividual(idv, newRole, newHID);
 
-	// Clear household if there's nobody left in it
-	if (oldHousehold->size() == 0)
-		households[oldHID].reset();
+    // Clear household if there's nobody left in it
+    if (oldHousehold->size() == 0)
+        households[oldHID].reset();
 
-	return;
+    return;
 }

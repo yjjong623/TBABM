@@ -16,13 +16,13 @@ using namespace StatisticalDistributions;
 
 void HIVInfectionLogger(Pointer<Individual> idv, double t)
 {
-	std::cout << termcolor::on_blue << 
+	std::cout << termcolor::on_magenta << 
 		"[" << 
-		std::left << std::setw(8) << 
+		std::left << std::setw(12) << 
 		idv->Name() << 
 		std::setw(5) << std::right << 
-		(int)t << "] HIV infection\n" << 
-		termcolor::reset;
+		(int)t << "] HIV infection" << 
+		termcolor::reset << std::endl;
 }
 
 EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
@@ -33,6 +33,8 @@ EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 			// Have to be alive and seronegative to get infected
 			if (!idv || idv->dead || idv->hivStatus == HIVStatus::Positive)
 				return true;
+
+			HIVInfectionLogger(idv, t);
 
 			idv->hivStatus = HIVStatus::Positive;
 
@@ -58,8 +60,6 @@ EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 			hivInfections.Record(t, +1);
 			hivPositivePyramid.UpdateByAge(t, sex, age, +1);
 			hivInfectionsPyramid.UpdateByAge(t, sex, age, +1);
-
-			HIVInfectionLogger(idv, t);
 
 			return true;
 		};

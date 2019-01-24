@@ -84,6 +84,8 @@ int main(int argc, char const *argv[])
 	TimeSeriesExport<int> hivDiagnosedVCT(outputPrefix + "hivDiagnosedVCT.csv");
 	TimeSeriesExport<int> hivDiagnosesVCT(outputPrefix + "hivDiagnosesVCT.csv");
 
+	TimeSeriesExport<int> tbInfections(outputPrefix + "tbInfections.csv");
+
 	PyramidTimeSeriesExport pyramid(outputPrefix + "populationPyramid.csv");
 	PyramidTimeSeriesExport deathPyramid(outputPrefix + "deathPyramid.csv");
 	PyramidTimeSeriesExport hivInfectionsPyramid(outputPrefix + "hivInfectionsPyramid.csv");
@@ -109,6 +111,8 @@ int main(int argc, char const *argv[])
 		success &= hivDiagnosed.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::HIVDiagnosed));
 		success &= hivDiagnosedVCT.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::HIVDiagnosedVCT));
 		success &= hivDiagnosesVCT.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::HIVDiagnosesVCT));
+
+		success &= tbInfections.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBInfections));
 
 		success &= pyramid.Add(trajectories[i]->GetData<IncidencePyramidTimeSeries>(TBABMData::Pyramid));
 		success &= deathPyramid.Add(trajectories[i]->GetData<IncidencePyramidTimeSeries>(TBABMData::DeathPyramid));

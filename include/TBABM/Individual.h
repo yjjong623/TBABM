@@ -191,7 +191,6 @@ public:
 		 // DummyTBIncidence) {
 		 // params,
 		 // fileData) {
-  		std::cout << termcolor::on_blue << "[" << std::left << std::setw(8) << name << std::setw(5) << std::right << (int)current_time << "] Initialized\n" << termcolor::reset;
 	  };
 	
 	Individual(int current_time,

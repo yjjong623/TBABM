@@ -65,6 +65,8 @@ public:
 		HIVDiagnosedVCT,
 		HIVDiagnosesVCT,
 		
+
+		TBInfections,
 		// TBSusceptible,
 		// TBLatentTN, 
 		// TBLatentTC, 
@@ -116,6 +118,8 @@ public:
 		hivDiagnosed(   "hivDiagnosed",       constants["tMax"], constants["periodLength"]),
 		hivDiagnosedVCT("hivDiagnosedVCT",    constants["tMax"], constants["periodLength"]),
 		hivDiagnosesVCT("hivDiagnosesVCT", 0, constants["tMax"], constants["periodLength"]),
+
+		tbInfections("tbIfections", 0, constants["tMax"], constants["periodLength"]),
 
 		pyramid("Population pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
 		deathPyramid("Death pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
@@ -180,6 +184,8 @@ private:
 	IncidenceTimeSeries<int>    hivDiagnosesVCT;
 	PrevalencePyramidTimeSeries hivPositivePyramid;
 	IncidencePyramidTimeSeries  hivInfectionsPyramid;
+
+	IncidenceTimeSeries<int>   tbInfections;
 
 	////////////////////////////////////////////////////////
 	/// Demographic Events

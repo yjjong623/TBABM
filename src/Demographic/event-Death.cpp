@@ -26,7 +26,7 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 			if (!idv || idv->dead)
 				return true;
 
-			std::cout << termcolor::on_green << "[" << std::left << std::setw(8) \
+			std::cout << termcolor::on_green << "[" << std::left << std::setw(12) \
 			          << idv->Name() << std::setw(5) << std::right \
 			          << (int)t << "] Death" << termcolor::reset << std::endl;
 
