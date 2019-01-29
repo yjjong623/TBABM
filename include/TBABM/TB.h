@@ -9,6 +9,7 @@
 #include <IncidenceTimeSeries.h>
 
 #include "IndividualTypes.h"
+#include "TBTypes.h"
 
 using std::function;
 using std::string;
@@ -17,12 +18,6 @@ using namespace SimulationLib;
 
 template <typename T>
 using Pointer = std::shared_ptr<T>;
-
-enum class StrainType {Unspecified};
-enum class RecoveryType {Natural, Treatment};
-
-using TBStatus = TBStatus;
-using TBTreatmentStatus = TBTreatmentStatus;
 
 using Params = std::map<std::string, Param>;
 
@@ -44,6 +39,7 @@ public:
 	   SexT sex,
 	   EQ& event_queue,
 	   RNG& rng,
+	   TBData initData,
 	   function<Age(Time)> AgeStatus,
 	   function<Alive(void)> AliveStatus,
 	   function<CD4(Time)> CD4Count,
@@ -64,6 +60,7 @@ public:
 		sex(sex),
 		event_queue(event_queue),
 		rng(rng),
+		data(initData),
 		AgeStatus(AgeStatus),
 		AliveStatus(AliveStatus),
 		CD4Count(CD4Count),
@@ -79,6 +76,8 @@ public:
 		risk_window_id(0)
 	{
 		InfectionRiskEvaluate(current_time);
+
+		data.tbSusceptible.Record(current_time, +1);
 	}
 
 	~TB(void);
@@ -130,7 +129,7 @@ private:
 	void TreatmentComplete(Time);
 
 	// Marks the individual as recovered, and sets
-	// status tb_status to Susceptible
+	// status tb_status to Latent
 	void Recovery(Time, RecoveryType);
 
 	double risk_window; // unit: [days]
@@ -146,6 +145,7 @@ private:
 
 	EQ& event_queue;
 	RNG& rng;
+	TBData data;
 
     function<Age(Time)> AgeStatus;
     function<Alive(void)> AliveStatus;

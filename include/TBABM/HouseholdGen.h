@@ -43,9 +43,11 @@ public:
                  Pointer<Params> params,
                  Pointer<map<string, DataFrameFile>> fileData,
                  EQ& event_queue,
+                 IndividualInitData initData,
                  long seed,
                  Names& name_gen) : file(file), params(params), fileData(fileData), 
-									event_queue(event_queue), rng(seed), name_gen(name_gen) {
+									event_queue(event_queue), initData(initData),rng(seed), 
+									name_gen(name_gen) {
 			FILE *ifile = fopen(file, "r");
 			int c;
 			int lines = 2;
@@ -120,6 +122,7 @@ private:
 
     EQ& event_queue;
     RNG rng;
+    IndividualInitData initData;
     Names& name_gen;
 
 	const char *file;

@@ -28,11 +28,17 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 			HouseholdPosition householdPosition = HouseholdPosition::Offspring;
 			MarriageStatus marriageStatus = MarriageStatus::Single;
 
+			IndividualInitData initData {tbInfections, tbConversions, tbRecoveries, \
+				tbSusceptible, tbInfected, tbLatent, tbInfectious, \
+				tbTreatmentBegin, tbTreatmentEnd, tbTreatmentDropout, \
+				tbInTreatment, tbCompletedTreatment, tbDroppedTreatment};
+
 			// Construct baby
 			auto baby = std::make_shared<Individual>(
 				t,
 				eq,
 				rng,
+				initData,
 				name_gen.getName(),
 				mother->householdID, t, sex,
 				Pointer<Individual>(), mother, father,

@@ -1,4 +1,6 @@
 #pragma once
+
+#include "utils/termcolor.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -8,10 +10,9 @@
 
 #include <EventQueue.h>
 
-#include "TB.h"
 #include "IndividualTypes.h"
-
-#include "utils/termcolor.h"
+#include "TB.h"
+#include "TBTypes.h"
 
 template <typename T>
 using Pointer = std::shared_ptr<T>;
@@ -150,6 +151,7 @@ public:
 	Individual(int current_time,
 			   EQ& event_queue,
 			   RNG &rng,
+			   IndividualInitData data,
 			   string name,
 			   long householdID, int birthDate, Sex sex,
 			   Pointer<Individual> spouse,
@@ -181,6 +183,7 @@ public:
 	  	 sex,
 	  	 event_queue,
 	  	 rng,
+	  	 CreateTBData(data),
 		 std::bind(&Individual::age<int>, this, std::placeholders::_1),
 		 std::bind(&Individual::Alive, this),
 		 std::bind(&Individual::DummyCD4count, this, std::placeholders::_1),
@@ -196,6 +199,7 @@ public:
 	Individual(int current_time,
 		       EQ& event_queue,
 		       RNG& rng,
+		       IndividualInitData data,
 		       string name,
 			   long hid, 
 			   int birthDate, 
@@ -207,6 +211,7 @@ public:
 	  Individual(current_time,
 	  	         event_queue,
 	  	         rng,
+	  	         data,
 	  	         name,
 	  			 hid, 
 	  			 birthDate, 

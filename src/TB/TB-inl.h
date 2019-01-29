@@ -38,8 +38,6 @@ TB<T>::GetTBStatus(Time t)
 		default:				      std::cout << " UNSUPPORTED TB type!\n";
 	}
 
-	std::cout << termcolor::reset;
-
 	return tb_status;
 }
 
@@ -53,7 +51,7 @@ TB<T>::RiskReeval(Time t)
 
 	// CONDITIONS THAT MAY CHANGE RISK WINDOW
 	if (HIVStatus() == HIVStatus::Positive)
-		risk_window = 365;
+		risk_window = 365; // unit: [days]
 
 	// /END CONDITIONS THAT MAY CHANGE RISK WINDOW
 
@@ -107,8 +105,8 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 			  << (int)HouseholdStatus() << " household status, " \
 			  << (int)(HIVStatus() == HIVStatus::Positive) << " HIV status" << termcolor::reset << std::endl;
 
-	if (Bernoulli(0.1)(rng.mt_))
-		if (Bernoulli(0.9)(rng.mt_))
+	if (Bernoulli(0.1)(rng.mt_)) // Will this individual be infected now?
+		if (Bernoulli(0.9)(rng.mt_)) // Will they become latently infected, or progress rapidly?
 			InfectLatent(t, StrainType::Unspecified);
 		else
 		 	InfectInfectious(t, StrainType::Unspecified);
@@ -139,6 +137,12 @@ TB<T>::InfectLatent(Time t, StrainType)
 
 	Log(t, "TB infection: Latent");
 
+	data.tbSusceptible.Record(t, -1);
+	data.tbInfected.Record(t, +1);
+	data.tbLatent.Record(t, +1);
+
+	data.tbInfections.Record(t, +1);
+
 	// Mark as latently infected
 	tb_status = TBStatus::Latent;
 
@@ -167,6 +171,11 @@ TB<T>::InfectInfectious(Time t, StrainType)
 	}
 
 	Log(t, "TB infection: Infectious");
+
+	data.tbLatent.Record(t, -1);
+	data.tbInfectious.Record(t, +1);
+
+	data.tbConversions.Record(t, +1);
 
 	// Mark as infectious
 	tb_status = TBStatus::Infectious;
@@ -199,6 +208,10 @@ TB<T>::TreatmentBegin(Time t)
 
 	Log(t, "TB treatment begin");
 
+	data.tbInfectious.Record(t, -1);
+	data.tbInTreatment.Record(t, +1);
+	data.tbTreatmentBegin.Record(t, +1);
+
 	tb_treatment_status = TBTreatmentStatus::Incomplete;
 
 	if (Bernoulli(0.5)(rng.mt_)) // Will they complete treatment?
@@ -218,6 +231,9 @@ TB<T>::TreatmentDropout(Time t)
 
 	Log(t, "TB treatment dropout");
 
+	data.tbDroppedTreatment.Record(t, +1);
+	data.tbTreatmentDropout.Record(t, +1);
+
 	tb_treatment_status = TBTreatmentStatus::Incomplete;
 	
 	return;
@@ -231,6 +247,9 @@ TB<T>::TreatmentComplete(Time t)
 		return;
 
 	Log(t, "TB treatment complete");
+
+	data.tbTreatmentEnd.Record(t, +1);
+	data.tbCompletedTreatment.Record(t, +1);
 
 	tb_treatment_status = TBTreatmentStatus::Complete;
 
@@ -248,6 +267,10 @@ TB<T>::Recovery(Time t, RecoveryType)
 		return;
 
 	Log(t, "TB recovery");
+
+	data.tbRecoveries.Record(t, +1);
+	data.tbInfectious.Record(t, -1);
+	data.tbLatent.Record(t, +1);
 
 	tb_status = TBStatus::Latent;
 

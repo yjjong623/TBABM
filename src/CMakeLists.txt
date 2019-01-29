@@ -39,7 +39,8 @@ set(hiv ${hiv_path}/event-ARTGuidelineChange.cpp
 		${hiv_path}/helper-HIVInfectionCheck.cpp)
 
 set(tb_path "${TBABM_SOURCE_DIR}/src/TB")
-set(tb ${tb_path}/TB.cpp)
+set(tb ${tb_path}/TB.cpp
+	   ${tb_path}/TBTypes.cpp)
 
 # Set source files
 set(src TBABM.cpp ${demographic} ${hiv} ${tb} HouseholdGen.cpp)

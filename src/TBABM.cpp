@@ -32,6 +32,17 @@ TBABM::GetData<PrevalenceTimeSeries<int>>(TBABMData field)
  
         case TBABMData::HIVDiagnosed:    return &hivDiagnosed;
         case TBABMData::HIVDiagnosedVCT: return &hivDiagnosedVCT;
+
+        case TBABMData::TBSusceptible:   return &tbSusceptible;
+        case TBABMData::TBInfected:      return &tbInfected;
+        case TBABMData::TBLatent:        return &tbLatent;
+        case TBABMData::TBInfectious:    return &tbInfectious;
+
+        case TBABMData::TBInTreatment:   return &tbInTreatment;
+        case TBABMData::TBCompletedTreatment:
+                                         return &tbCompletedTreatment;
+        case TBABMData::TBDroppedTreatment:
+                                         return &tbDroppedTreatment;
  
         default:                         return nullptr;
     }
@@ -54,6 +65,13 @@ TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
         case TBABMData::HIVDiagnosesVCT: return &hivDiagnosesVCT;
 
         case TBABMData::TBInfections:    return &tbInfections;
+        case TBABMData::TBConversions:   return &tbConversions;
+        case TBABMData::TBRecoveries:    return &tbRecoveries;
+
+        case TBABMData::TBTreatmentBegin:return &tbTreatmentBegin;
+        case TBABMData::TBTreatmentEnd:  return &tbTreatmentEnd;
+        case TBABMData::TBTreatmentDropout:
+                                         return &tbTreatmentDropout;
 
         default:                         return nullptr;
     }
@@ -127,6 +145,21 @@ bool TBABM::Run(void)
     hivDiagnosesVCT.Close();
 
     tbInfections.Close();
+    tbConversions.Close();
+    tbRecoveries.Close();
+
+    tbSusceptible.Close();
+    tbInfected.Close();
+    tbLatent.Close();
+    tbInfectious.Close();
+
+    tbTreatmentBegin.Close();
+    tbTreatmentEnd.Close();
+    tbTreatmentDropout.Close();
+    
+    tbInTreatment.Close();
+    tbCompletedTreatment.Close();
+    tbDroppedTreatment.Close();
 
     meanSurvivalTime.close();
 

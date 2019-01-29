@@ -66,7 +66,22 @@ public:
 		HIVDiagnosesVCT,
 		
 
+		TBSusceptible,
+		TBInfected,
+		TBLatent,
+		TBInfectious,
+
 		TBInfections,
+		TBConversions,
+		TBRecoveries,
+
+		TBInTreatment,
+		TBCompletedTreatment,
+		TBDroppedTreatment,
+
+		TBTreatmentBegin,
+		TBTreatmentEnd,
+		TBTreatmentDropout,
 		// TBSusceptible,
 		// TBLatentTN, 
 		// TBLatentTC, 
@@ -119,7 +134,22 @@ public:
 		hivDiagnosedVCT("hivDiagnosedVCT",    constants["tMax"], constants["periodLength"]),
 		hivDiagnosesVCT("hivDiagnosesVCT", 0, constants["tMax"], constants["periodLength"]),
 
-		tbInfections("tbIfections", 0, constants["tMax"], constants["periodLength"]),
+		tbInfections( "tbInfections",  0, constants["tMax"], constants["periodLength"]),
+		tbConversions("tbConversions", 0, constants["tMax"], constants["periodLength"]),
+		tbRecoveries( "tbRecoveries",  0, constants["tMax"], constants["periodLength"]),
+
+		tbSusceptible("tbSusceptible", constants["tMax"], constants["periodLength"]),
+		tbInfected(   "tbInfected",    constants["tMax"], constants["periodLength"]),
+		tbLatent(     "tbLatent",      constants["tMax"], constants["periodLength"]),
+		tbInfectious( "tbInfectious",  constants["tMax"], constants["periodLength"]),
+
+		tbTreatmentBegin(  "tbTreatmentBegin",   0, constants["tMax"], constants["periodLength"]),
+		tbTreatmentEnd(    "tbTreatmentEnd",     0, constants["tMax"], constants["periodLength"]),
+		tbTreatmentDropout("tbTreatmentDropout", 0, constants["tMax"], constants["periodLength"]),
+
+		tbInTreatment(       "tbInTreatment",        constants["tMax"], constants["periodLength"]),
+		tbCompletedTreatment("tbCompletedTreatment", constants["tMax"], constants["periodLength"]),
+		tbDroppedTreatment(  "tbDroppedTreatment",   constants["tMax"], constants["periodLength"]),
 
 		pyramid("Population pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
 		deathPyramid("Death pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
@@ -143,6 +173,10 @@ public:
 					 std::make_shared<Params>(params),
 					 std::make_shared<map<string, DataFrameFile>>(fileData),
 					 eq,
+					 {tbInfections, tbConversions, tbRecoveries, \
+					  tbSusceptible, tbInfected, tbLatent, tbInfectious, \
+					  tbTreatmentBegin, tbTreatmentEnd, tbTreatmentDropout, \
+					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment},
 					 seed + 1, // Little bit of a hack
 					 name_gen),
 		name_gen(rng) {
@@ -185,7 +219,22 @@ private:
 	PrevalencePyramidTimeSeries hivPositivePyramid;
 	IncidencePyramidTimeSeries  hivInfectionsPyramid;
 
-	IncidenceTimeSeries<int>   tbInfections;
+	IncidenceTimeSeries<int>  tbInfections;  // Individuals transitioning from S to L
+	IncidenceTimeSeries<int>  tbConversions; // Individuals transitioning from L to I
+	IncidenceTimeSeries<int>  tbRecoveries;  // Individuals transitioning from I to L
+
+	PrevalenceTimeSeries<int> tbSusceptible; // # Individuals in S
+	PrevalenceTimeSeries<int> tbInfected;    // # Individuals in L or I
+	PrevalenceTimeSeries<int> tbLatent;      // # Individuals in L
+	PrevalenceTimeSeries<int> tbInfectious;  // # Individuals in I
+
+	IncidenceTimeSeries<int>  tbTreatmentBegin;   // Individuals initiating treatment
+	IncidenceTimeSeries<int>  tbTreatmentEnd;     // Individuals completing treatment
+	IncidenceTimeSeries<int>  tbTreatmentDropout; // Individuals dropping out
+
+	PrevalenceTimeSeries<int> tbInTreatment;        // Individuals in treatment
+	PrevalenceTimeSeries<int> tbCompletedTreatment; // Individuals who completed
+	PrevalenceTimeSeries<int> tbDroppedTreatment;   // Individuals who dropped
 
 	////////////////////////////////////////////////////////
 	/// Demographic Events

@@ -85,6 +85,18 @@ int main(int argc, char const *argv[])
 	TimeSeriesExport<int> hivDiagnosesVCT(outputPrefix + "hivDiagnosesVCT.csv");
 
 	TimeSeriesExport<int> tbInfections(outputPrefix + "tbInfections.csv");
+	TimeSeriesExport<int> tbConversions(outputPrefix + "tbConversions.csv");
+	TimeSeriesExport<int> tbRecoveries(outputPrefix + "tbRecoveries.csv");
+	TimeSeriesExport<int> tbSusceptible(outputPrefix + "tbSusceptible.csv");
+	TimeSeriesExport<int> tbInfected(outputPrefix + "tbInfected.csv");
+	TimeSeriesExport<int> tbLatent(outputPrefix + "tbLatent.csv");
+	TimeSeriesExport<int> tbInfectious(outputPrefix + "tbInfectious.csv");
+	TimeSeriesExport<int> tbTreatmentBegin(outputPrefix + "tbTreatmentBegin.csv");
+	TimeSeriesExport<int> tbTreatmentEnd(outputPrefix + "tbTreatmentEnd.csv");
+	TimeSeriesExport<int> tbTreatmentDropout(outputPrefix + "tbTreatmentDropout.csv");
+	TimeSeriesExport<int> tbInTreatment(outputPrefix + "tbInTreatment.csv");
+	TimeSeriesExport<int> tbCompletedTreatment(outputPrefix + "tbCompletedTreatment.csv");
+	TimeSeriesExport<int> tbDroppedTreatment(outputPrefix + "tbDroppedTreatment.csv");
 
 	PyramidTimeSeriesExport pyramid(outputPrefix + "populationPyramid.csv");
 	PyramidTimeSeriesExport deathPyramid(outputPrefix + "deathPyramid.csv");
@@ -113,6 +125,18 @@ int main(int argc, char const *argv[])
 		success &= hivDiagnosesVCT.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::HIVDiagnosesVCT));
 
 		success &= tbInfections.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBInfections));
+		success &= tbConversions.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBConversions));
+		success &= tbRecoveries.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBRecoveries));
+		success &= tbSusceptible.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBSusceptible));
+		success &= tbInfected.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBInfected));
+		success &= tbLatent.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBLatent));
+		success &= tbInfectious.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBInfectious));
+		success &= tbTreatmentBegin.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBTreatmentBegin));
+		success &= tbTreatmentEnd.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBTreatmentEnd));
+		success &= tbTreatmentDropout.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBTreatmentDropout));
+		success &= tbInTreatment.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBInTreatment));
+		success &= tbCompletedTreatment.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBCompletedTreatment));
+		success &= tbDroppedTreatment.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBDroppedTreatment));
 
 		success &= pyramid.Add(trajectories[i]->GetData<IncidencePyramidTimeSeries>(TBABMData::Pyramid));
 		success &= deathPyramid.Add(trajectories[i]->GetData<IncidencePyramidTimeSeries>(TBABMData::DeathPyramid));
@@ -134,16 +158,31 @@ int main(int argc, char const *argv[])
 		singleToLooking.Write()      &&
 		pyramid.Write()              &&
 		deathPyramid.Write()         &&
+		households.Write()           &&
+		
 		hivInfectionsPyramid.Write() &&
 		hivPositivePyramid.Write()   &&
-		households.Write()           &&
 		hivNegative.Write()          &&
 		hivPositive.Write()          &&
 		hivPositiveART.Write()       &&
 		hivInfections.Write()        &&
 		hivDiagnosed.Write()         &&
 		hivDiagnosedVCT.Write()      &&
-		hivDiagnosesVCT.Write() ) {
+		hivDiagnosesVCT.Write()      &&
+		
+		tbInfections.Write()         &&
+		tbConversions.Write()        &&
+		tbRecoveries.Write()         &&
+		tbSusceptible.Write()        &&
+		tbInfected.Write()           &&
+		tbLatent.Write()             &&
+		tbInfectious.Write()         &&
+		tbTreatmentBegin.Write()     &&
+		tbTreatmentEnd.Write()       &&
+		tbTreatmentDropout.Write()   &&
+		tbInTreatment.Write()        &&
+		tbCompletedTreatment.Write() &&
+		tbDroppedTreatment.Write()       ) {
 		printf("Everything was written successfully!\n");
 	} else {
 		printf("Somethihg didn't write correctly\n");
