@@ -3,6 +3,7 @@
 #include <string>
 
 #include <RNG.h>
+#include <Uniform.h>
 #include <EventQueue.h>
 #include <Param.h>
 #include <DataFrame.h>
@@ -68,7 +69,9 @@ public:
 		tb_treatment_status(TBTreatmentStatus::None),
 		risk_window_id(0)
 	{
-		InfectionRiskEvaluate(initCtx.current_time);
+		double firstRiskEval = Uniform(0, risk_window)(rng.mt_);
+
+		InfectionRiskEvaluate(initCtx.current_time + firstRiskEval);
 
 		data.tbSusceptible.Record(initCtx.current_time, +1);
 	}
@@ -95,7 +98,7 @@ private:
 	// 
 	// When scheduling an infection, the only StrainType
 	// supported right now is 'Unspecified'.
-	bool InfectionRiskEvaluate(Time, int local_risk_window = 0);
+	void InfectionRiskEvaluate(Time, int local_risk_window = 0);
 
 	// Marks an individual as latently infected. May transition
 	// to infectous TB through reactivation.

@@ -84,44 +84,47 @@ TB<T>::Investigate(void)
 // When scheduling an infection, the only StrainType
 // supported right now is 'Unspecified'.
 template <typename T>
-bool
+void
 TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 {
-	if (risk_window_local != risk_window_id) {
-		std::cout << termcolor::on_grey << "[" << std::left << std::setw(12) << name << std::setw(5) << std::right << (int)t << "] InfectionRiskEvaluate aborted" << termcolor::reset << std::endl;
-		return true;
-	}
-
-	if (!AliveStatus())
-		return true;
-
-	if (tb_status == TBStatus::Infectious)
-		return true;
-
-	std::cout << termcolor::on_blue << "[" << std::left \
-			  << std::setw(12) << name << std::setw(5) << std::right \
-			  << (int)t << "] InfectionRiskEvaluate" << termcolor::reset << " " \
-			  << std::setw(2) << AgeStatus(t) << " years old, " \
-			  << std::setw(4) << (int)CD4Count(t) << " cells/ml, " \
-			  << (int)HouseholdStatus() << " household status, " \
-			  << (int)(HIVStatus() == HIVStatus::Positive) << " HIV status" << termcolor::reset << std::endl;
-
-	double timeToInfection {0.0};
-
-	if ((timeToInfection = Exponential(0.05, 0.)(rng.mt_)) < risk_window/365) // Will this individual be infected now?
-		if (Bernoulli(0.9)(rng.mt_)) {// Will they become latently infected, or progress rapidly?
-			InfectLatent(t + timeToInfection, StrainType::Unspecified);
-		} else {
-			InfectInfectious(t + timeToInfection, StrainType::Unspecified);
+	auto lambda = [this, risk_window_local] (auto ts, auto) -> bool {
+		if (risk_window_local != risk_window_id) {
+			std::cout << termcolor::on_grey << "[" << std::left << std::setw(12) << name << std::setw(5) << std::right << (int)ts << "] InfectionRiskEvaluate aborted" << termcolor::reset << std::endl;
+			return true;
 		}
-	else {
-		eq.QuickSchedule(t + risk_window, \
-			[this, risk_window_local] \
-			(auto t_new, auto sched) -> bool \
-			{ return InfectionRiskEvaluate(t_new, risk_window_local); });
-	}
 
-	return true;
+		if (!AliveStatus())
+			return true;
+
+		if (tb_status == TBStatus::Infectious)
+			return true;
+
+		std::cout << termcolor::on_blue << "[" << std::left \
+				  << std::setw(12) << name << std::setw(5) << std::right \
+				  << (int)ts << "] InfectionRiskEvaluate" << termcolor::reset << " " \
+				  << std::setw(2) << AgeStatus(ts) << " years old, " \
+				  << std::setw(4) << (int)CD4Count(ts) << " cells/ml, " \
+				  << (int)HouseholdStatus() << " household status, " \
+				  << (int)(HIVStatus() == HIVStatus::Positive) << " HIV status" << termcolor::reset << std::endl;
+
+		double timeToInfection {0.0};
+
+		if ((timeToInfection = Exponential(0.05, 0.)(rng.mt_)) < risk_window/365) // Will this individual be infected now?
+			if (Bernoulli(0.9)(rng.mt_)) {// Will they become latently infected, or progress rapidly?
+				InfectLatent(ts + timeToInfection, StrainType::Unspecified);
+			} else {
+				InfectInfectious(ts + timeToInfection, StrainType::Unspecified);
+			}
+		else {
+			InfectionRiskEvaluate(ts + risk_window, risk_window_local);
+		}
+
+		return true;
+	};
+
+	eq.QuickSchedule(t, lambda);
+
+	return;
 }
 
 // Marks an individual as infected and may or may not
