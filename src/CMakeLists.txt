@@ -1,12 +1,12 @@
 # Set headers
-set(header_path "${TBABM_SOURCE_DIR}/include/TBABM")
-set(header ${header_path}/Individual.h
-		   ${header_path}/Household.h
-		   ${header_path}/HouseholdGen.h
-		   ${header_path}/TBABM.h
-		   ${header_path}/SurveyUtils.h
-		   ${header_path}/TB.h
-		   ${header_path}/Names.h)
+# set(header_path "${TBABM_SOURCE_DIR}/include/TBABM")
+# set(header ${header_path}/Individual.h
+# 		   ${header_path}/Household.h
+# 		   ${header_path}/HouseholdGen.h
+# 		   ${header_path}/TBABM.h
+# 		   ${header_path}/SurveyUtils.h
+# 		   ${header_path}/TB.h
+# 		   ${header_path}/Names.h)
 
 # Set Demographic files
 set(demographic_path "${TBABM_SOURCE_DIR}/src/Demographic")
@@ -29,6 +29,9 @@ set(demographic ${demographic_path}/event-Birth.cpp
 				${demographic_path}/helper-InitialEvents.cpp
 				${demographic_path}/helper-SurveyUtils.cpp)
 
+set(individual_path "${TBABM_SOURCE_DIR}/src/Individual")
+set(individual "${individual_path}/IndividualTypes.cpp")
+
 set(hiv_path "${TBABM_SOURCE_DIR}/src/HIV")
 set(hiv ${hiv_path}/event-ARTGuidelineChange.cpp
 		${hiv_path}/event-ARTInitiate.cpp
@@ -43,7 +46,7 @@ set(tb ${tb_path}/TB.cpp
 	   ${tb_path}/TBTypes.cpp)
 
 # Set source files
-set(src TBABM.cpp ${demographic} ${hiv} ${tb} HouseholdGen.cpp)
+set(src TBABM.cpp ${demographic} ${hiv} ${tb} ${individual} HouseholdGen.cpp)
 
 # Require C++14 compilation
 set(CMAKE_CXX_STANDARD 14)

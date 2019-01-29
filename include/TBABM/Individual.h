@@ -71,9 +71,12 @@ public:
 		return false;
 	}
 
-	void DummyDeathHandler(double t) {
-		printf("Individual::DummyDeathHandler\n");
-		return;
+	void TBDeathHandler(int t) {
+		return handles.death(
+			std::shared_ptr<Individual>(this), 
+			t, 
+			DeathCause::TB
+		);
 	}
 
 	HIVStatus GetHIVStatus(void) {
@@ -148,10 +151,9 @@ public:
 		return;
 	}
 
-	Individual(int current_time,
-			   EQ& event_queue,
-			   RNG &rng,
+	Individual(IndividualSimContext isc,
 			   IndividualInitData data,
+			   IndividualHandlers handles,
 			   string name,
 			   long householdID, int birthDate, Sex sex,
 			   Pointer<Individual> spouse,
@@ -162,44 +164,41 @@ public:
 			   MarriageStatus marriageStatus) :
 			   // Pointer<Params> params,
 			   // Pointer<map<string, DataFrameFile>> fileData) :
-	  event_queue(event_queue),
-	  rng(rng),
-	  name(name),
-	  householdID(householdID), 
-	  birthDate(birthDate), 
-	  sex(sex), 
-	  pregnant(false),
-	  spouse(spouse),
-	  mother(mother), 
-	  father(father), 
-	  offspring(offspring),
-	  householdPosition(householdPosition),
-	  marriageStatus(marriageStatus),
-	  onART(false),
-	  hivStatus(HIVStatus::Negative),
-	  dead(false),
-	  TB(current_time,
-	  	 name,
-	  	 sex,
-	  	 event_queue,
-	  	 rng,
-	  	 CreateTBData(data),
-		 std::bind(&Individual::age<int>, this, std::placeholders::_1),
-		 std::bind(&Individual::Alive, this),
-		 std::bind(&Individual::DummyCD4count, this, std::placeholders::_1),
-		 std::bind(&Individual::DummyHouseholdTBStatus, this),
-		 std::bind(&Individual::GetHIVStatus, this),
-		 std::bind(&Individual::DummyDeathHandler, this, std::placeholders::_1),
-		 10*365) {
-		 // DummyTBIncidence) {
-		 // params,
-		 // fileData) {
-	  };
+	    event_queue(isc.event_queue),
+	    rng(isc.rng),
+	    fileData(isc.fileData),
+	    params(isc.params),
+	    name(name),
+	    handles(handles),
+	    householdID(householdID), 
+	    birthDate(birthDate), 
+	    sex(sex), 
+	    pregnant(false),
+	    spouse(spouse),
+	    mother(mother), 
+	    father(father), 
+	    offspring(offspring),
+	    householdPosition(householdPosition),
+	    marriageStatus(marriageStatus),
+	    onART(false),
+	    hivStatus(HIVStatus::Negative),
+	    dead(false),
+	    TB(CreateTBData(data),
+	  	   isc,
+	  	   CreateTBHandlers(std::bind(&Individual::TBDeathHandler, this, std::placeholders::_1)),
+	  	   name,
+	  	   sex,
+		   std::bind(&Individual::age<int>, this, std::placeholders::_1),
+		   std::bind(&Individual::Alive, this),
+		   std::bind(&Individual::DummyCD4count, this, std::placeholders::_1),
+		   std::bind(&Individual::DummyHouseholdTBStatus, this),
+		   std::bind(&Individual::GetHIVStatus, this),
+		   2*365) {
+	};
 	
-	Individual(int current_time,
-		       EQ& event_queue,
-		       RNG& rng,
+	Individual(IndividualSimContext isc,
 		       IndividualInitData data,
+		       IndividualHandlers handles,
 		       string name,
 			   long hid, 
 			   int birthDate, 
@@ -208,10 +207,9 @@ public:
 			   MarriageStatus marriageStatus) :
 			   // Pointer<Params> params,
 			   // Pointer<map<string, DataFrameFile>> fileData) :
-	  Individual(current_time,
-	  	         event_queue,
-	  	         rng,
+	  Individual(isc,
 	  	         data,
+	  	         handles,
 	  	         name,
 	  			 hid, 
 	  			 birthDate, 
@@ -229,4 +227,8 @@ private:
 	string name;
 	EQ& event_queue;
 	RNG& rng;
+	map<string, DataFrameFile>& fileData;
+	Params& params;
+
+	IndividualHandlers handles;
 };

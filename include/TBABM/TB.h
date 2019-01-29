@@ -34,50 +34,43 @@ public:
 	using CD4         = double;
 	using HouseholdTB = bool;
 
-	TB(int current_time,
+	TB(TBData initData,
+	   TBSimContext initCtx,
+	   TBHandlers initHandlers,
 	   string name,
 	   SexT sex,
-	   EQ& event_queue,
-	   RNG& rng,
-	   TBData initData,
 	   function<Age(Time)> AgeStatus,
 	   function<Alive(void)> AliveStatus,
 	   function<CD4(Time)> CD4Count,
 	   function<HouseholdTB(void)> HouseholdStatus,
 	   function<HIVStatus(void)> HIVStatus,
 
-	   function<void(Time)> DeathHandler,
-	   
 	   double risk_window, // unit: [days]
 	   
-	   // Pointer<IncidenceTimeSeries<int>> TBIncidence,
-
-	   // Pointer<Params> params,
-	   // Pointer<map<string, DataFrameFile>> fileData,
-
 	   TBStatus tb_status = TBStatus::Susceptible) :
 		name(name),
 		sex(sex),
-		event_queue(event_queue),
-		rng(rng),
-		data(initData),
 		AgeStatus(AgeStatus),
 		AliveStatus(AliveStatus),
 		CD4Count(CD4Count),
 		HouseholdStatus(HouseholdStatus),
 		HIVStatus(HIVStatus),
-		DeathHandler(DeathHandler),
+		DeathHandler(initHandlers.death),
+
+		data(initData),
+		eq(initCtx.event_queue),
+		rng(initCtx.rng),
+		fileData(initCtx.fileData),
+		params(initCtx.params),
+
 		risk_window(risk_window),
-		// TBIncidence(TBIncidence),
-		// params(params)
-		// fileData(fileData),
 		tb_status(tb_status),
 		tb_treatment_status(TBTreatmentStatus::None),
 		risk_window_id(0)
 	{
-		InfectionRiskEvaluate(current_time);
+		InfectionRiskEvaluate(initCtx.current_time);
 
-		data.tbSusceptible.Record(current_time, +1);
+		data.tbSusceptible.Record(initCtx.current_time, +1);
 	}
 
 	~TB(void);
@@ -114,7 +107,7 @@ private:
 	// schedule the beginning of treatment.
 	// 
 	// If no treatment, recovery or death is scheduled.
-	bool InfectInfectious(Time, StrainType);
+	void InfectInfectious(Time, StrainType);
 
 	// Marks an individual as having begun treatment.
 	// Decides if they will complete treatment, or drop
@@ -138,13 +131,15 @@ private:
 	TBStatus tb_status;
 	TBTreatmentStatus tb_treatment_status;
 
-
 	// All of these are from the constructor
 	string name;
 	SexT sex;
 
-	EQ& event_queue;
+	EQ& eq;
 	RNG& rng;
+	map<string, DataFrameFile>& fileData;
+	Params& params;
+
 	TBData data;
 
     function<Age(Time)> AgeStatus;

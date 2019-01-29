@@ -51,8 +51,6 @@ public:
 	using EventFunc = EQ::EventFunc;
 	using SchedulerT = EQ::SchedulerT;
 
-	
-
 	enum class TBABMData {
 		HIVNegative, 
 		HIVPositiveART, 
@@ -170,13 +168,15 @@ public:
 		seed(seed),
 		rng(seed),
 		householdGen(householdsFile, 
-					 std::make_shared<Params>(params),
-					 std::make_shared<map<string, DataFrameFile>>(fileData),
+					 params,
+					 fileData,
 					 eq,
 					 {tbInfections, tbConversions, tbRecoveries, \
 					  tbSusceptible, tbInfected, tbLatent, tbInfectious, \
 					  tbTreatmentBegin, tbTreatmentEnd, tbTreatmentDropout, \
 					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment},
+					 CreateIndividualHandlers([this] (Pointer<Individual> i, int t, DeathCause dc) -> void
+					 						  { return Schedule(t, Death(i, dc)); }),
 					 seed + 1, // Little bit of a hack
 					 name_gen),
 		name_gen(rng) {

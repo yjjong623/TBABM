@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <Bernoulli.h>
+#include <Exponential.h>
 
 #include "../../include/TBABM/IndividualTypes.h"
 #include "../../include/TBABM/TB.h"
@@ -105,16 +106,20 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 			  << (int)HouseholdStatus() << " household status, " \
 			  << (int)(HIVStatus() == HIVStatus::Positive) << " HIV status" << termcolor::reset << std::endl;
 
-	if (Bernoulli(0.1)(rng.mt_)) // Will this individual be infected now?
-		if (Bernoulli(0.9)(rng.mt_)) // Will they become latently infected, or progress rapidly?
-			InfectLatent(t, StrainType::Unspecified);
-		else
-		 	InfectInfectious(t, StrainType::Unspecified);
-	else
-		event_queue.QuickSchedule(t + risk_window, 
-			[this, risk_window_local] 
-			(auto t_new, auto sched) -> bool 
+	double timeToInfection {0.0};
+
+	if ((timeToInfection = Exponential(0.05, 0.)(rng.mt_)) < risk_window/365) // Will this individual be infected now?
+		if (Bernoulli(0.9)(rng.mt_)) {// Will they become latently infected, or progress rapidly?
+			InfectLatent(t + timeToInfection, StrainType::Unspecified);
+		} else {
+			InfectInfectious(t + timeToInfection, StrainType::Unspecified);
+		}
+	else {
+		eq.QuickSchedule(t + risk_window, \
+			[this, risk_window_local] \
+			(auto t_new, auto sched) -> bool \
 			{ return InfectionRiskEvaluate(t_new, risk_window_local); });
+	}
 
 	return true;
 }
@@ -127,30 +132,35 @@ template <typename T>
 void
 TB<T>::InfectLatent(Time t, StrainType)
 {
-	if (!AliveStatus())
-		return;
+	auto lambda = [this] (auto ts, auto) -> bool {
+		if (!AliveStatus())
+			return true;
 
-	if (tb_status == TBStatus::Infectious) {
-		printf("Warning: TB::Infect: Individual is already has infectous TB. Multiple infections not supported. Behavior undefined\n");
-		return;
-	}
+		if (tb_status == TBStatus::Infectious) {
+			printf("Warning: TB::Infect: Individual is already has infectous TB. Multiple infections not supported. Behavior undefined\n");
+			return true;
+		}
 
-	Log(t, "TB infection: Latent");
+		Log(ts, "TB infection: Latent");
 
-	data.tbSusceptible.Record(t, -1);
-	data.tbInfected.Record(t, +1);
-	data.tbLatent.Record(t, +1);
+		data.tbSusceptible.Record(ts, -1);
+		data.tbInfected.Record(ts, +1);
+		data.tbLatent.Record(ts, +1);
 
-	data.tbInfections.Record(t, +1);
+		data.tbInfections.Record(ts, +1);
 
-	// Mark as latently infected
-	tb_status = TBStatus::Latent;
+		// Mark as latently infected
+		tb_status = TBStatus::Latent;
 
-	// Decide whether individual will become infectious
-	if (Bernoulli(0.5)(rng.mt_))
-		event_queue.QuickSchedule(t + 200, 
-			[this] (auto ts, auto) -> bool { return InfectInfectious(ts, StrainType::Unspecified); });
-	
+		// Decide whether individual will become infectious
+		if (Bernoulli(0.5)(rng.mt_))
+			InfectInfectious(ts + 200, StrainType::Unspecified);
+		
+		return true;
+	};
+
+	eq.QuickSchedule(t, lambda);
+
 	return;
 }
 
@@ -159,36 +169,43 @@ TB<T>::InfectLatent(Time t, StrainType)
 // 
 // If no treatment, recovery or death is scheduled.
 template <typename T>
-bool
+void
 TB<T>::InfectInfectious(Time t, StrainType)
 {
-	if (!AliveStatus())
+	auto lambda = [this] (auto ts, auto) -> bool {
+		if (!AliveStatus())
+			return true;
+
+		if (tb_status == TBStatus::Infectious) {
+			printf("Warning: TB::Infect: Individual is already infected. Multiple infections not supported. Behavior undefined\n");
+			return true;
+		}
+
+		Log(ts, "TB infection: Infectious");
+
+		data.tbLatent.Record(ts, -1);
+		data.tbInfectious.Record(ts, +1);
+
+		data.tbConversions.Record(ts, +1);
+
+		// Mark as infectious
+		tb_status = TBStatus::Infectious;
+
+		// Decide whether individual will enter treatment
+		if (Bernoulli(0.5)(rng.mt_))
+			TreatmentBegin(ts);
+		else if (Bernoulli(0.5)(rng.mt_)) // Decide whether individual recovers or dies
+			Recovery(ts + 365*Exponential(0.15, 0.)(rng.mt_), RecoveryType::Natural);
+		else {
+			DeathHandler(ts + 365*Exponential(0.25, 0.)(rng.mt_));
+		}
+		
 		return true;
+	};
 
-	if (tb_status == TBStatus::Infectious) {
-		printf("Warning: TB::Infect: Individual is already infected. Multiple infections not supported. Behavior undefined\n");
-		return true;
-	}
+	eq.QuickSchedule(t, lambda);
 
-	Log(t, "TB infection: Infectious");
-
-	data.tbLatent.Record(t, -1);
-	data.tbInfectious.Record(t, +1);
-
-	data.tbConversions.Record(t, +1);
-
-	// Mark as infectious
-	tb_status = TBStatus::Infectious;
-
-	// Decide whether individual will enter treatment
-	if (Bernoulli(0.5)(rng.mt_))
-		TreatmentBegin(t);
-	else if (Bernoulli(0.5)(rng.mt_)) // Decide whether individual recovers or dies
-		Recovery(t, RecoveryType::Natural);
-	else
-		DeathHandler(t);
-	
-	return true;
+	return;
 }
 
 // Marks an individual as having begun treatment.
@@ -198,26 +215,33 @@ template <typename T>
 void
 TB<T>::TreatmentBegin(Time t)
 {
-	if (!AliveStatus())
-		return;
+	auto lambda = [this] (auto ts, auto) -> bool {
+		if (!AliveStatus())
+			return true;
 
-	if (tb_status != TBStatus::Infectious) {
-		printf("Error: Cannot begin treatment for non-infectious TB\n");
-		return;
-	}
+		if (tb_status != TBStatus::Infectious) {
+			printf("Error: Cannot begin treatment for non-infectious TB\n");
+			return true;
+		}
 
-	Log(t, "TB treatment begin");
+		Log(ts, "TB treatment begin");
 
-	data.tbInfectious.Record(t, -1);
-	data.tbInTreatment.Record(t, +1);
-	data.tbTreatmentBegin.Record(t, +1);
+		data.tbInfectious.Record(ts, -1);
+		data.tbInTreatment.Record(ts, +1);
+		data.tbTreatmentBegin.Record(ts, +1);
 
-	tb_treatment_status = TBTreatmentStatus::Incomplete;
+		tb_treatment_status = TBTreatmentStatus::Incomplete;
 
-	if (Bernoulli(0.5)(rng.mt_)) // Will they complete treatment?
-		TreatmentComplete(t);
-	else
-		TreatmentDropout(t);
+		if (Bernoulli(0.93)(rng.mt_)) {// Will they complete treatment? Assume 93% yes
+			TreatmentComplete(ts + 0.50*365);
+		} else {
+			TreatmentDropout(ts + 0.42*365); // Assume 0.42 years
+		}
+
+		return true;
+	};
+
+	eq.QuickSchedule(t, lambda);
 
 	return;
 }
@@ -226,16 +250,22 @@ template <typename T>
 void
 TB<T>::TreatmentDropout(Time t)
 {
-	if (!AliveStatus())
-		return;
+	auto lambda = [this] (auto ts, auto) -> bool {
+		if (!AliveStatus())
+			return true;
 
-	Log(t, "TB treatment dropout");
+		Log(ts, "TB treatment dropout");
 
-	data.tbDroppedTreatment.Record(t, +1);
-	data.tbTreatmentDropout.Record(t, +1);
+		data.tbDroppedTreatment.Record(ts, +1);
+		data.tbTreatmentDropout.Record(ts, +1);
 
-	tb_treatment_status = TBTreatmentStatus::Incomplete;
-	
+		tb_treatment_status = TBTreatmentStatus::Incomplete;
+		
+		return true;
+	};
+
+	eq.QuickSchedule(t, lambda);
+
 	return;
 }
 
@@ -243,18 +273,24 @@ template <typename T>
 void
 TB<T>::TreatmentComplete(Time t)
 {
-	if (!AliveStatus())
-		return;
+	auto lambda = [this] (auto ts, auto) -> bool {
+		if (!AliveStatus())
+			return true;
 
-	Log(t, "TB treatment complete");
+		Log(ts, "TB treatment complete");
 
-	data.tbTreatmentEnd.Record(t, +1);
-	data.tbCompletedTreatment.Record(t, +1);
+		data.tbTreatmentEnd.Record(ts, +1);
+		data.tbCompletedTreatment.Record(ts, +1);
 
-	tb_treatment_status = TBTreatmentStatus::Complete;
+		tb_treatment_status = TBTreatmentStatus::Complete;
 
-	Recovery(t, RecoveryType::Treatment);
-	
+		Recovery(ts, RecoveryType::Treatment);
+		
+		return true;
+	};
+
+	eq.QuickSchedule(t, lambda);
+
 	return;
 }
 
@@ -263,16 +299,22 @@ template <typename T>
 void
 TB<T>::Recovery(Time t, RecoveryType)
 {
-	if (!AliveStatus())
-		return;
+	auto lambda = [this] (auto ts, auto) -> bool {
+		if (!AliveStatus())
+			return true;
 
-	Log(t, "TB recovery");
+		Log(ts, "TB recovery");
 
-	data.tbRecoveries.Record(t, +1);
-	data.tbInfectious.Record(t, -1);
-	data.tbLatent.Record(t, +1);
+		data.tbRecoveries.Record(ts, +1);
+		data.tbInfectious.Record(ts, -1);
+		data.tbLatent.Record(ts, +1);
 
-	tb_status = TBStatus::Latent;
+		tb_status = TBStatus::Latent;
+
+		return true;
+	};
+
+	eq.QuickSchedule(t, lambda);
 
 	return;
 }

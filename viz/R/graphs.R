@@ -63,6 +63,20 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     hivCD4Decline         = function(n_samples) hivCD4Decline(ps, ds, n_samples),
     hivSurvivalNoART      = function() hivSurvivalNoART(ds),
     
+    tbInfections = function() Graph(Loader, "tbInfections", "Time (years)", ""),
+    tbConversions = function() Graph(Loader, "tbConversions", "Time (years)", ""),
+    tbRecoveries = function() Graph(Loader, "tbRecoveries", "Time (years)", ""),
+    tbSusceptible = function() Graph(Loader, "tbSusceptible", "Time (years)", ""),
+    tbInfected = function() Graph(Loader, "tbInfected", "Time (years)", ""),
+    tbLatent = function() Graph(Loader, "tbLatent", "Time (years)", ""),
+    tbInfectious = function() Graph(Loader, "tbInfectious", "Time (years)", ""),
+    tbTreatmentBegin = function() Graph(Loader, "tbTreatmentBegin", "Time (years)", ""),
+    tbTreatmentEnd = function() Graph(Loader, "tbTreatmentEnd", "Time (years)", ""),
+    tbTreatmentDropout = function() Graph(Loader, "tbTreatmentDropout", "Time (years)", ""),
+    tbInTreatment = function() Graph(Loader, "tbInTreatment", "Time (years)", ""),
+    tbCompletedTreatment = function() Graph(Loader, "tbCompletedTreatment", "Time (years)", ""),
+    tbDroppedTreatment = function() Graph(Loader, "tbDroppedTreatment", "Time (years)", ""),
+    
     # ageAtInfection        = function() Hist(Loader, "meanSurvivalTimeNoART", "age.at.infection", "Age at Infection"),
     # meanSurvivalTimeNoART = function() Hist(Loader, "meanSurvivalTimeNoART", "years.lived", "Years lived with HIV, no ART"),
     

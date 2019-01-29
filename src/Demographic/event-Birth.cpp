@@ -33,12 +33,15 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 				tbTreatmentBegin, tbTreatmentEnd, tbTreatmentDropout, \
 				tbInTreatment, tbCompletedTreatment, tbDroppedTreatment};
 
+			auto deathHandler = [this] (Pointer<Individual> idv, int t, DeathCause cause) -> void { 
+				return Schedule(t, Death(idv, cause));
+			};
+
 			// Construct baby
 			auto baby = std::make_shared<Individual>(
-				t,
-				eq,
-				rng,
+				CreateIndividualSimContext(t, eq, rng, fileData, params),
 				initData,
+				CreateIndividualHandlers(deathHandler),
 				name_gen.getName(),
 				mother->householdID, t, sex,
 				Pointer<Individual>(), mother, father,

@@ -15,5 +15,9 @@ TBData CreateTBData(IndividualInitData data) {
         data.tbInTreatment,
         data.tbCompletedTreatment,
         data.tbDroppedTreatment
-	};
+    };
+}
+
+TBHandlers CreateTBHandlers(function<void(int)> death) {
+    return {death};
 }

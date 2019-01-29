@@ -17,7 +17,6 @@ HouseholdGen::GetHousehold(const int current_time, const int hid)
 	std::uniform_int_distribution<> dis(0, size-1);
 	auto fid = dis(gen);
 
-
 	// Retrieve the corresponding vector
 	MicroFamily family = families[fid];
 
@@ -25,8 +24,27 @@ HouseholdGen::GetHousehold(const int current_time, const int hid)
 	//   household; create an Individual using the smaller
 	//   constructor
 	MicroIndividual _head = family[0];
-	auto head = std::make_shared<Individual>(current_time, event_queue, rng, initData, name_gen.getName(), hid, 0-365*_head.age, _head.sex, _head.role, MarriageStatus::Single); //, params, fileData);
-	auto newIndividuals = std::vector<Pointer<Individual>>{head};
+
+	auto initSimContext = CreateIndividualSimContext(current_time, 
+		event_queue, 
+		rng,
+		fileData,
+		params
+	);
+
+	auto head = std::make_shared<Individual>(
+		initSimContext,
+		initData,
+		initHandles,
+		name_gen.getName(), 
+		hid, 
+		0-365*_head.age, 
+		_head.sex, 
+		_head.role, 
+		MarriageStatus::Single
+	); //, params, fileData);
+	
+	auto newIndividuals = std::vector<Pointer<Individual>> { head };
 
 	// Add this object to the household as the head
 	household->head = head;
@@ -39,8 +57,19 @@ HouseholdGen::GetHousehold(const int current_time, const int hid)
 	for (int i = 1; i < family.size(); ++i)
 	{
 		MicroIndividual midv = family[i];
-		auto idv = std::make_shared<Individual>(current_time, event_queue, rng, initData, name_gen.getName(), hid, 0-365*midv.age, midv.sex, midv.role, MarriageStatus::Single); //, params, fileData);
+		auto idv = std::make_shared<Individual>(
+			initSimContext,
+			initData,
+			initHandles,
+			name_gen.getName(), 
+			hid, 
+			0-365*midv.age, 
+			midv.sex, 
+			midv.role, 
+			MarriageStatus::Single);
+
 		newIndividuals.push_back(idv);
+
 		switch (idv->householdPosition) {
 			case (HouseholdPosition::Head):
 				std::cout << "Error: Can't have two household heads" << std::endl;
@@ -49,9 +78,9 @@ HouseholdGen::GetHousehold(const int current_time, const int hid)
 				idv->marriageStatus = MarriageStatus::Married;
 
 				household->spouse = idv;
-				
 				idv->spouse = household->head; // bidirectional
 				household->head->spouse = idv;
+
 				household->head->marriageStatus = MarriageStatus::Married;
 				break;
 			case (HouseholdPosition::Offspring):
@@ -72,13 +101,12 @@ HouseholdGen::GetHousehold(const int current_time, const int hid)
 				if (household->spouse) {
 					if (household->spouse->sex == Sex::Female) {
 						idv->mother = household->spouse;
-					}
-					else {
+					} else {
 						idv->father = household->spouse;
 					}
 				}
-				
 				break;
+
 			case (HouseholdPosition::Other):
 				idv->marriageStatus = MarriageStatus::Single;
 				household->other.insert(idv);

@@ -40,14 +40,15 @@ public:
 	Pointer<Household> GetHousehold(int current_time, int hid);
 
 	HouseholdGen(const char *file,
-                 Pointer<Params> params,
-                 Pointer<map<string, DataFrameFile>> fileData,
+                 Params& params,
+                 map<string, DataFrameFile>& fileData,
                  EQ& event_queue,
                  IndividualInitData initData,
+                 IndividualHandlers handles,
                  long seed,
                  Names& name_gen) : file(file), params(params), fileData(fileData), 
-									event_queue(event_queue), initData(initData),rng(seed), 
-									name_gen(name_gen) {
+									event_queue(event_queue), initData(initData),
+									initHandles(handles), rng(seed), name_gen(name_gen) {
 			FILE *ifile = fopen(file, "r");
 			int c;
 			int lines = 2;
@@ -117,12 +118,13 @@ public:
 private:
 	std::vector<MicroFamily> families;
 
-	Pointer<Params> params;
-    Pointer<map<string, DataFrameFile>> fileData;
+	Params& params;
+    map<string, DataFrameFile>& fileData;
 
     EQ& event_queue;
     RNG rng;
     IndividualInitData initData;
+    IndividualHandlers initHandles;
     Names& name_gen;
 
 	const char *file;
