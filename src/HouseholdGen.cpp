@@ -28,8 +28,8 @@ HouseholdGen::GetHousehold(const int current_time, const int hid)
 	auto initSimContext = CreateIndividualSimContext(current_time, 
 		event_queue, 
 		rng,
-		fileData,
-		params
+		*fileData,
+		*params
 	);
 
 	auto head = std::make_shared<Individual>(

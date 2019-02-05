@@ -42,6 +42,9 @@ TB<T>::GetTBStatus(Time t)
 	return tb_status;
 }
 
+// Right now, changing the risk window is disabled. However, calling this function will
+// still trigger an immediate InfectionRiskEvaluate and disable any other scheduled
+// InfectionRiskEvaluates.
 template <typename T>
 void
 TB<T>::RiskReeval(Time t)
@@ -51,8 +54,8 @@ TB<T>::RiskReeval(Time t)
 	printf("RiskReeval\n");
 
 	// CONDITIONS THAT MAY CHANGE RISK WINDOW
-	if (HIVStatus() == HIVStatus::Positive)
-		risk_window = 365; // unit: [days]
+	// if (HIVStatus() == HIVStatus::Positive)
+		// risk_window = 2*365; // unit: [days]
 
 	// /END CONDITIONS THAT MAY CHANGE RISK WINDOW
 
@@ -109,8 +112,8 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 
 		double timeToInfection {0.0};
 
-		if ((timeToInfection = Exponential(0.05, 0.)(rng.mt_)) < risk_window/365) // Will this individual be infected now?
-			if (Bernoulli(0.9)(rng.mt_)) {// Will they become latently infected, or progress rapidly?
+		if ((timeToInfection = params["TB_risk"].Sample(rng)) < risk_window/365) // Will this individual be infected now?
+			if (!params["TB_rapidprog_risk"].Sample(rng)) { // Will they become latently infected, or progress rapidly?
 				InfectLatent(ts + timeToInfection, StrainType::Unspecified);
 			} else {
 				InfectInfectious(ts + timeToInfection, StrainType::Unspecified);
@@ -156,9 +159,9 @@ TB<T>::InfectLatent(Time t, StrainType)
 		tb_status = TBStatus::Latent;
 
 		// Decide whether individual will become infectious
-		if (Bernoulli(0.5)(rng.mt_))
-			InfectInfectious(ts + 200, StrainType::Unspecified);
-		
+		if (params["TB_prog_risk"].Sample(rng))
+			InfectInfectious(ts + params["TB_prog_time"].Sample(rng), StrainType::Unspecified);
+
 		return true;
 	};
 
@@ -195,12 +198,12 @@ TB<T>::InfectInfectious(Time t, StrainType)
 		tb_status = TBStatus::Infectious;
 
 		// Decide whether individual will enter treatment
-		if (Bernoulli(0.5)(rng.mt_))
-			TreatmentBegin(ts);
-		else if (Bernoulli(0.5)(rng.mt_)) // Decide whether individual recovers or dies
-			Recovery(ts + 365*Exponential(0.15, 0.)(rng.mt_), RecoveryType::Natural);
+		if (params["TB_Tx_init"].Sample(rng))
+			TreatmentBegin(ts); // They begin treatment immediately
+		else if (params["TB_p_recov"].Sample(rng)) // Decide whether individual recovers or dies
+			Recovery(ts + 365*params["TB_t_recov"].Sample(rng), RecoveryType::Natural);
 		else {
-			DeathHandler(ts + 365*Exponential(0.25, 0.)(rng.mt_));
+			DeathHandler(ts + 365*params["TB_t_death"].Sample(rng));
 		}
 		
 		return true;
@@ -235,10 +238,10 @@ TB<T>::TreatmentBegin(Time t)
 
 		tb_treatment_status = TBTreatmentStatus::Incomplete;
 
-		if (Bernoulli(0.93)(rng.mt_)) {// Will they complete treatment? Assume 93% yes
-			TreatmentComplete(ts + 0.50*365);
+		if (params["TB_p_Tx_cmp"].Sample(rng)) {// Will they complete treatment? Assume 93% yes
+			TreatmentComplete(ts + params["TB_t_Tx_cmp"].Sample(rng));
 		} else {
-			TreatmentDropout(ts + 0.42*365); // Assume 0.42 years
+			TreatmentDropout(ts + params["TB_t_Tx_drop"].Sample(rng)); // Assume 0.42 years
 		}
 
 		return true;

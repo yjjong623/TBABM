@@ -103,7 +103,7 @@ public:
 		SingleToLooking
 	};
 
-	TBABM(Params params, 
+	TBABM(Params _params, 
 		  std::map<string, long double> constants,
 		  const char *householdsFile, 
 		  long seed,
@@ -111,7 +111,7 @@ public:
 		  std::shared_ptr<ofstream> householdSurvey,
 		  std::shared_ptr<ofstream> deathSurvey) : 
 
-		params(params),
+		params(_params),
 		constants(constants),
 
 		births(         "births",          0, constants["tMax"], constants["periodLength"]),
@@ -168,8 +168,8 @@ public:
 		seed(seed),
 		rng(seed),
 		householdGen(householdsFile, 
-					 params,
-					 fileData,
+					 std::make_shared<Params>(params),
+					 std::make_shared<map<string, DataFrameFile>>(fileData),
 					 eq,
 					 {tbInfections, tbConversions, tbRecoveries, \
 					  tbSusceptible, tbInfected, tbLatent, tbInfectious, \
