@@ -1,3 +1,4 @@
+
 #include "../include/TBABM/TBABM.h"
 #include <Uniform.h>
 #include <Empirical.h>
@@ -101,7 +102,7 @@ TBABM::GetData<PrevalencePyramidTimeSeries>(TBABMData field)
 
 bool TBABM::Run(void)
 {
-    CreatePopulation(0, 100);
+    CreatePopulation(0, 10000);
     Schedule(1, Matchmaking());
     Schedule(1, UpdatePyramid());
     Schedule(1, UpdateHouseholds());

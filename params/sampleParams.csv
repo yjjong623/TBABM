@@ -28,8 +28,8 @@ HIV prevalence - 1990,HIV_prevalence_1990,f,../params/HIV/prevalence - 1990.json
 Exogenous birth rate,annualBirthRate,v,Constant,(value),0.02,,,,F
 TB - Risk of infection,TB_risk,v,Exponential,(rate-shift),0.05,0,,,T
 TB - Prob of immediate progression,TB_rapidprog_risk,v,Bernoulli,p,0.10,,,,T
-TB - Prob of slow progression,TB_prog_risk,v,Bernoulli,p,0.50,,,,T
-TB - Time to progression,TB_prog_time,v,Constant,(value),200,,,,T
+TB - Prob of slow progression,TB_prog_risk,v,Bernoulli,p,0.15,,,,T
+TB - Time to progression,TB_prog_time,v,Constant,(value),10,,,,T
 TB - Prob of entering treatment,TB_Tx_init,v,Bernoulli,p,0.5,,,,T
 TB - Prob of natural recovery,TB_p_recov,v,Bernoulli,p,0.5,,,,T
 TB - Time to recovery from conv,TB_t_recov,v,Exponential,(rate-shift),0.15,0,,,T

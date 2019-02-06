@@ -160,7 +160,7 @@ TB<T>::InfectLatent(Time t, StrainType)
 
 		// Decide whether individual will become infectious
 		if (params["TB_prog_risk"].Sample(rng))
-			InfectInfectious(ts + params["TB_prog_time"].Sample(rng), StrainType::Unspecified);
+			InfectInfectious(ts + 365*params["TB_prog_time"].Sample(rng), StrainType::Unspecified);
 
 		return true;
 	};
@@ -232,16 +232,15 @@ TB<T>::TreatmentBegin(Time t)
 
 		Log(ts, "TB treatment begin");
 
-		data.tbInfectious.Record(ts, -1);
 		data.tbInTreatment.Record(ts, +1);
 		data.tbTreatmentBegin.Record(ts, +1);
 
 		tb_treatment_status = TBTreatmentStatus::Incomplete;
 
 		if (params["TB_p_Tx_cmp"].Sample(rng)) {// Will they complete treatment? Assume 93% yes
-			TreatmentComplete(ts + params["TB_t_Tx_cmp"].Sample(rng));
+			TreatmentComplete(ts + 365*params["TB_t_Tx_cmp"].Sample(rng));
 		} else {
-			TreatmentDropout(ts + params["TB_t_Tx_drop"].Sample(rng)); // Assume 0.42 years
+			TreatmentDropout(ts + 365*params["TB_t_Tx_drop"].Sample(rng)); // Assume 0.42 years
 		}
 
 		return true;
@@ -262,7 +261,7 @@ TB<T>::TreatmentDropout(Time t)
 
 		Log(ts, "TB treatment dropout");
 
-		data.tbDroppedTreatment.Record(ts, +1);
+		data.tbDroppedTreatment.Record(ts, +1); 
 		data.tbTreatmentDropout.Record(ts, +1);
 
 		tb_treatment_status = TBTreatmentStatus::Incomplete;

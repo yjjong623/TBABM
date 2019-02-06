@@ -63,16 +63,23 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     hivCD4Decline         = function(n_samples) hivCD4Decline(ps, ds, n_samples),
     hivSurvivalNoART      = function() hivSurvivalNoART(ds),
     
+    # All seems to check out, but are the rates realistic?
     tbInfections = function() Graph(Loader, "tbInfections", "Time (years)", "Infections/year") + ggtitle("Infections"),
     tbConversions = function() Graph(Loader, "tbConversions", "Time (years)", "Conversions/year") + ggtitle("Conversions Latent->Active"),
     tbRecoveries = function() Graph(Loader, "tbRecoveries", "Time (years)", "Recoveries/year") + ggtitle("Recoveries"),
+    
+    # At end there are supposedly 8k Susceptible, but probably some of them are dead. Check
     tbSusceptible = function() Graph(Loader, "tbSusceptible", "Time (years)", ""),
     tbInfected = function() Graph(Loader, "tbInfected", "Time (years)", ""),
-    tbLatent = function() Graph(Loader, "tbLatent", "Time (years)", ""),
-    tbInfectious = function() Graph(Loader, "tbInfectious", "Time (years)", ""),
+    tbLatent = function() Graph(Loader, "tbLatent", "Time (years)", ""), # Good, seems like most people's TB never progresses
+    tbInfectious = function() Graph(Loader, "tbInfectious", "Time (years)", ""), # This is definitely wrong
+    
+    # Seems good
     tbTreatmentBegin = function() Graph(Loader, "tbTreatmentBegin", "Time (years)", ""),
     tbTreatmentEnd = function() Graph(Loader, "tbTreatmentEnd", "Time (years)", ""),
     tbTreatmentDropout = function() Graph(Loader, "tbTreatmentDropout", "Time (years)", ""),
+    
+    # Might be screwy
     tbInTreatment = function() Graph(Loader, "tbInTreatment", "Time (years)", "Individuals in treatment"),
     tbCompletedTreatment = function() Graph(Loader, "tbCompletedTreatment", "Time (years)", "Individuals completing treatment"),
     tbDroppedTreatment = function() Graph(Loader, "tbDroppedTreatment", "Time (years)", "Individuals dropping out"),
