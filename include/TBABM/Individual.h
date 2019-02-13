@@ -49,7 +49,7 @@ public:
 
 	MarriageStatus marriageStatus;
 
-	string Name(void) {return name;};
+	string Name(void) { return name; };
 
 	// HIV stuff
 	int t_HIV_infection;
@@ -153,9 +153,9 @@ public:
 
 	Individual(IndividualSimContext isc,
 			   IndividualInitData data,
-			   IndividualHandlers handles,
+			   IndividualHandlers handles_,
 			   string name,
-			   long householdID, int birthDate, Sex sex,
+			   long householdID_, int birthDate, Sex sex,
 			   Pointer<Individual> spouse,
 			   Pointer<Individual> mother,
 			   Pointer<Individual> father,
@@ -169,8 +169,8 @@ public:
 	    fileData(isc.fileData),
 	    params(isc.params),
 	    name(name),
-	    handles(handles),
-	    householdID(householdID), 
+	    handles(handles_),
+	    householdID(householdID_), 
 	    birthDate(birthDate), 
 	    sex(sex), 
 	    pregnant(false),
@@ -184,7 +184,7 @@ public:
 	    hivStatus(HIVStatus::Negative),
 	    dead(false),
 	    TB(CreateTBData(data),
-	  	   isc,
+	  	   std::forward<IndividualSimContext>(isc),
 	  	   CreateTBHandlers(std::bind(&Individual::TBDeathHandler, this, std::placeholders::_1)),
 	  	   name,
 	  	   sex,
@@ -193,8 +193,9 @@ public:
 		   std::bind(&Individual::DummyCD4count, this, std::placeholders::_1),
 		   std::bind(&Individual::DummyHouseholdTBStatus, this),
 		   std::bind(&Individual::GetHIVStatus, this),
-		   2*365) {
-	};
+		   handles_.GlobalTBPrevalence,
+		   [this] (int t) -> double { return handles.HouseholdTBPrevalence(t, householdID); },
+		   2*365) {};
 	
 	Individual(IndividualSimContext isc,
 		       IndividualInitData data,

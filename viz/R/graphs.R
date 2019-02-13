@@ -25,6 +25,7 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
   ds <- Loader("deathSurvey")
 
   list(
+    Loader                = Loader,
     ps                    = ps,
     hs                    = hs,
     ds                    = ds,
@@ -72,7 +73,7 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     tbSusceptible = function() Graph(Loader, "tbSusceptible", "Time (years)", ""),
     tbInfected = function() Graph(Loader, "tbInfected", "Time (years)", ""),
     tbLatent = function() Graph(Loader, "tbLatent", "Time (years)", ""), # Good, seems like most people's TB never progresses
-    tbInfectious = function() Graph(Loader, "tbInfectious", "Time (years)", ""), # This is definitely wrong
+    tbInfectious = function() Graph(Loader, "tbInfectious", "Time (years)", ""), # This is fixed now
     
     # Seems good
     tbTreatmentBegin = function() Graph(Loader, "tbTreatmentBegin", "Time (years)", ""),
@@ -104,4 +105,52 @@ cat <- CreateGraphCatalog(outputLocation)
   # geom_hline(yintercept = 16.99) + DEATHRATE
   # geom_hline(yintercept = 3) + MARRIAGERATE
   # geom_hline(yintercept = 0.4) + DIVORCERATE
+
+Prepper <- function(cat) function(string) mutate(cat$Loader(string), type=string)
+
+
+# TB events
+map(c("tbInfections", "tbConversions", "tbRecoveries"), Prepper(cat)) %>%
+  bind_rows() %>%
+  ggplot(aes(period, value, color=type, group=type)) + 
+  geom_line() +
+  labs(x="Time (years)", y = "Events/year", title="Infection events") +
+  theme(legend.title = element_blank()) +
+  scale_color_discrete(name="Data type", 
+                       breaks=c("tbInfections", "tbConversions", "tbRecoveries"),
+                       labels=c("TB Conversions", "TB Infections", "TB Recoveries"))
+
+# TB compared to population size
+map(c("populationSize", "tbLatent", "tbInfectious"), Prepper(cat)) %>%
+  bind_rows() %>%
+  ggplot(aes(period, value, color=type, group=type)) + 
+    geom_line() +
+    labs(x="Time (years)", y = "People", title="TB and Population Size") +
+    theme(legend.title = element_blank()) +
+    scale_color_discrete(name="Data type", 
+                         breaks=c("populationSize", "tbLatent", "tbInfectious"),
+                         labels=c("Population size", "Latent TB", "Infectious TB"))
+
+# TB + Tx events
+map(c("tbInfections", "tbConversions", "tbRecoveries", "tbTreatmentBegin", "tbTreatmentEnd", "tbTreatmentDropout"), Prepper(cat)) %>%
+  bind_rows() %>%
+  ggplot(aes(period, value, color=type, group=type)) + 
+    geom_line() +
+  labs(x="Time (years)", y = "Events/year", title="All TB Events") +
+  theme(legend.title = element_blank()) +
+  scale_color_discrete(name="Data type", 
+                       breaks=c("tbInfections", "tbConversions", "tbRecoveries", "tbTreatmentBegin", "tbTreatmentEnd", "tbTreatmentDropout"),
+                       labels=c("TB Conversions", "TB Infections", "TB Recoveries", "Tx Init", "Tx End", "Tx Dropout"))
+
+
+# TB + Tx events
+map(c("tbInTreatment", "tbCompletedTreatment", "tbDroppedTreatment"), Prepper(cat)) %>%
+  bind_rows() %>%
+  ggplot(aes(period, value, color=type, group=type)) + 
+    geom_line() +
+  labs(x="Time (years)", y = "# People", title="Treatment status distribution") +
+  theme(legend.title = element_blank()) +
+  scale_color_discrete(name="Data type", 
+                       breaks=c("tbInTreatment", "tbCompletedTreatment", "tbDroppedTreatment"),
+                       labels=c("In Treatment", "Completed Treatment", "Dropped Treatment"))
 

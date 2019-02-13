@@ -67,6 +67,9 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 			// it is now safe to erase them from the population
 			population.erase(idv);
 			
+			// Advise TB object that individual has died
+			idv->TB.HandleDeath(t);
+
 			// Update various metrics
 			populationSize.Record(t, -1);
 			deaths.Record(t, +1);

@@ -45,6 +45,8 @@ public:
 	   function<CD4(Time)> CD4Count,
 	   function<HouseholdTB(void)> HouseholdStatus,
 	   function<HIVStatus(void)> HIVStatus,
+	   function<double(Time)> GlobalTBPrevalence,
+	   function<double(Time)> HouseholdTBPrevalence,
 
 	   double risk_window, // unit: [days]
 	   
@@ -56,6 +58,9 @@ public:
 		CD4Count(CD4Count),
 		HouseholdStatus(HouseholdStatus),
 		HIVStatus(HIVStatus),
+		GlobalTBPrevalence(GlobalTBPrevalence),
+		HouseholdTBPrevalence(HouseholdTBPrevalence),
+
 		DeathHandler(initHandlers.death),
 
 		data(initData),
@@ -79,8 +84,13 @@ public:
 	~TB(void);
 
 	TBStatus GetTBStatus(Time);
+
 	void RiskReeval(Time);
 	void Investigate(void);
+
+	// Called by containing Individual upon death, neccessary
+	// to update TimeSeries data.
+	void HandleDeath(Time);
 
 private:
 
@@ -150,6 +160,8 @@ private:
     function<CD4(Time)> CD4Count;
     function<HouseholdTB(void)> HouseholdStatus;
     function<HIVStatus(void)> HIVStatus;
+    function<double(Time)> GlobalTBPrevalence;
+	function<double(Time)> HouseholdTBPrevalence;
  
     function<void(Time)> DeathHandler;
         

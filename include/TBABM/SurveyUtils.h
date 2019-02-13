@@ -24,3 +24,5 @@ string ART(IPt idv); // bool
 string ART_date(IPt idv); // in days
 string CD4(IPt idv, double t, double m_30);
 string ART_baseline_CD4(IPt idv, double m_30);
+
+string TBStatus(IPt idv, int t);

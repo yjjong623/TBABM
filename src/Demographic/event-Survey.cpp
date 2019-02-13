@@ -44,7 +44,8 @@ EventFunc TBABM::Survey(void)
 							+ dad(idv) + s
 							+ HIV(idv) + s
 							+ ART(idv) + s
-							+ CD4(idv, t, params["HIV_m_30"].Sample(rng))
+							+ CD4(idv, t, params["HIV_m_30"].Sample(rng)) + s
+							+ TBStatus(idv, t)
 							+ "\n";
 
 				buf += line;

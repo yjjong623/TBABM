@@ -30,14 +30,14 @@ template <typename T>
 TBStatus
 TB<T>::GetTBStatus(Time t)
 {
-	std::cout << termcolor::on_red << "[" << (int)t << "] GetTBStatus" << termcolor::reset;
+	// std::cout << termcolor::on_red << "[" << (int)t << "] GetTBStatus" << termcolor::reset;
 
-	switch(tb_status) {
-		case (TBStatus::Susceptible): std::cout << " Susceptible\n"; break;
-		case (TBStatus::Latent):      std::cout << " Latent\n"; break;
-		case (TBStatus::Infectious):  std::cout << " Infectious\n"; break;
-		default:				      std::cout << " UNSUPPORTED TB type!\n";
-	}
+	// switch(tb_status) {
+	// 	case (TBStatus::Susceptible): std::cout << " Susceptible\n"; break;
+	// 	case (TBStatus::Latent):      std::cout << " Latent\n"; break;
+	// 	case (TBStatus::Infectious):  std::cout << " Infectious\n"; break;
+	// 	default:				      std::cout << " UNSUPPORTED TB type!\n";
+	// }
 
 	return tb_status;
 }
@@ -74,6 +74,36 @@ TB<T>::Investigate(void)
 	return;
 }
 
+template <typename T>
+void
+TB<T>::HandleDeath(Time t)
+{
+	switch(tb_status) {
+		case (TBStatus::Susceptible):
+			data.tbSusceptible.Record(t, -1); break;
+		case (TBStatus::Latent):
+			data.tbLatent.Record(t, -1);
+			data.tbInfected.Record(t, -1); break;
+		case (TBStatus::Infectious):
+			data.tbInfectious.Record(t, -1); break;
+			data.tbInfected.Record(t, -1); break;
+		default: std::cout << "Error: UNSUPPORTED TBStatus!" << std::endl;
+	}
+
+	switch(tb_treatment_status) {
+		case (TBTreatmentStatus::None): break;
+		case (TBTreatmentStatus::Incomplete):
+			data.tbInTreatment.Record(t, -1); break;
+		case (TBTreatmentStatus::Complete):
+			data.tbCompletedTreatment.Record(t, -1); break;
+		case (TBTreatmentStatus::Dropout):
+			data.tbDroppedTreatment.Record(t, -1); break;
+		default: std::cout << "Error: UNSUPPORTED TBTreatmentStatus!" << std::endl;
+	}
+
+	return;
+}
+
 // Evaluates the risk of infection according to age,
 // sex, year, CD4 count, and household TB presence.
 // May schedule TB infection.
@@ -91,10 +121,8 @@ void
 TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 {
 	auto lambda = [this, risk_window_local] (auto ts, auto) -> bool {
-		if (risk_window_local != risk_window_id) {
-			std::cout << termcolor::on_grey << "[" << std::left << std::setw(12) << name << std::setw(5) << std::right << (int)ts << "] InfectionRiskEvaluate aborted" << termcolor::reset << std::endl;
+		if (risk_window_local != risk_window_id)
 			return true;
-		}
 
 		if (!AliveStatus())
 			return true;
@@ -108,11 +136,23 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 				  << std::setw(2) << AgeStatus(ts) << " years old, " \
 				  << std::setw(4) << (int)CD4Count(ts) << " cells/ml, " \
 				  << (int)HouseholdStatus() << " household status, " \
-				  << (int)(HIVStatus() == HIVStatus::Positive) << " HIV status" << termcolor::reset << std::endl;
+				  << (int)(HIVStatus() == HIVStatus::Positive) << " HIV status, " \
+				  << GlobalTBPrevalence(ts) << " g_prev, " \
+				  << HouseholdTBPrevalence(ts) << " h_prev" << termcolor::reset << std::endl;
 
+		bool infectAtInit {false};
 		double timeToInfection {0.0};
+		
+		double risk_global {GlobalTBPrevalence(ts) * (double)params["TB_risk_global"].Sample(rng)};
+		double risk_local  {HouseholdTBPrevalence(ts) * (double)params["TB_risk_local"].Sample(rng)};
+		double risk {0.0000001 + risk_global + risk_local};
 
-		if ((timeToInfection = params["TB_risk"].Sample(rng)) < risk_window/365) // Will this individual be infected now?
+		if (ts < 365 && Bernoulli(0.12)(rng.mt_))
+			infectAtInit = true;
+		else
+			timeToInfection = Exponential(risk)(rng.mt_);
+
+		if (timeToInfection < risk_window/365 || infectAtInit) // Will this individual be infected now?
 			if (!params["TB_rapidprog_risk"].Sample(rng)) { // Will they become latently infected, or progress rapidly?
 				InfectLatent(ts + timeToInfection, StrainType::Unspecified);
 			} else {
@@ -237,6 +277,8 @@ TB<T>::TreatmentBegin(Time t)
 
 		tb_treatment_status = TBTreatmentStatus::Incomplete;
 
+		Recovery(ts, RecoveryType::Treatment);
+
 		if (params["TB_p_Tx_cmp"].Sample(rng)) {// Will they complete treatment? Assume 93% yes
 			TreatmentComplete(ts + 365*params["TB_t_Tx_cmp"].Sample(rng));
 		} else {
@@ -289,7 +331,7 @@ TB<T>::TreatmentComplete(Time t)
 
 		tb_treatment_status = TBTreatmentStatus::Complete;
 
-		Recovery(ts, RecoveryType::Treatment);
+		// Recovery(ts, RecoveryType::Treatment);
 		
 		return true;
 	};

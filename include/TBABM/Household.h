@@ -5,6 +5,7 @@
 
 #include "Individual.h"
 #include "IndividualTypes.h"
+#include "TBTypes.h"
 
 template <typename T>
 using Pointer = std::shared_ptr<T>;
@@ -144,6 +145,23 @@ public:
 
 	bool hasMember(Pointer<Individual> idv) {
 		return head == idv || spouse == idv || offspring.count(idv) == 1 || other.count(idv) == 1;
+	}
+
+	double TBPrevalence(int t) {
+		double numInfected {0};
+
+		numInfected += head->TB.GetTBStatus(t) == TBStatus::Infectious ? 1 : 0;
+
+		if (spouse)
+			numInfected += spouse->TB.GetTBStatus(t) == TBStatus::Infectious ? 1 : 0;
+
+		for (auto idv : offspring)
+			numInfected += idv->TB.GetTBStatus(t) == TBStatus::Infectious ? 1 : 0;
+
+		for (auto idv : other)
+			numInfected += idv->TB.GetTBStatus(t) == TBStatus::Infectious ? 1 : 0;
+
+		return size() == 0. ? 0. : numInfected/(double)size();
 	}
 
 	Household(Pointer<Individual> head,

@@ -76,3 +76,12 @@ string CD4(IPt idv, double t, double m_30) {
 string ART_baseline_CD4(IPt idv, double m_30) {
 	return to_string(idv->ART_init_CD4);
 }
+
+string TBStatus(IPt idv, int t) {
+	switch (idv->TB.GetTBStatus(t)) {
+		case TBStatus::Susceptible: return "Susceptible"; break;
+		case TBStatus::Latent:		return "Latent"; break;
+		case TBStatus::Infectious:  return "Infectious"; break;
+		default:				    return "UNSUPPORTED TBStatus";
+	}
+}

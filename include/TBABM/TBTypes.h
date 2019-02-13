@@ -35,10 +35,10 @@ typedef struct TBData {
 
 TBData CreateTBData(IndividualInitData data);
 
-typedef IndividualSimContext TBSimContext; // For right now these are the same
-
 typedef struct TBHandlers {
 	function<void(int)> death;
 } TBHandlers;
 
 TBHandlers CreateTBHandlers(function<void(int)> death);
+
+typedef IndividualSimContext TBSimContext; // For right now these are the same

@@ -175,8 +175,17 @@ public:
 					  tbSusceptible, tbInfected, tbLatent, tbInfectious, \
 					  tbTreatmentBegin, tbTreatmentEnd, tbTreatmentDropout, \
 					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment},
-					 CreateIndividualHandlers([this] (Pointer<Individual> i, int t, DeathCause dc) -> void
-					 						  { return Schedule(t, Death(i, dc)); }),
+					 CreateIndividualHandlers([this] (Pointer<Individual> i, int t, DeathCause dc) -> void \
+					 						  { return Schedule(t, Death(i, dc)); },
+					 						  [this] (int t) -> double { return (double)tbInfectious(t)/(double)populationSize(t); },
+											  [this] (int t, int householdID) -> double {
+												auto household = households.at(householdID);
+												if (household)
+													return household->TBPrevalence(t); 
+												else
+													return 0;
+											  }),
+
 					 seed + 1, // Little bit of a hack
 					 name_gen),
 		name_gen(rng) {
