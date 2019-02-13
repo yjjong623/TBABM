@@ -161,7 +161,12 @@ public:
 		for (auto idv : other)
 			numInfected += idv->TB.GetTBStatus(t) == TBStatus::Infectious ? 1 : 0;
 
-		return size() == 0. ? 0. : numInfected/(double)size();
+		if (size() == 0)
+			return 0.
+		else if (size() == 1)
+			return numInfected;
+		else
+			return numInfected/((double)size() - 1);
 	}
 
 	Household(Pointer<Individual> head,
