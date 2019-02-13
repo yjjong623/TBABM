@@ -195,7 +195,7 @@ public:
 		   std::bind(&Individual::GetHIVStatus, this),
 		   handles_.GlobalTBPrevalence,
 		   [this] (int t) -> double { return handles.HouseholdTBPrevalence(t, householdID); },
-		   2*365) {};
+		   5*365) {};
 	
 	Individual(IndividualSimContext isc,
 		       IndividualInitData data,

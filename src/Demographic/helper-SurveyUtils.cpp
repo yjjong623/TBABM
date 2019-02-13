@@ -49,6 +49,7 @@ string causeDeath(DeathCause cause_death) {
 	switch (cause_death) {
 		case DeathCause::HIV:      return "HIV";      break;			
 		case DeathCause::Natural:  return "natural";  break;
+		case DeathCause::TB:       return "TB";       break;
 		default:		           return "UNSUPPORTED cause of death";
 	}
 }
@@ -58,7 +59,10 @@ string HIV(IPt idv) {
 }
 
 string HIV_date(IPt idv) {
-	return to_string(idv->t_HIV_infection);
+	if (idv->hivStatus == HIVStatus::Positive)
+		return to_string(idv->t_HIV_infection);
+	else
+		return to_string(0);
 }
 
 string ART(IPt idv) {
@@ -66,7 +70,7 @@ string ART(IPt idv) {
 }
 
 string ART_date(IPt idv) {
-	return to_string(idv->ARTInitTime);
+	return to_string(idv->onART ? idv->ARTInitTime : 0);
 }
 
 string CD4(IPt idv, double t, double m_30) {
@@ -74,7 +78,7 @@ string CD4(IPt idv, double t, double m_30) {
 }
 
 string ART_baseline_CD4(IPt idv, double m_30) {
-	return to_string(idv->ART_init_CD4);
+	return to_string(idv->onART ? idv->ART_init_CD4 : 0);
 }
 
 string TBStatus(IPt idv, int t) {

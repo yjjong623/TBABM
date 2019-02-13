@@ -19,10 +19,10 @@ template <typename T>
 void
 TB<T>::Log(Time t, string msg)
 {
-	std::cout << termcolor::on_green << "[" << std::left \
-			  << std::setw(12) << name << std::setw(5) << std::right \
-			  << (int)t << "] " \
-			  << msg << termcolor::reset << std::endl;
+	// std::cout << termcolor::on_green << "[" << std::left \
+	// 		  << std::setw(12) << name << std::setw(5) << std::right \
+	// 		  << (int)t << "] " \
+	// 		  << msg << termcolor::reset << std::endl;
 }
 
 
@@ -130,15 +130,15 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 		if (tb_status == TBStatus::Infectious)
 			return true;
 
-		std::cout << termcolor::on_blue << "[" << std::left \
-				  << std::setw(12) << name << std::setw(5) << std::right \
-				  << (int)ts << "] InfectionRiskEvaluate" << termcolor::reset << " " \
-				  << std::setw(2) << AgeStatus(ts) << " years old, " \
-				  << std::setw(4) << (int)CD4Count(ts) << " cells/ml, " \
-				  << (int)HouseholdStatus() << " household status, " \
-				  << (int)(HIVStatus() == HIVStatus::Positive) << " HIV status, " \
-				  << GlobalTBPrevalence(ts) << " g_prev, " \
-				  << HouseholdTBPrevalence(ts) << " h_prev" << termcolor::reset << std::endl;
+		// std::cout << termcolor::on_blue << "[" << std::left \
+		// 		  << std::setw(12) << name << std::setw(5) << std::right \
+		// 		  << (int)ts << "] InfectionRiskEvaluate" << termcolor::reset << " " \
+		// 		  << std::setw(2) << AgeStatus(ts) << " years old, " \
+		// 		  << std::setw(4) << (int)CD4Count(ts) << " cells/ml, " \
+		// 		  << (int)HouseholdStatus() << " household status, " \
+		// 		  << (int)(HIVStatus() == HIVStatus::Positive) << " HIV status, " \
+		// 		  << GlobalTBPrevalence(ts) << " g_prev, " \
+		// 		  << HouseholdTBPrevalence(ts) << " h_prev" << termcolor::reset << std::endl;
 
 		bool infectAtInit {false};
 		double timeToInfection {0.0};

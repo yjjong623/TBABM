@@ -91,7 +91,7 @@ EventFunc TBABM::Survey(void)
 
 			*householdSurvey << buf;
 
-			Schedule(t + 1*365, Survey());
+			Schedule(t + 10*365, Survey());
 
 			return true;
 		};

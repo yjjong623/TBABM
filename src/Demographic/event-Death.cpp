@@ -30,6 +30,8 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 			          << idv->Name() << std::setw(5) << std::right \
 			          << (int)t << "] Death" << termcolor::reset << std::endl;
 
+			SurveyDeath(idv, t, deathCause);
+
 			// Look up household, and assert that this household actually exists
 			auto household = households[idv->householdID];
 			assert(household);
@@ -81,8 +83,6 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 			if (idv->hivStatus == HIVStatus::Positive &&
 				idv->onART)
 				hivPositiveART.Record(t, -1);
-
-			SurveyDeath(idv, t, deathCause);
 
 			return true;
 		};

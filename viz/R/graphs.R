@@ -112,7 +112,7 @@ Prepper <- function(cat) function(string) mutate(cat$Loader(string), type=string
 # TB events
 map(c("tbInfections", "tbConversions", "tbRecoveries"), Prepper(cat)) %>%
   bind_rows() %>%
-  ggplot(aes(period, value, color=type, group=type)) + 
+  ggplot(aes(period, value, color=type, group=interaction(type, trajectory))) + 
   geom_line() +
   labs(x="Time (years)", y = "Events/year", title="Infection events") +
   theme(legend.title = element_blank()) +
@@ -123,7 +123,7 @@ map(c("tbInfections", "tbConversions", "tbRecoveries"), Prepper(cat)) %>%
 # TB compared to population size
 map(c("populationSize", "tbLatent", "tbInfectious"), Prepper(cat)) %>%
   bind_rows() %>%
-  ggplot(aes(period, value, color=type, group=type)) + 
+  ggplot(aes(period, value, color=type, group=interaction(type, trajectory))) + 
     geom_line() +
     labs(x="Time (years)", y = "People", title="TB and Population Size") +
     theme(legend.title = element_blank()) +
@@ -134,7 +134,7 @@ map(c("populationSize", "tbLatent", "tbInfectious"), Prepper(cat)) %>%
 # TB + Tx events
 map(c("tbInfections", "tbConversions", "tbRecoveries", "tbTreatmentBegin", "tbTreatmentEnd", "tbTreatmentDropout"), Prepper(cat)) %>%
   bind_rows() %>%
-  ggplot(aes(period, value, color=type, group=type)) + 
+  ggplot(aes(period, value, color=type, group=interaction(type, trajectory))) + 
     geom_line() +
   labs(x="Time (years)", y = "Events/year", title="All TB Events") +
   theme(legend.title = element_blank()) +
@@ -143,10 +143,10 @@ map(c("tbInfections", "tbConversions", "tbRecoveries", "tbTreatmentBegin", "tbTr
                        labels=c("TB Conversions", "TB Infections", "TB Recoveries", "Tx Init", "Tx End", "Tx Dropout"))
 
 
-# TB + Tx events
+# TB + Tx pools
 map(c("tbInTreatment", "tbCompletedTreatment", "tbDroppedTreatment"), Prepper(cat)) %>%
   bind_rows() %>%
-  ggplot(aes(period, value, color=type, group=type)) + 
+  ggplot(aes(period, value, color=type, group=interaction(type, trajectory))) + 
     geom_line() +
   labs(x="Time (years)", y = "# People", title="Treatment status distribution") +
   theme(legend.title = element_blank()) +

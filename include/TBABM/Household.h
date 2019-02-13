@@ -162,7 +162,7 @@ public:
 			numInfected += idv->TB.GetTBStatus(t) == TBStatus::Infectious ? 1 : 0;
 
 		if (size() == 0)
-			return 0.
+			return 0.;
 		else if (size() == 1)
 			return numInfected;
 		else
