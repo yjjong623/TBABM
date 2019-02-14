@@ -43,7 +43,6 @@ public:
 	   function<Age(Time)> AgeStatus,
 	   function<Alive(void)> AliveStatus,
 	   function<CD4(Time)> CD4Count,
-	   function<HouseholdTB(void)> HouseholdStatus,
 	   function<HIVStatus(void)> HIVStatus,
 	   function<double(Time)> GlobalTBPrevalence,
 	   function<double(Time)> HouseholdTBPrevalence,
@@ -56,7 +55,6 @@ public:
 		AgeStatus(AgeStatus),
 		AliveStatus(AliveStatus),
 		CD4Count(CD4Count),
-		HouseholdStatus(HouseholdStatus),
 		HIVStatus(HIVStatus),
 		GlobalTBPrevalence(GlobalTBPrevalence),
 		HouseholdTBPrevalence(HouseholdTBPrevalence),
@@ -158,15 +156,9 @@ private:
     function<Age(Time)> AgeStatus;
     function<Alive(void)> AliveStatus;
     function<CD4(Time)> CD4Count;
-    function<HouseholdTB(void)> HouseholdStatus;
     function<HIVStatus(void)> HIVStatus;
     function<double(Time)> GlobalTBPrevalence;
 	function<double(Time)> HouseholdTBPrevalence;
  
-    function<void(Time)> DeathHandler;
-        
-    // Pointer<IncidenceTimeSeries<int>> TBIncidence;
- 
-    // Pointer<Params> params;
-    // Pointer<map<string, DataFrameFile>> fileData;
+    function<void(Time)> DeathHandler;        
 };

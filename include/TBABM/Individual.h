@@ -64,11 +64,7 @@ public:
 	// TB stuff
 	TB<Sex> TB;
 	double DummyCD4count(double t_cur) {
-		return CD4count(t_cur, 0.6);
-	}
-
-	bool DummyHouseholdTBStatus(void) {
-		return false;
+		return CD4count(t_cur, params["HIV_m_30"].Sample(rng));
 	}
 
 	void TBDeathHandler(int t) {
@@ -190,8 +186,7 @@ public:
 	  	   sex,
 		   std::bind(&Individual::age<int>, this, std::placeholders::_1),
 		   std::bind(&Individual::Alive, this),
-		   std::bind(&Individual::DummyCD4count, this, std::placeholders::_1),
-		   std::bind(&Individual::DummyHouseholdTBStatus, this),
+		   [this] (int t) -> double { return CD4count(t, params["HIV_m_30"].Sample(rng)); },
 		   std::bind(&Individual::GetHIVStatus, this),
 		   handles_.GlobalTBPrevalence,
 		   [this] (int t) -> double { return handles.HouseholdTBPrevalence(t, householdID); },
