@@ -38,26 +38,23 @@ public:
 	TB(TBData initData,
 	   TBSimContext initCtx,
 	   TBHandlers initHandlers,
+	   TBQueryHandlers initQueryHandlers,
+
 	   string name,
 	   SexT sex,
-	   function<Age(Time)> AgeStatus,
-	   function<Alive(void)> AliveStatus,
-	   function<CD4(Time)> CD4Count,
-	   function<HIVStatus(void)> HIVStatus,
-	   function<double(Time)> GlobalTBPrevalence,
-	   function<double(Time)> HouseholdTBPrevalence,
 
 	   double risk_window, // unit: [days]
 	   
 	   TBStatus tb_status = TBStatus::Susceptible) :
+		AgeStatus(initQueryHandlers.Age),
+		AliveStatus(initQueryHandlers.Alive),
+		CD4Count(initQueryHandlers.CD4Count),
+		HIVStatus(initQueryHandlers.HIVStatus),
+		GlobalTBPrevalence(initQueryHandlers.GlobalTBPrevalence),
+		HouseholdTBPrevalence(initQueryHandlers.HouseholdTBPrevalence),
+
 		name(name),
 		sex(sex),
-		AgeStatus(AgeStatus),
-		AliveStatus(AliveStatus),
-		CD4Count(CD4Count),
-		HIVStatus(HIVStatus),
-		GlobalTBPrevalence(GlobalTBPrevalence),
-		HouseholdTBPrevalence(HouseholdTBPrevalence),
 
 		DeathHandler(initHandlers.death),
 

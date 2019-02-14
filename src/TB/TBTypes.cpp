@@ -21,3 +21,21 @@ TBData CreateTBData(IndividualInitData data) {
 TBHandlers CreateTBHandlers(function<void(int)> death) {
     return {death};
 }
+
+
+TBQueryHandlers CreateTBQueryHandlers(function<int(Time)> Age,
+                                      function<bool(void)> Alive,
+                                      function<double(Time)> CD4Count,
+                                      function<HIVStatus(void)> HIVStatus,
+                                      function<double(Time)> GlobalTBPrevalence,
+                                      function<double(Time)> HouseholdTBPrevalence)
+{
+    return {
+        Age,
+        Alive,
+        CD4Count,
+        HIVStatus,
+        GlobalTBPrevalence,
+        HouseholdTBPrevalence
+    };
+}

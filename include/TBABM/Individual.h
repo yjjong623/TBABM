@@ -17,6 +17,8 @@
 template <typename T>
 using Pointer = std::shared_ptr<T>;
 
+using Time = int;
+
 using std::vector;
 using std::string;
 
@@ -63,9 +65,6 @@ public:
 
 	// TB stuff
 	TB<Sex> TB;
-	double DummyCD4count(double t_cur) {
-		return CD4count(t_cur, params["HIV_m_30"].Sample(rng));
-	}
 
 	void TBDeathHandler(int t) {
 		return handles.death(
@@ -75,17 +74,18 @@ public:
 		);
 	}
 
-	HIVStatus GetHIVStatus(void) {
-		return hivStatus;
+	TBQueryHandlers TBQueryHandlersInit(void) {
+		return CreateTBQueryHandlers(
+			[this] (Time t) -> int     { return age(t); },
+			[this] (void) -> bool      { return !dead; },
+			[this] (Time t) -> double  { return CD4count(t, params["HIV_m_30"].Sample(rng)); },
+			[this] (void) -> HIVStatus { return hivStatus; },
+			[this] (Time t) -> double  { return handles.GlobalTBPrevalence(t); },
+			[this] (Time t) -> double  { return handles.HouseholdTBPrevalence(t, householdID); }
+		);
 	}
-
-	Pointer<IncidenceTimeSeries<int>> DummyTBIncidence;
 
 	bool dead;
-
-	bool Alive(void) {
-		return !dead;
-	}
 
 	template <class T = int>
 	T age(double t) {
@@ -182,14 +182,9 @@ public:
 	    TB(CreateTBData(data),
 	  	   std::forward<IndividualSimContext>(isc),
 	  	   CreateTBHandlers(std::bind(&Individual::TBDeathHandler, this, std::placeholders::_1)),
+	  	   TBQueryHandlersInit(),
 	  	   name,
 	  	   sex,
-		   std::bind(&Individual::age<int>, this, std::placeholders::_1),
-		   std::bind(&Individual::Alive, this),
-		   [this] (int t) -> double { return CD4count(t, params["HIV_m_30"].Sample(rng)); },
-		   std::bind(&Individual::GetHIVStatus, this),
-		   handles_.GlobalTBPrevalence,
-		   [this] (int t) -> double { return handles.HouseholdTBPrevalence(t, householdID); },
 		   5*365) {};
 	
 	Individual(IndividualSimContext isc,
