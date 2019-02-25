@@ -19,8 +19,8 @@ using namespace StatisticalDistributions;
 //   or sets
 EventFunc TBABM::CreateHousehold(Pointer<Individual> head,
 								 Pointer<Individual> spouse,
-								 std::unordered_set<Pointer<Individual>> offspring,
-								 std::unordered_set<Pointer<Individual>> other)
+								 std::vector<Pointer<Individual>> offspring,
+								 std::vector<Pointer<Individual>> other)
 {
 	EventFunc ef = 
 		[this, head, spouse, offspring, other](double t, SchedulerT scheduler) {

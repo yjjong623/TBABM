@@ -1,6 +1,5 @@
 #pragma once
 
-#include <unordered_set>
 #include <cassert>
 
 #include "Individual.h"
@@ -14,8 +13,8 @@ class Household {
 public:
 	Pointer<Individual> head;
 	Pointer<Individual> spouse;
-	std::unordered_set<Pointer<Individual>> offspring;
-	std::unordered_set<Pointer<Individual>> other;
+	std::vector<Pointer<Individual>> offspring;
+	std::vector<Pointer<Individual>> other;
 
 	void AddIndividual(Pointer<Individual> idv, HouseholdPosition hp, int hid) {
 
@@ -49,38 +48,31 @@ public:
 		if (hp == HouseholdPosition::Head) {
 			if (head) {
 				head->householdPosition = HouseholdPosition::Other;
-				other.insert(head);
+				other.push_back(head);
 			}
 			head = idv;
 		}
 		else if (hp == HouseholdPosition::Spouse) {
 			if (spouse) {
-				other.insert(spouse);
+				other.push_back(spouse);
 				spouse->householdPosition = HouseholdPosition::Other;
 			}
 			spouse = idv;
 		}
 		else if (hp == HouseholdPosition::Other) {
-			other.insert(idv);
+			other.push_back(idv);
 		}
 		else if (hp == HouseholdPosition::Offspring) {
-			offspring.insert(idv);
+			offspring.push_back(idv);
 		}
 
 		return;
 	}
 
 	void RemoveIndividual(Pointer<Individual> idv) {
-
 		assert(idv);
-
-		bool c1 = head == idv;
-		bool c2 = spouse == idv;
-		bool c3 = offspring.count(idv) == 1;
-		bool c4 = other.count(idv) == 1;
-		assert(c1 || c2 || c3 || c4);
-
-
+		if (!hasMember(idv))
+			return;
 		if (head == idv) {
 			head.reset();
 			// Find a new head
@@ -93,7 +85,7 @@ public:
 						if (*it && !(*it)->dead) {
 							head = *it;
 							head->householdPosition = HouseholdPosition::Head;
-							offspring.erase(*it);
+							offspring.erase(it);
 							break;
 						}
 					}
@@ -102,7 +94,7 @@ public:
 					if (*it && !(*it)->dead) {
 						head = *it;
 						head->householdPosition = HouseholdPosition::Head;
-						other.erase(*it);
+						other.erase(it);
 						break;
 					}
 				}
@@ -110,10 +102,26 @@ public:
 				// There is nobody to replace the head.
 			}
 		}
+
+
 		if (spouse == idv)
 			spouse.reset();
-		offspring.erase(idv);
-		other.erase(idv);
+
+
+		for (auto it = offspring.begin(); it != offspring.end(); it++) {
+			if (*it == idv) {
+				offspring.erase(it);
+				break;
+			}
+		}
+
+		for (auto it = other.begin(); it != other.end(); it++)
+			if (*it == idv) {
+				other.erase(it);
+				break;
+			}
+
+		return;
 	}
 
 	void PrintHousehold(int t) {
@@ -144,7 +152,18 @@ public:
 	}
 
 	bool hasMember(Pointer<Individual> idv) {
-		return head == idv || spouse == idv || offspring.count(idv) == 1 || other.count(idv) == 1;
+		if ((head == idv) || (spouse == idv))
+			return true;
+
+		for (auto candidate : offspring)
+			if (candidate == idv)
+				return true;
+
+		for (auto candidate : other)
+			if (candidate == idv)
+				return true;
+
+		return false;
 	}
 
 	double TBPrevalence(int t) {
@@ -171,8 +190,8 @@ public:
 
 	Household(Pointer<Individual> head,
 			  Pointer<Individual> spouse,
-			  std::unordered_set<Pointer<Individual>> offspring,
-			  std::unordered_set<Pointer<Individual>> other) : 
+			  std::vector<Pointer<Individual>> offspring,
+			  std::vector<Pointer<Individual>> other) : 
 		head(head), 
 		spouse(spouse), 
 		offspring(offspring), 

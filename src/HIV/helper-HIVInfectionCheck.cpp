@@ -18,7 +18,7 @@ EventFunc TBABM::HIVInfectionCheck(Pointer<Individual> idv)
 {
 	EventFunc ef = 
 		[this, idv](double t, SchedulerT scheduler) {
-			// printf("[%d] HIVInfectionCheck\n", t);
+			// printf("[%s %d] HIVInfectionCheck\n", idv->Name().c_str(), (int)t);
 
 			if (!idv || idv->dead || idv->hivStatus == HIVStatus::Positive)
 				return true;

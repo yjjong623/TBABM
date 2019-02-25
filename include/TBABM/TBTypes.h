@@ -39,9 +39,11 @@ TBData CreateTBData(IndividualInitData data);
 
 typedef struct TBHandlers {
 	function<void(int)> death;
+	function<void(Time)> TBProgression;
 } TBHandlers;
 
-TBHandlers CreateTBHandlers(function<void(int)> death);
+TBHandlers CreateTBHandlers(function<void(int)> death,
+							function<void(Time)> TBProgression);
 
 typedef struct TBQueryHandlers {
 	function<int(Time)> Age;

@@ -1,4 +1,3 @@
-
 #include "../include/TBABM/TBABM.h"
 #include <Uniform.h>
 #include <Empirical.h>
@@ -119,7 +118,6 @@ bool TBABM::Run(void)
 
         e->run();
         eq.Pop();
-        // delete e;
     }
 
     births.Close();

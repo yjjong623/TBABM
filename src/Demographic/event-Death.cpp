@@ -26,10 +26,6 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 			if (!idv || idv->dead)
 				return true;
 
-			std::cout << termcolor::on_green << "[" << std::left << std::setw(12) \
-			          << idv->Name() << std::setw(5) << std::right \
-			          << (int)t << "] Death" << termcolor::reset << std::endl;
-
 			SurveyDeath(idv, t, deathCause);
 
 			// Look up household, and assert that this household actually exists
@@ -37,10 +33,19 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 			assert(household);
 
 			// Eliminate from Looking pools
-			if (idv->sex == Sex::Male)
-				maleSeeking.erase(idv);
-			else
-				femaleSeeking.erase(idv);
+			if (idv->sex == Sex::Male) {
+				for (auto it = maleSeeking.begin(); it != maleSeeking.end(); it++)
+					if (*it == idv) {
+						maleSeeking.erase(it);
+						break;
+					}
+			} else {
+				for (auto it = femaleSeeking.begin(); it != femaleSeeking.end(); it++)
+					if (*it == idv) {
+						femaleSeeking.erase(it);
+						break;
+					}
+			}
 
 			// Advise spouse that they are now widowed
 			if (idv->spouse)
@@ -67,7 +72,11 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 
 			// With 'idv' cut out of others records, and their household,
 			// it is now safe to erase them from the population
-			population.erase(idv);
+			for (auto it = population.begin(); it != population.end(); it++)
+				if (*it == idv) {
+					population.erase(it);
+					break;
+				}
 			
 			// Advise TB object that individual has died
 			idv->TB.HandleDeath(t);

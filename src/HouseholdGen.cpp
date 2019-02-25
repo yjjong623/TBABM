@@ -5,20 +5,15 @@
 #include "../include/TBABM/HouseholdGen.h"
 
 Pointer<Household>
-HouseholdGen::GetHousehold(const int current_time, const int hid)
+HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 {
 	// Create a blank Household object
 	auto household = std::make_shared<Household>();
 
-	// Grab a random number between 0 and size(dataset)-1
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	size_t size = families.size();
-	std::uniform_int_distribution<> dis(0, size-1);
-	auto fid = dis(gen);
-
 	// Retrieve the corresponding vector
-	MicroFamily family = families[fid];
+	size_t size = families.size();
+	size_t idx = rng.mt_() % size;
+	MicroFamily family = families[idx];
 
 	// The first element in the vector is the head of the
 	//   household; create an Individual using the smaller
@@ -36,7 +31,7 @@ HouseholdGen::GetHousehold(const int current_time, const int hid)
 		initSimContext,
 		initData,
 		initHandles,
-		name_gen.getName(), 
+		name_gen.getName(rng), 
 		hid, 
 		0-365*_head.age, 
 		_head.sex, 
@@ -61,7 +56,7 @@ HouseholdGen::GetHousehold(const int current_time, const int hid)
 			initSimContext,
 			initData,
 			initHandles,
-			name_gen.getName(), 
+			name_gen.getName(rng), 
 			hid, 
 			0-365*midv.age, 
 			midv.sex, 
@@ -69,6 +64,7 @@ HouseholdGen::GetHousehold(const int current_time, const int hid)
 			MarriageStatus::Single);
 
 		newIndividuals.push_back(idv);
+
 
 		switch (idv->householdPosition) {
 			case (HouseholdPosition::Head):
@@ -90,7 +86,7 @@ HouseholdGen::GetHousehold(const int current_time, const int hid)
 					household->spouse->offspring.push_back(idv);
 
 				// Add offspring to household
-				household->offspring.insert(idv);
+				household->offspring.push_back(idv);
 
 				// Add mat/paternity to offspring
 				if (household->head->sex == Sex::Male)
@@ -109,7 +105,7 @@ HouseholdGen::GetHousehold(const int current_time, const int hid)
 
 			case (HouseholdPosition::Other):
 				idv->marriageStatus = MarriageStatus::Single;
-				household->other.insert(idv);
+				household->other.push_back(idv);
 				break;
 			default:
 				printf("\t\tError!!\n");

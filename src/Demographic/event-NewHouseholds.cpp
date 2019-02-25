@@ -25,22 +25,22 @@ EventFunc TBABM::NewHouseholds(int num)
 
 			while (popChange < num) {
 				long hid = nHouseholds++;
-				Pointer<Household> hh = householdGen.GetHousehold(t, hid);
+				Pointer<Household> hh = householdGen.GetHousehold(t, hid, rng);
 				households[hid] = hh;
 
 				// Insert all members of the household into the population
-				population.insert(hh->head); popChange++;
+				population.push_back(hh->head); popChange++;
 				if (hh->spouse){
-					population.insert(hh->spouse);
+					population.push_back(hh->spouse);
 					popChange++;
 				}
 				for (auto it = hh->offspring.begin(); it != hh->offspring.end(); it++) {
 					popChange++;
-					population.insert(*it);
+					population.push_back(*it);
 				}
 				for (auto it = hh->other.begin(); it != hh->other.end(); it++) {
 					popChange++;
-					population.insert(*it);
+					population.push_back(*it);
 				}
 			}
 

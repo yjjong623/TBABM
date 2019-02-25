@@ -37,18 +37,17 @@ public:
 
 	using MicroFamily = std::vector<MicroIndividual>;
 
-	Pointer<Household> GetHousehold(int current_time, int hid);
+	Pointer<Household> GetHousehold(int current_time, int hid, RNG &rng);
 
 	HouseholdGen(const char *file,
                  std::shared_ptr<Params>(params),
 				 std::shared_ptr<map<string, DataFrameFile>>(fileData),
                  EQ& event_queue,
                  IndividualInitData initData,
-                 IndividualHandlers handles,
-                 long seed,
-                 Names& name_gen) : file(file), params(params), fileData(fileData), 
+                 IndividualHandlers handles) : 
+									file(file), params(params), fileData(fileData), 
 									event_queue(event_queue), initData(initData),
-									initHandles(handles), rng(seed), name_gen(name_gen) {
+									initHandles(handles) {
 			FILE *ifile = fopen(file, "r");
 			int c;
 			int lines = 2;
@@ -122,10 +121,9 @@ private:
 	std::shared_ptr<map<string, DataFrameFile>>(fileData);
 
     EQ& event_queue;
-    RNG rng;
     IndividualInitData initData;
     IndividualHandlers initHandles;
-    Names& name_gen;
+    Names name_gen;
 
 	const char *file;
 };

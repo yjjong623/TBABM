@@ -30,11 +30,16 @@ int main(int argc, char const *argv[])
 
 	const char *householdsFile = "household_structure.csv";
 
-	int nTrajectories = 5;
+	int nTrajectories = 1;
 
-	auto timestamp = std::time(NULL);	
+	auto timestamp = argc == 1 ? std::time(NULL) : atol(argv[1]);
 
 	RNG rng(timestamp);
+
+	std::ofstream seedLog;
+	seedLog.open("../output/seed_log.txt", std::ios_base::app);
+	seedLog << timestamp << std::endl;
+
 
 	string outputPrefix = "../output/" + to_string(timestamp) + "_";
 

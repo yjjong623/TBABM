@@ -31,7 +31,6 @@
 #include "utils/termcolor.h"
 
 using std::map;
-using std::unordered_set;
 using std::vector;
 using std::string;
 
@@ -106,7 +105,7 @@ public:
 	TBABM(Params _params, 
 		  std::map<string, long double> constants,
 		  const char *householdsFile, 
-		  long seed,
+		  long _seed,
 		  std::shared_ptr<ofstream> populationSurvey,
 		  std::shared_ptr<ofstream> householdSurvey,
 		  std::shared_ptr<ofstream> deathSurvey) : 
@@ -165,8 +164,8 @@ public:
 		seekingART({}),
 
 		nHouseholds(0),
-		seed(seed),
-		rng(seed),
+		seed(_seed),
+		rng(_seed),
 		householdGen(householdsFile, 
 					 std::make_shared<Params>(params),
 					 std::make_shared<map<string, DataFrameFile>>(fileData),
@@ -177,6 +176,7 @@ public:
 					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment},
 					 CreateIndividualHandlers([this] (Pointer<Individual> i, int t, DeathCause dc) -> void \
 					 						  { return Schedule(t, Death(i, dc)); },
+					 						  std::bind(&TBABM::TBProgressionHandler, this, std::placeholders::_1, std::placeholders::_2),
 					 						  [this] (int t) -> double { return (double)tbInfectious(t)/(double)populationSize(t); },
 											  [this] (int t, int householdID) -> double {
 												auto household = households.at(householdID);
@@ -184,11 +184,7 @@ public:
 													return household->TBPrevalence(t); 
 												else
 													return 0;
-											  }),
-
-					 seed + 1, // Little bit of a hack
-					 name_gen),
-		name_gen(rng) {
+											  })) {
 			for (auto it = params.begin(); it != params.end(); it++) {
 				if (it->second.getType() == SimulationLib::Type::file_type) {
 					auto j = JSONImport::fileToJSON(it->second.getFileName());
@@ -199,6 +195,8 @@ public:
 			// Open file for mean survival time
 			meanSurvivalTime.open("../output/meanSurvivalTimeNoART.csv", ios_base::app);
 			meanSurvivalTime << "years lived,age at infection\n";
+
+			printf("Seed is %ld\n", seed);
 		};
 
 	bool Run(void);
@@ -261,8 +259,8 @@ private:
 	// Algorithm S5: Create a household
 	EventFunc CreateHousehold(Pointer<Individual> head,
 						      Pointer<Individual> spouse,
-							  std::unordered_set<Pointer<Individual>> offspring,
-							  std::unordered_set<Pointer<Individual>> other);
+							  std::vector<Pointer<Individual>> offspring,
+							  std::vector<Pointer<Individual>> other);
 
 	// Algorithm S6: Birth
 	EventFunc Birth(Pointer<Individual> mother, Pointer<Individual> father);
@@ -336,6 +334,30 @@ private:
 	void HIVInfectionCheck(int t, Pointer<Individual> idv);
 
 	////////////////////////////////////////////////////////
+	/// TB Utilities
+	////////////////////////////////////////////////////////
+	void TBProgressionHandler(Pointer<Individual> idv, int t){
+		auto hh = households.at(idv->householdID);
+		assert(hh);
+
+		if (hh->head != idv)
+			hh->head->TB.RiskReeval(t);
+		if (hh->spouse && hh->spouse != idv)
+			hh->spouse->TB.RiskReeval(t);
+
+		for (auto p : hh->offspring)
+			if (p && p != idv)
+				p->TB.RiskReeval(t);
+
+		for (auto p : hh->other)
+			if (p && p != idv)
+				p->TB.RiskReeval(t);
+
+		printf("TBProgressionHandler: Finished successfully\n");
+		return;
+	};
+
+	////////////////////////////////////////////////////////
 	/// Scheduling
 	////////////////////////////////////////////////////////
 	EventQueue<> eq;
@@ -349,13 +371,13 @@ private:
 	map<string, DataFrameFile> fileData;
 	Params params;
 
-	unordered_set<Pointer<Individual>> population;
+	vector<Pointer<Individual>> population;
 	map<long, Pointer<Household>> households;
 
-	unordered_set<Pointer<Individual>> maleSeeking;
-	unordered_set<Pointer<Individual>> femaleSeeking;
+	vector<Pointer<Individual>> maleSeeking;
+	vector<Pointer<Individual>> femaleSeeking;
 
-	unordered_set<Pointer<Individual>> seekingART; // Individuals seeking ART
+	vector<Pointer<Individual>> seekingART; // Individuals seeking ART
 
 	Constants constants;
 

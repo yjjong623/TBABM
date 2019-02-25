@@ -18,8 +18,12 @@ TBData CreateTBData(IndividualInitData data) {
     };
 }
 
-TBHandlers CreateTBHandlers(function<void(int)> death) {
-    return {death};
+TBHandlers CreateTBHandlers(function<void(int)> death,
+                            function<void(int)> TBProgression) {
+    return {
+        death,
+        TBProgression
+    };
 }
 
 

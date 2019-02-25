@@ -67,11 +67,11 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 				}
 				else if (!ARTEligible(t, idv)) {
 					// printf("\tART ineligible\n");
-					seekingART.insert(idv);
+					seekingART.push_back(idv);
 				}
 				else {
 					// printf("\tART eligible, but not initiating\n");
-					seekingART.insert(idv);
+					seekingART.push_back(idv);
 				}
 			}
 			else {

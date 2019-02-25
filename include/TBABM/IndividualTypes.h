@@ -17,6 +17,8 @@ using Params = map<string, Param>;
 template <typename T>
 using Pointer = std::shared_ptr<T>;
 
+using Time = int;
+
 class Individual;
 
 enum class Sex {
@@ -60,13 +62,15 @@ typedef struct IndividualInitData {
 } IndividualInitData;
 
 typedef struct IndividualHandlers {
-	function<void(Pointer<Individual>, int, DeathCause)> death;
+	function<void(Pointer<Individual>, int, DeathCause)> Death;
+	function<void(Pointer<Individual>, Time)> TBProgression;
 	function<double(int)> GlobalTBPrevalence;
 	function<double(int, int)> HouseholdTBPrevalence;
 } IndividualHandlers;
 
 IndividualHandlers CreateIndividualHandlers(
-	function<void(Pointer<Individual>, int, DeathCause)> death,
+	function<void(Pointer<Individual>, int, DeathCause)> Death,
+	function<void(Pointer<Individual>, Time)> TBProgression,
 	function<double(int)> GlobalTBPrevalence,
 	function<double(int, int)> HouseholdTBPrevalence
 );

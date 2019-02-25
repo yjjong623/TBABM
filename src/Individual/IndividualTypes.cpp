@@ -1,11 +1,12 @@
 #include "../../include/TBABM/IndividualTypes.h"
 
 IndividualHandlers 
-CreateIndividualHandlers(function<void(Pointer<Individual>, int, DeathCause)> death,
+CreateIndividualHandlers(function<void(Pointer<Individual>, int, DeathCause)> Death,
+						 function<void(Pointer<Individual>, Time)> TBProgression,
 						 function<double(int)> GlobalTBPrevalence,
 						 function<double(int, int)> HouseholdTBPrevalence)
 {
-	return {death, GlobalTBPrevalence, HouseholdTBPrevalence};
+	return {Death, TBProgression, GlobalTBPrevalence, HouseholdTBPrevalence};
 }
 
 IndividualSimContext

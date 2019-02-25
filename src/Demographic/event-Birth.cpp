@@ -37,6 +37,11 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 				return Schedule(t, Death(idv, cause));
 			};
 
+			auto tbProgressionHandler = std::bind(&TBABM::TBProgressionHandler, 
+												  this, 
+												  std::placeholders::_1, 
+												  std::placeholders::_2);
+
 			auto GlobalTBHandler = [this] (int t) -> double {
 				return (double)tbInfectious(t)/(double)populationSize(t);
 			};
@@ -56,8 +61,11 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 			auto baby = std::make_shared<Individual>(
 				CreateIndividualSimContext(t, eq, rng, fileData, params),
 				initData,
-				CreateIndividualHandlers(deathHandler, GlobalTBHandler, HouseholdTBHandler),
-				name_gen.getName(),
+				CreateIndividualHandlers(deathHandler, 
+									     tbProgressionHandler, 
+										 GlobalTBHandler, 
+										 HouseholdTBHandler),
+				name_gen.getName(rng),
 				mother->householdID, t, sex,
 				Pointer<Individual>(), mother, father,
 				vector<Pointer<Individual>>{}, householdPosition, marriageStatus);
@@ -70,7 +78,7 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 			if (father && !father->dead)
 				father->offspring.push_back(baby);
 
-			population.insert(baby);
+			population.push_back(baby);
 			
 			ChangeHousehold(baby, mother->householdID, householdPosition);
 			

@@ -43,7 +43,7 @@ public:
 	   string name,
 	   SexT sex,
 
-	   double risk_window, // unit: [days]
+	   double risk_window = 1*30, // unit: [days]
 	   
 	   TBStatus tb_status = TBStatus::Susceptible) :
 		AgeStatus(initQueryHandlers.Age),
@@ -57,6 +57,7 @@ public:
 		sex(sex),
 
 		DeathHandler(initHandlers.death),
+		ProgressionHandler(initHandlers.TBProgression),
 
 		data(initData),
 		eq(initCtx.event_queue),
@@ -157,5 +158,6 @@ private:
     function<double(Time)> GlobalTBPrevalence;
 	function<double(Time)> HouseholdTBPrevalence;
  
-    function<void(Time)> DeathHandler;        
+    function<void(Time)> DeathHandler;   
+    function<void(Time)> ProgressionHandler;
 };

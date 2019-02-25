@@ -19,10 +19,10 @@ template <typename T>
 void
 TB<T>::Log(Time t, string msg)
 {
-	// std::cout << termcolor::on_green << "[" << std::left \
-	// 		  << std::setw(12) << name << std::setw(5) << std::right \
-	// 		  << (int)t << "] " \
-	// 		  << msg << termcolor::reset << std::endl;
+	std::cout << termcolor::on_green << "[" << std::left \
+			  << std::setw(12) << name << std::setw(5) << std::right \
+			  << (int)t << "] " \
+			  << msg << termcolor::reset << std::endl;
 }
 
 
@@ -49,19 +49,28 @@ template <typename T>
 void
 TB<T>::RiskReeval(Time t)
 {
-	auto old_risk_window = risk_window;
+	auto lambda = [this] (auto ts, auto) -> bool {
+		if (!AliveStatus())
+			return true;
 
-	printf("RiskReeval\n");
+		auto old_risk_window = risk_window;
 
-	// CONDITIONS THAT MAY CHANGE RISK WINDOW
-	// if (HIVStatus() == HIVStatus::Positive)
-		// risk_window = 2*365; // unit: [days]
+		Log(ts, "TB: RiskReeval triggered");
 
-	// /END CONDITIONS THAT MAY CHANGE RISK WINDOW
+		// CONDITIONS THAT MAY CHANGE RISK WINDOW
+		// if (HIVStatus() == HIVStatus::Positive)
+			// risk_window = 2*365; // unit: [days]
 
-	risk_window_id += 1;
+		// /END CONDITIONS THAT MAY CHANGE RISK WINDOW
 
-	InfectionRiskEvaluate(t, risk_window_id);
+		risk_window_id += 1;
+
+		InfectionRiskEvaluate(ts, risk_window_id);
+
+		return true;
+	};
+
+	eq.QuickSchedule(t, lambda);
 
 	return;
 }
@@ -78,6 +87,7 @@ template <typename T>
 void
 TB<T>::HandleDeath(Time t)
 {
+	printf("Handling death at time %f\n", t);
 	switch(tb_status) {
 		case (TBStatus::Susceptible):
 			data.tbSusceptible.Record(t, -1); break;
@@ -127,7 +137,7 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 		if (!AliveStatus())
 			return true;
 
-		if (tb_status == TBStatus::Infectious)
+		if (tb_status != TBStatus::Susceptible)
 			return true;
 
 		// std::cout << termcolor::on_blue << "[" << std::left \
@@ -135,7 +145,6 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 		// 		  << (int)ts << "] InfectionRiskEvaluate" << termcolor::reset << " " \
 		// 		  << std::setw(2) << AgeStatus(ts) << " years old, " \
 		// 		  << std::setw(4) << (int)CD4Count(ts) << " cells/ml, " \
-		// 		  << (int)HouseholdStatus() << " household status, " \
 		// 		  << (int)(HIVStatus() == HIVStatus::Positive) << " HIV status, " \
 		// 		  << GlobalTBPrevalence(ts) << " g_prev, " \
 		// 		  << HouseholdTBPrevalence(ts) << " h_prev" << termcolor::reset << std::endl;
@@ -147,10 +156,14 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 		double risk_local  {HouseholdTBPrevalence(ts) * (double)params["TB_risk_local"].Sample(rng)};
 		double risk {0.0000001 + risk_global + risk_local};
 
+		// printf("problem?\n");
+
 		if (ts < 365 && Bernoulli(0.12)(rng.mt_))
 			infectAtInit = true;
 		else
 			timeToInfection = Exponential(risk)(rng.mt_);
+
+		// printf("no problem\n");
 
 		if (timeToInfection < risk_window/365 || infectAtInit) // Will this individual be infected now?
 			if (!params["TB_rapidprog_risk"].Sample(rng)) { // Will they become latently infected, or progress rapidly?
@@ -182,18 +195,16 @@ TB<T>::InfectLatent(Time t, StrainType)
 		if (!AliveStatus())
 			return true;
 
-		if (tb_status == TBStatus::Infectious) {
-			printf("Warning: TB::Infect: Individual is already has infectous TB. Multiple infections not supported. Behavior undefined\n");
+		if (tb_status == TBStatus::Infectious)
 			return true;
-		}
 
 		Log(ts, "TB infection: Latent");
 
-		data.tbSusceptible.Record(ts, -1);
-		data.tbInfected.Record(ts, +1);
-		data.tbLatent.Record(ts, +1);
+		data.tbSusceptible.Record((int)ts, -1);
+		data.tbInfected.Record((int)ts, +1);
+		data.tbLatent.Record((int)ts, +1);
 
-		data.tbInfections.Record(ts, +1);
+		data.tbInfections.Record((int)ts, +1);
 
 		// Mark as latently infected
 		tb_status = TBStatus::Latent;
@@ -222,20 +233,24 @@ TB<T>::InfectInfectious(Time t, StrainType)
 		if (!AliveStatus())
 			return true;
 
-		if (tb_status == TBStatus::Infectious) {
-			printf("Warning: TB::Infect: Individual is already infected. Multiple infections not supported. Behavior undefined\n");
+		if (tb_status == TBStatus::Infectious)
 			return true;
-		}
 
 		Log(ts, "TB infection: Infectious");
 
-		data.tbLatent.Record(ts, -1);
-		data.tbInfectious.Record(ts, +1);
+		if (tb_status == TBStatus::Latent)
+			data.tbLatent.Record((int)ts, -1);
+		if (tb_status == TBStatus::Susceptible)
+			data.tbSusceptible.Record((int)ts, -1);
 
-		data.tbConversions.Record(ts, +1);
+		data.tbInfectious.Record((int)ts, +1);
+
+		data.tbConversions.Record((int)ts, +1);
 
 		// Mark as infectious
 		tb_status = TBStatus::Infectious;
+
+		ProgressionHandler(ts);
 
 		// Decide whether individual will enter treatment
 		if (params["TB_Tx_init"].Sample(rng))
@@ -272,8 +287,8 @@ TB<T>::TreatmentBegin(Time t)
 
 		Log(ts, "TB treatment begin");
 
-		data.tbInTreatment.Record(ts, +1);
-		data.tbTreatmentBegin.Record(ts, +1);
+		data.tbInTreatment.Record((int)ts, +1);
+		data.tbTreatmentBegin.Record((int)ts, +1);
 
 		tb_treatment_status = TBTreatmentStatus::Incomplete;
 
@@ -303,8 +318,8 @@ TB<T>::TreatmentDropout(Time t)
 
 		Log(ts, "TB treatment dropout");
 
-		data.tbDroppedTreatment.Record(ts, +1); 
-		data.tbTreatmentDropout.Record(ts, +1);
+		data.tbDroppedTreatment.Record((int)ts, +1); 
+		data.tbTreatmentDropout.Record((int)ts, +1);
 
 		tb_treatment_status = TBTreatmentStatus::Incomplete;
 		
@@ -326,8 +341,8 @@ TB<T>::TreatmentComplete(Time t)
 
 		Log(ts, "TB treatment complete");
 
-		data.tbTreatmentEnd.Record(ts, +1);
-		data.tbCompletedTreatment.Record(ts, +1);
+		data.tbTreatmentEnd.Record((int)ts, +1);
+		data.tbCompletedTreatment.Record((int)ts, +1);
 
 		tb_treatment_status = TBTreatmentStatus::Complete;
 
@@ -352,9 +367,9 @@ TB<T>::Recovery(Time t, RecoveryType)
 
 		Log(ts, "TB recovery");
 
-		data.tbRecoveries.Record(ts, +1);
-		data.tbInfectious.Record(ts, -1);
-		data.tbLatent.Record(ts, +1);
+		data.tbRecoveries.Record((int)ts, +1);
+		data.tbInfectious.Record((int)ts, -1);
+		data.tbLatent.Record((int)ts, +1);
 
 		tb_status = TBStatus::Latent;
 

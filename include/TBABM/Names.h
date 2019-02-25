@@ -7,12 +7,12 @@ using std::string;
 
 class Names {
 public:
-	Names(RNG& rng, vector<string> names_ = {}) : rng(rng) {
+	Names(vector<string> names_ = {}) {
 	  	if (names_.size() != 0)
 	  		names = names_;
 	  };
 
-	string getName(void) {
+	string getName(RNG &rng) {
 		size_t length = names.size();
 		auto num = rng.mt_();
 
@@ -20,7 +20,6 @@ public:
 	}
 
 private:
-	RNG& rng;
 	vector<string> names = 
 	#include "Names.inc"
 };

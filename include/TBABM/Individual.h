@@ -67,11 +67,15 @@ public:
 	TB<Sex> TB;
 
 	void TBDeathHandler(int t) {
-		return handles.death(
+		return handles.Death(
 			std::shared_ptr<Individual>(this), 
 			t, 
 			DeathCause::TB
 		);
+	}
+
+	void TBProgressionHandler(int t) {
+		return handles.TBProgression(std::make_shared<Individual>(*this), t);
 	}
 
 	TBQueryHandlers TBQueryHandlersInit(void) {
@@ -181,11 +185,11 @@ public:
 	    dead(false),
 	    TB(CreateTBData(data),
 	  	   std::forward<IndividualSimContext>(isc),
-	  	   CreateTBHandlers(std::bind(&Individual::TBDeathHandler, this, std::placeholders::_1)),
+	  	   CreateTBHandlers(std::bind(&Individual::TBDeathHandler, this, std::placeholders::_1),
+	  	   					std::bind(&Individual::TBProgressionHandler, this, std::placeholders::_1)),
 	  	   TBQueryHandlersInit(),
 	  	   name,
-	  	   sex,
-		   5*365) {};
+	  	   sex) {};
 	
 	Individual(IndividualSimContext isc,
 		       IndividualInitData data,

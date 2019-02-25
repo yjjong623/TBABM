@@ -21,20 +21,13 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 	EventFunc ef = 
 		[this, m, f](double t, SchedulerT scheduler) {
 
-			if (population.count(m) != 1 || population.count(f) != 1) {
-				// printf("\tA spouse is dead!\n");
-				return true;
-			}
-
 			// printf("[%d] Marriage, populationSize=%lu, people: m=%ld::%lu f=%ld::%lu\n", (int)t, population.size(), m->householdID, std::hash<Pointer<Individual>>()(m), f->householdID, std::hash<Pointer<Individual>>()(f));
-			assert(m);
-			assert(f);
-			assert(m != f);
+			assert(m && f && (m != f));
 
 			if (m->dead || f->dead)
 				return true;
 
-			bool canDivorce = true;
+			bool canDivorce {true};
 
 			if (households[m->householdID]->size() == 1) {
 				// The female will join the male's household

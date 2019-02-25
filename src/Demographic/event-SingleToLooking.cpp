@@ -28,9 +28,9 @@ EventFunc TBABM::SingleToLooking(Pointer<Individual> idv)
 				return true;	
 
 			if (idv->sex == Sex::Male)
-				maleSeeking.insert(idv);
+				maleSeeking.push_back(idv);
 			else
-				femaleSeeking.insert(idv);
+				femaleSeeking.push_back(idv);
 
 			idv->marriageStatus = MarriageStatus::Looking;
 
