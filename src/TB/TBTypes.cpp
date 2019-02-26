@@ -5,6 +5,8 @@ TBData CreateTBData(IndividualInitData data) {
         data.tbInfections,
         data.tbConversions,
         data.tbRecoveries,
+        data.tbInfectionsHousehold,
+        data.tbInfectionsCommunity,
         data.tbSusceptible,
         data.tbInfected,
         data.tbLatent,

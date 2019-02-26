@@ -214,6 +214,8 @@ TB<T>::InfectLatent(Time t, Source s, StrainType)
 
 		tb_history.emplace_back((int)ts, s);
 
+		(s == Source::Household ? data.tbInfectionsHousehold : data.tbInfectionsCommunity).Record((int)ts, +1);
+
 		// Mark as latently infected
 		tb_status = TBStatus::Latent;
 

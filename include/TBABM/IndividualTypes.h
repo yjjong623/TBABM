@@ -47,6 +47,9 @@ typedef struct IndividualInitData {
 	IncidenceTimeSeries<int>&  tbConversions; // Individuals transitioning from L to I
 	IncidenceTimeSeries<int>&  tbRecoveries;  // Individuals transitioning from I to L
 
+	IncidenceTimeSeries<int>& tbInfectionsHousehold; // Individuals infected by household member
+	IncidenceTimeSeries<int>& tbInfectionsCommunity; // Individuals infected by community
+
 	PrevalenceTimeSeries<int>& tbSusceptible; // # Individuals in S
 	PrevalenceTimeSeries<int>& tbInfected;    // # Individuals in L or I
 	PrevalenceTimeSeries<int>& tbLatent;      // # Individuals in L

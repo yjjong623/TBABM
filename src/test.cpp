@@ -92,6 +92,10 @@ int main(int argc, char const *argv[])
 	TimeSeriesExport<int> tbInfections(outputPrefix + "tbInfections.csv");
 	TimeSeriesExport<int> tbConversions(outputPrefix + "tbConversions.csv");
 	TimeSeriesExport<int> tbRecoveries(outputPrefix + "tbRecoveries.csv");
+
+	TimeSeriesExport<int> tbInfectionsHousehold(outputPrefix + "tbInfectionsHousehold.csv");
+	TimeSeriesExport<int> tbInfectionsCommunity(outputPrefix + "tbInfectionsCommunity.csv");
+
 	TimeSeriesExport<int> tbSusceptible(outputPrefix + "tbSusceptible.csv");
 	TimeSeriesExport<int> tbInfected(outputPrefix + "tbInfected.csv");
 	TimeSeriesExport<int> tbLatent(outputPrefix + "tbLatent.csv");
@@ -132,6 +136,10 @@ int main(int argc, char const *argv[])
 		success &= tbInfections.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBInfections));
 		success &= tbConversions.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBConversions));
 		success &= tbRecoveries.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBRecoveries));
+
+		success &= tbInfectionsHousehold.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBInfectionsHousehold));
+		success &= tbInfectionsCommunity.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBInfectionsCommunity));
+
 		success &= tbSusceptible.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBSusceptible));
 		success &= tbInfected.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBInfected));
 		success &= tbLatent.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBLatent));
@@ -178,6 +186,10 @@ int main(int argc, char const *argv[])
 		tbInfections.Write()         &&
 		tbConversions.Write()        &&
 		tbRecoveries.Write()         &&
+
+		tbInfectionsHousehold.Write()&&
+		tbInfectionsCommunity.Write()&&
+
 		tbSusceptible.Write()        &&
 		tbInfected.Write()           &&
 		tbLatent.Write()             &&

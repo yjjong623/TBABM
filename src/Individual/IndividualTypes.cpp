@@ -10,16 +10,17 @@ CreateIndividualHandlers(function<void(Pointer<Individual>, int, DeathCause)> De
 }
 
 IndividualSimContext
-CreateIndividualSimContext(
-	int current_time, 
-	EQ& event_queue, 
-	RNG &rng,
-	map<string, DataFrameFile>& fileData,
-	Params& params)
+CreateIndividualSimContext(int current_time, 
+						   EQ& event_queue, 
+						   RNG &rng,
+						   map<string, DataFrameFile>& fileData,
+						   Params& params)
 {
-	return {current_time, 
-			event_queue, 
-		    rng,
-		    fileData,
-		    params};
+	return {
+		current_time, 
+		event_queue, 
+		rng,
+		fileData,
+		params
+	};
 }

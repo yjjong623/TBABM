@@ -72,6 +72,9 @@ public:
 		TBConversions,
 		TBRecoveries,
 
+		TBInfectionsHousehold,
+		TBInfectionsCommunity,
+
 		TBInTreatment,
 		TBCompletedTreatment,
 		TBDroppedTreatment,
@@ -135,6 +138,9 @@ public:
 		tbConversions("tbConversions", 0, constants["tMax"], constants["periodLength"]),
 		tbRecoveries( "tbRecoveries",  0, constants["tMax"], constants["periodLength"]),
 
+		tbInfectionsHousehold( "tbInfectionsHousehold",  0, constants["tMax"], constants["periodLength"]),
+		tbInfectionsCommunity( "tbInfectionsCommunity",  0, constants["tMax"], constants["periodLength"]),
+
 		tbSusceptible("tbSusceptible", constants["tMax"], constants["periodLength"]),
 		tbInfected(   "tbInfected",    constants["tMax"], constants["periodLength"]),
 		tbLatent(     "tbLatent",      constants["tMax"], constants["periodLength"]),
@@ -171,6 +177,7 @@ public:
 					 std::make_shared<map<string, DataFrameFile>>(fileData),
 					 eq,
 					 {tbInfections, tbConversions, tbRecoveries, \
+					  tbInfectionsHousehold, tbInfectionsCommunity,
 					  tbSusceptible, tbInfected, tbLatent, tbInfectious, \
 					  tbTreatmentBegin, tbTreatmentEnd, tbTreatmentDropout, \
 					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment},
@@ -229,6 +236,9 @@ private:
 	IncidenceTimeSeries<int>  tbInfections;  // Individuals transitioning from S to L
 	IncidenceTimeSeries<int>  tbConversions; // Individuals transitioning from L to I
 	IncidenceTimeSeries<int>  tbRecoveries;  // Individuals transitioning from I to L
+
+	IncidenceTimeSeries<int>  tbInfectionsHousehold; // Individuals infected by household member
+	IncidenceTimeSeries<int>  tbInfectionsCommunity; // Individuals infected by community
 
 	PrevalenceTimeSeries<int> tbSusceptible; // # Individuals in S
 	PrevalenceTimeSeries<int> tbInfected;    // # Individuals in L or I

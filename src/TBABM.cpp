@@ -68,6 +68,9 @@ TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
         case TBABMData::TBConversions:   return &tbConversions;
         case TBABMData::TBRecoveries:    return &tbRecoveries;
 
+        case TBABMData::TBInfectionsHousehold: return &tbInfectionsHousehold;
+        case TBABMData::TBInfectionsCommunity: return &tbInfectionsCommunity;
+
         case TBABMData::TBTreatmentBegin:return &tbTreatmentBegin;
         case TBABMData::TBTreatmentEnd:  return &tbTreatmentEnd;
         case TBABMData::TBTreatmentDropout:
@@ -146,6 +149,9 @@ bool TBABM::Run(void)
     tbInfections.Close();
     tbConversions.Close();
     tbRecoveries.Close();
+
+    tbInfectionsHousehold.Close();
+    tbInfectionsCommunity.Close();
 
     tbSusceptible.Close();
     tbInfected.Close();

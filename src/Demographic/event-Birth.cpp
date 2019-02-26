@@ -29,6 +29,7 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 			MarriageStatus marriageStatus = MarriageStatus::Single;
 
 			IndividualInitData initData {tbInfections, tbConversions, tbRecoveries, \
+				tbInfectionsHousehold, tbInfectionsCommunity,
 				tbSusceptible, tbInfected, tbLatent, tbInfectious, \
 				tbTreatmentBegin, tbTreatmentEnd, tbTreatmentDropout, \
 				tbInTreatment, tbCompletedTreatment, tbDroppedTreatment};
