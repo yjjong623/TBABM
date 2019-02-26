@@ -12,9 +12,18 @@ enum class TBTreatmentStatus {
 	None, Incomplete, Complete, Dropout
 };
 
+enum class Source {Global, Household};
+
 enum class StrainType {Unspecified};
 
 enum class RecoveryType {Natural, Treatment};
+
+typedef struct TBHistoryItem {
+	int t_infection;
+	Source source;
+
+	TBHistoryItem(int t, Source s) : t_infection(t), source(s) {};
+} TBHistoryItem;
 
 typedef struct TBData {
 	IncidenceTimeSeries<int>& tbInfections;  // Individuals transitioning from S to L

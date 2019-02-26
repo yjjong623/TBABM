@@ -68,6 +68,7 @@ public:
 		risk_window(risk_window),
 		tb_status(tb_status),
 		tb_treatment_status(TBTreatmentStatus::None),
+		tb_history({}),
 		risk_window_id(0)
 	{
 		double firstRiskEval = Uniform(0, risk_window)(rng.mt_);
@@ -110,13 +111,13 @@ private:
 	// to infectous TB through reactivation.
 	// 
 	// NOTE: Reinfection not implemented
-	void InfectLatent(Time, StrainType);
+	void InfectLatent(Time, Source, StrainType);
 
 	// Marks an individual as infectous and may or may not
 	// schedule the beginning of treatment.
 	// 
 	// If no treatment, recovery or death is scheduled.
-	void InfectInfectious(Time, StrainType);
+	void InfectInfectious(Time, Source, StrainType);
 
 	// Marks an individual as having begun treatment.
 	// Decides if they will complete treatment, or drop
@@ -139,6 +140,7 @@ private:
 
 	TBStatus tb_status;
 	TBTreatmentStatus tb_treatment_status;
+	std::vector<TBHistoryItem> tb_history;
 
 	// All of these are from the constructor
 	string name;

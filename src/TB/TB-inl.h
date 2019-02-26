@@ -126,6 +126,8 @@ TB<T>::HandleDeath(Time t)
 // 
 // When scheduling an infection, the only StrainType
 // supported right now is 'Unspecified'.
+#define SMALLFLOAT 0.0000000001
+
 template <typename T>
 void
 TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
@@ -137,6 +139,7 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 		if (!AliveStatus())
 			return true;
 
+		// Can't get infected if you're not susceptible
 		if (tb_status != TBStatus::Susceptible)
 			return true;
 
@@ -149,27 +152,30 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 		// 		  << GlobalTBPrevalence(ts) << " g_prev, " \
 		// 		  << HouseholdTBPrevalence(ts) << " h_prev" << termcolor::reset << std::endl;
 
-		bool infectAtInit {false};
-		double timeToInfection {0.0};
-		
-		double risk_global {GlobalTBPrevalence(ts) * (double)params["TB_risk_global"].Sample(rng)};
-		double risk_local  {HouseholdTBPrevalence(ts) * (double)params["TB_risk_local"].Sample(rng)};
-		double risk {0.0000001 + risk_global + risk_local};
+		bool init_infection {false};
+		double p_init_infection {0.12};
 
-		// printf("problem?\n");
+		double risk_global     {GlobalTBPrevalence(ts) * (double)params["TB_risk_global"].Sample(rng)};
+		double risk_household  {HouseholdTBPrevalence(ts) * (double)params["TB_risk_household"].Sample(rng)};
 
-		if (ts < 365 && Bernoulli(0.12)(rng.mt_))
-			infectAtInit = true;
-		else
-			timeToInfection = Exponential(risk)(rng.mt_);
+		// Time to infection for global and local. If any of these risks are zero,
+		// change to a really small number since you can't sample 0-rate exponentials
+		long double tti_global     {Exponential(risk_global     > 0 ? risk_global     : SMALLFLOAT)(rng.mt_)};
+		long double tti_household  {Exponential(risk_household  > 0 ? risk_household  : SMALLFLOAT)(rng.mt_)};
 
-		// printf("no problem\n");
+		// First risk window of the simulation, we infect a bunch of people
+		if (ts < risk_window && Bernoulli(p_init_infection)(rng.mt_))
+			init_infection = true;
 
-		if (timeToInfection < risk_window/365 || infectAtInit) // Will this individual be infected now?
+		// If they do get infected, this is what the infection source is
+		Source infection_source {tti_global < tti_household ? Source::Global : Source::Household};
+		long double master_infection_time {init_infection ? 0.0 : std::min(tti_global, tti_household)};
+
+		if (master_infection_time < risk_window/365) // Will this individual be infected now?
 			if (!params["TB_rapidprog_risk"].Sample(rng)) { // Will they become latently infected, or progress rapidly?
-				InfectLatent(ts + timeToInfection, StrainType::Unspecified);
+				InfectLatent(ts + master_infection_time, infection_source, StrainType::Unspecified);
 			} else {
-				InfectInfectious(ts + timeToInfection, StrainType::Unspecified);
+				InfectInfectious(ts + master_infection_time, infection_source, StrainType::Unspecified);
 			}
 		else {
 			InfectionRiskEvaluate(ts + risk_window, risk_window_local);
@@ -189,9 +195,9 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 // If no treatment, recovery or death is scheduled.
 template <typename T>
 void
-TB<T>::InfectLatent(Time t, StrainType)
+TB<T>::InfectLatent(Time t, Source s, StrainType)
 {
-	auto lambda = [this] (auto ts, auto) -> bool {
+	auto lambda = [this, s] (auto ts, auto) -> bool {
 		if (!AliveStatus())
 			return true;
 
@@ -206,12 +212,14 @@ TB<T>::InfectLatent(Time t, StrainType)
 
 		data.tbInfections.Record((int)ts, +1);
 
+		tb_history.emplace_back((int)ts, s);
+
 		// Mark as latently infected
 		tb_status = TBStatus::Latent;
 
 		// Decide whether individual will become infectious
 		if (params["TB_prog_risk"].Sample(rng))
-			InfectInfectious(ts + 365*params["TB_prog_time"].Sample(rng), StrainType::Unspecified);
+			InfectInfectious(ts + 365*params["TB_prog_time"].Sample(rng), s, StrainType::Unspecified);
 
 		return true;
 	};
@@ -227,7 +235,7 @@ TB<T>::InfectLatent(Time t, StrainType)
 // If no treatment, recovery or death is scheduled.
 template <typename T>
 void
-TB<T>::InfectInfectious(Time t, StrainType)
+TB<T>::InfectInfectious(Time t, Source s, StrainType)
 {
 	auto lambda = [this] (auto ts, auto) -> bool {
 		if (!AliveStatus())
