@@ -320,7 +320,7 @@ private:
 
 	void DeleteIndividual(Pointer<Individual> idv);
 
-	void ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPosition newRole);
+	void ChangeHousehold(Pointer<Individual> idv, int time, int newHID, HouseholdPosition newRole);
 
 	void SurveyDeath(Pointer<Individual> idv, int t, DeathCause deathCause);
 

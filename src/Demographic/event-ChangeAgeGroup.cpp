@@ -91,12 +91,12 @@ EventFunc TBABM::ChangeAgeGroup(Pointer<Individual> idv)
 					int hid = idv->livedWithBefore[i]->householdID;
 					if (!households[hid])
 						continue;
-					ChangeHousehold(idv, hid, HouseholdPosition::Other);
+					ChangeHousehold(idv, t, hid, HouseholdPosition::Other);
 					changed = true;
 					break;
 				}
 				if (!changed)
-					ChangeHousehold(idv, findHousehold(households), HouseholdPosition::Other);
+					ChangeHousehold(idv, t, findHousehold(households), HouseholdPosition::Other);
 			}
 
 			if (!scheduledDeath)

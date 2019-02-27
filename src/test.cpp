@@ -23,14 +23,14 @@ int main(int argc, char const *argv[])
 {
 	Constants constants {};
 
-	constants["tMax"] = 365*5;
+	constants["tMax"] = 365*50;
 	constants["periodLength"] = 365;
 	constants["ageGroupWidth"] = 3;
 	constants["startYear"] = 1990;
 
 	const char *householdsFile = "household_structure.csv";
 
-	int nTrajectories = 1;
+	int nTrajectories = 5;
 
 	auto timestamp = argc == 1 ? std::time(NULL) : atol(argv[1]);
 

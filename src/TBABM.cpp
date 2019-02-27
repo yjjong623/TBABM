@@ -215,7 +215,7 @@ void TBABM::DeleteIndividual(Pointer<Individual> idv)
         PurgeReferencesToIndividual(idv->livedWithBefore[i], idv);
 }
 
-void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPosition newRole)
+void TBABM::ChangeHousehold(Pointer<Individual> idv, int t, int newHID, HouseholdPosition newRole)
 {
     if (!idv || idv->dead)
         return;
@@ -231,9 +231,9 @@ void TBABM::ChangeHousehold(Pointer<Individual> idv, int newHID, HouseholdPositi
     assert(newHousehold);
 
     if (oldHousehold != newHousehold)
-        oldHousehold->RemoveIndividual(idv);
+        oldHousehold->RemoveIndividual(idv, t);
     
-    newHousehold->AddIndividual(idv, newRole, newHID);
+    newHousehold->AddIndividual(idv, t, newRole);
 
     // Clear household if there's nobody left in it
     if (oldHousehold->size() == 0)

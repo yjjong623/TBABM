@@ -30,7 +30,11 @@ set(demographic ${demographic_path}/event-Birth.cpp
 				${demographic_path}/helper-SurveyUtils.cpp)
 
 set(individual_path "${TBABM_SOURCE_DIR}/src/Individual")
-set(individual "${individual_path}/IndividualTypes.cpp")
+set(individual ${individual_path}/IndividualTypes.cpp)
+
+set(household_path "${TBABM_SOURCE_DIR}/src/Household")
+set(household ${household_path}/Household.cpp
+			  ${household_path}/HouseholdGen.cpp)
 
 set(hiv_path "${TBABM_SOURCE_DIR}/src/HIV")
 set(hiv ${hiv_path}/event-ARTGuidelineChange.cpp
@@ -46,7 +50,7 @@ set(tb ${tb_path}/TB.cpp
 	   ${tb_path}/TBTypes.cpp)
 
 # Set source files
-set(src TBABM.cpp ${demographic} ${hiv} ${tb} ${individual} HouseholdGen.cpp)
+set(src TBABM.cpp ${demographic} ${hiv} ${tb} ${individual} ${household})
 
 # Require C++14 compilation
 set(CMAKE_CXX_STANDARD 14)
@@ -62,5 +66,5 @@ find_package(Boost REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_executable(TBABMTest test.cpp TBABM.cpp HouseholdGen.cpp ${src})
+add_executable(TBABMTest test.cpp TBABM.cpp ${src})
 target_link_libraries(TBABMTest PUBLIC SimulationLib StatisticalDistributionsLib)

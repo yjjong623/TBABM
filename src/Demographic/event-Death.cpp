@@ -62,7 +62,7 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 
 			// Removes the individual from the household and elects a 
 			// new head, if 'idv' was the head of his or her household
-			household->RemoveIndividual(idv);
+			household->RemoveIndividual(idv, t);
 
 			// The call to 'RemoveIndivdual' could cause a house to no 
 			// longer have any members in it. In this case, remove the

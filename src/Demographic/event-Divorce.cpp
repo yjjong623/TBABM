@@ -53,7 +53,7 @@ EventFunc TBABM::Divorce(Pointer<Individual> m, Pointer<Individual> f)
 				assert(households[newHouseholdID]);
 
 				// If another household was found for the booted individual
-				ChangeHousehold(booted, newHouseholdID, HouseholdPosition::Other);
+				ChangeHousehold(booted, t, newHouseholdID, HouseholdPosition::Other);
 			} else {
 				Schedule(t, CreateHousehold(booted, Pointer<Individual>(), {}, {}));
 			}

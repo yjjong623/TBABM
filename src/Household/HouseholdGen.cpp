@@ -2,13 +2,13 @@
 #include <iostream>
 #include <random>
 
-#include "../include/TBABM/HouseholdGen.h"
+#include "../../include/TBABM/HouseholdGen.h"
 
 Pointer<Household>
 HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 {
 	// Create a blank Household object
-	auto household = std::make_shared<Household>();
+	auto household = std::make_shared<Household>(current_time, hid);
 
 	// Retrieve the corresponding vector
 	size_t size = families.size();
@@ -42,7 +42,7 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 	auto newIndividuals = std::vector<Pointer<Individual>> { head };
 
 	// Add this object to the household as the head
-	household->head = head;
+	household->AddIndividual(head, current_time, HouseholdPosition::Head);
 
 	// Go through the remaining elements:
 	//   Establish relationships between the head
@@ -65,19 +65,17 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 
 		newIndividuals.push_back(idv);
 
-
 		switch (idv->householdPosition) {
 			case (HouseholdPosition::Head):
 				std::cout << "Error: Can't have two household heads" << std::endl;
 				break;
 			case (HouseholdPosition::Spouse):
 				idv->marriageStatus = MarriageStatus::Married;
-
-				household->spouse = idv;
 				idv->spouse = household->head; // bidirectional
 				household->head->spouse = idv;
-
 				household->head->marriageStatus = MarriageStatus::Married;
+
+				household->AddIndividual(idv, current_time, HouseholdPosition::Spouse);
 				break;
 			case (HouseholdPosition::Offspring):
 				// Add offspring to head and spouse
@@ -86,7 +84,7 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 					household->spouse->offspring.push_back(idv);
 
 				// Add offspring to household
-				household->offspring.push_back(idv);
+				household->AddIndividual(idv, current_time, HouseholdPosition::Offspring);
 
 				// Add mat/paternity to offspring
 				if (household->head->sex == Sex::Male)
@@ -105,7 +103,7 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 
 			case (HouseholdPosition::Other):
 				idv->marriageStatus = MarriageStatus::Single;
-				household->other.push_back(idv);
+				household->AddIndividual(idv, current_time, HouseholdPosition::Offspring);
 				break;
 			default:
 				printf("\t\tError!!\n");

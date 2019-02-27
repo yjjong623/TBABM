@@ -81,7 +81,7 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 
 			population.push_back(baby);
 			
-			ChangeHousehold(baby, mother->householdID, householdPosition);
+			ChangeHousehold(baby, t, mother->householdID, householdPosition);
 			
 			Schedule(t, ChangeAgeGroup(baby));
 

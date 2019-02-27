@@ -31,49 +31,49 @@ EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
 
 			if (households[m->householdID]->size() == 1) {
 				// The female will join the male's household
-				ChangeHousehold(f, m->householdID, HouseholdPosition::Spouse);
+				ChangeHousehold(f, t, m->householdID, HouseholdPosition::Spouse);
 
 				if (f->offspring.size() > 0)
 					canDivorce = false;
 
 				for (auto idv : f->offspring)
-					ChangeHousehold(idv, m->householdID, HouseholdPosition::Offspring);
+					ChangeHousehold(idv, t, m->householdID, HouseholdPosition::Offspring);
 
 			} else if (households[f->householdID]->size() == 1) {
 				// Male joins female household
-				ChangeHousehold(m, f->householdID, HouseholdPosition::Spouse);
+				ChangeHousehold(m, t, f->householdID, HouseholdPosition::Spouse);
 
 				if (m->offspring.size() > 0)
 					canDivorce = false;
 
 				for (auto idv : f->offspring)
-					ChangeHousehold(idv, f->householdID, HouseholdPosition::Offspring);
+					ChangeHousehold(idv, t, f->householdID, HouseholdPosition::Offspring);
 
 			} else {
 				// Couple forms new household?
 				if (params["coupleFormsNewHousehold"].Sample(rng) == 1) {
 					auto hid = nHouseholds++;
-					households[hid] = std::make_shared<Household>();
+					households[hid] = std::make_shared<Household>(t, hid);
 
-					ChangeHousehold(m, hid, HouseholdPosition::Head);
-					ChangeHousehold(f, hid, HouseholdPosition::Spouse);
+					ChangeHousehold(m, t, hid, HouseholdPosition::Head);
+					ChangeHousehold(f, t, hid, HouseholdPosition::Spouse);
 
 					if (f->offspring.size() > 0 || m->offspring.size() > 0)
 						canDivorce = false;
 
 					for (auto idv : f->offspring)
-						ChangeHousehold(idv, hid, HouseholdPosition::Offspring);
+						ChangeHousehold(idv, t, hid, HouseholdPosition::Offspring);
 					for (auto idv : m->offspring)
-						ChangeHousehold(idv, hid, HouseholdPosition::Offspring);
+						ChangeHousehold(idv, t, hid, HouseholdPosition::Offspring);
 
 				} else {
-					ChangeHousehold(f, m->householdID, HouseholdPosition::Spouse);
+					ChangeHousehold(f, t, m->householdID, HouseholdPosition::Spouse);
 
 					if (f->offspring.size() > 0)
 						canDivorce = false;
 
 					for (auto idv : f->offspring)
-						ChangeHousehold(idv, m->householdID, HouseholdPosition::Offspring);
+						ChangeHousehold(idv, t, m->householdID, HouseholdPosition::Offspring);
 				}
 			}
 

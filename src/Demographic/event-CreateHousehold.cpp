@@ -25,20 +25,20 @@ EventFunc TBABM::CreateHousehold(Pointer<Individual> head,
 	EventFunc ef = 
 		[this, head, spouse, offspring, other](double t, SchedulerT scheduler) {
 			// printf("[%d] CreateHousehold\n", (int)t);
-			auto household = std::make_shared<Household>(head, spouse, offspring, other);
 			long hid = nHouseholds++;
+			auto household = std::make_shared<Household>(head, spouse, offspring, other, t, hid);
 			households[hid] = household;
 
-			ChangeHousehold(head, hid, HouseholdPosition::Head);
+			ChangeHousehold(head, t, hid, HouseholdPosition::Head);
 
 			if (spouse)
-				ChangeHousehold(spouse, hid, HouseholdPosition::Spouse);
+				ChangeHousehold(spouse, t, hid, HouseholdPosition::Spouse);
 
 			for (auto idv : offspring)
-				ChangeHousehold(idv, hid, HouseholdPosition::Offspring);
+				ChangeHousehold(idv, t, hid, HouseholdPosition::Offspring);
 
 			for (auto idv : other)
-				ChangeHousehold(idv, hid, HouseholdPosition::Offspring);
+				ChangeHousehold(idv, t, hid, HouseholdPosition::Offspring);
 
 			return true;
 		};

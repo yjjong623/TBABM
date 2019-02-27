@@ -18,7 +18,7 @@ EventFunc TBABM::Survey(void)
 			string buf;
 			string s = ",";
 
-			printf("[%5d] Survey", (int)t);
+			printf("[%5d] Survey\n", (int)t);
 
 			///////////////////////////////////////////////////////
 			// Population survey
