@@ -20,11 +20,9 @@ TBData CreateTBData(IndividualInitData data) {
     };
 }
 
-TBHandlers CreateTBHandlers(function<void(int)> death,
-                            function<void(int)> TBProgression) {
+TBHandlers CreateTBHandlers(function<void(int)> death) {
     return {
-        death,
-        TBProgression
+        death
     };
 }
 
@@ -33,15 +31,18 @@ TBQueryHandlers CreateTBQueryHandlers(function<int(Time)> Age,
                                       function<bool(void)> Alive,
                                       function<double(Time)> CD4Count,
                                       function<HIVStatus(void)> HIVStatus,
-                                      function<double(Time)> GlobalTBPrevalence,
-                                      function<double(Time)> HouseholdTBPrevalence)
+                                      function<double(Time)> GlobalTBPrevalence)
 {
+    if (!Age || !Alive || !CD4Count || !HIVStatus || !GlobalTBPrevalence) {
+        printf("Error: >= 1 argument to CreateTBHandlers contained empty std::function\n");
+        exit(1);
+    }
+
     return {
         Age,
         Alive,
         CD4Count,
         HIVStatus,
-        GlobalTBPrevalence,
-        HouseholdTBPrevalence
+        GlobalTBPrevalence
     };
 }

@@ -61,7 +61,8 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 			0-365*midv.age, 
 			midv.sex, 
 			midv.role, 
-			MarriageStatus::Single);
+			MarriageStatus::Single
+		);
 
 		newIndividuals.push_back(idv);
 

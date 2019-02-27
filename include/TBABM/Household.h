@@ -26,7 +26,7 @@ public:
 
 	bool hasMember(Pointer<Individual> idv);
 
-	double TBPrevalence(int t);
+	double TBPrevalence(void);
 
 	Household(Pointer<Individual> head,
 			  Pointer<Individual> spouse,
@@ -38,7 +38,8 @@ public:
 		spouse(spouse), 
 		offspring(offspring), 
 		other(other),
-		hid(hid) {
+		hid(hid),
+		nInfectiousTBIndivduals(0) {
 
 			nIndividuals = (head?1:0) + 
 						   (spouse?1:0) + 
@@ -61,4 +62,6 @@ private:
 	int hid;
 	int nIndividuals;
 	int nInfectiousTBIndivduals;
+
+	void TriggerReeval(int t, Pointer<Individual> idv);
 };

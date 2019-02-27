@@ -88,7 +88,10 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     tbCompletedTreatment  = function() Graph(Loader, "tbCompletedTreatment", "Time (years)", "Individuals completing treatment"),
     tbDroppedTreatment    = function() Graph(Loader, "tbDroppedTreatment", "Time (years)", "Individuals dropping out"),
     
-    
+    tbEvents              = function() tbEvents(Loader),  
+    tbOverview            = function() tbOverview(Loader),
+    tbAll                 = function() tbAll(Loader),
+    tbTreatment           = function() tbTreatment(Loader),
     
     # ageAtInfection        = function() Hist(Loader, "meanSurvivalTimeNoART", "age.at.infection", "Age at Infection"),
     # meanSurvivalTimeNoART = function() Hist(Loader, "meanSurvivalTimeNoART", "years.lived", "Years lived with HIV, no ART"),
@@ -106,6 +109,12 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
 
 outputLocation <- "/Users/marcusrussi/Desktop/Yaesoubi-Cohen-Lab/repos/TBABM/output/"
 cat <- CreateGraphCatalog(outputLocation)
+
+cat$tbOverview() + geom_text(aes(label=trajectory))
+cat$tbEvents()
+cat$tbTransmission()
+
+
   # geom_hline(yintercept = 19.61) + BIRTHRATE
   # geom_hline(yintercept = 16.99) + DEATHRATE
   # geom_hline(yintercept = 3) + MARRIAGERATE

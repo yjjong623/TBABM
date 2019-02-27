@@ -66,16 +66,12 @@ typedef struct IndividualInitData {
 
 typedef struct IndividualHandlers {
 	function<void(Pointer<Individual>, int, DeathCause)> Death;
-	function<void(Pointer<Individual>, Time)> TBProgression;
 	function<double(int)> GlobalTBPrevalence;
-	function<double(int, int)> HouseholdTBPrevalence;
 } IndividualHandlers;
 
 IndividualHandlers CreateIndividualHandlers(
 	function<void(Pointer<Individual>, int, DeathCause)> Death,
-	function<void(Pointer<Individual>, Time)> TBProgression,
-	function<double(int)> GlobalTBPrevalence,
-	function<double(int, int)> HouseholdTBPrevalence
+	function<double(int)> GlobalTBPrevalence
 );
 
 typedef struct IndividualSimContext {

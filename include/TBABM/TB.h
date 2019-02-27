@@ -43,7 +43,7 @@ public:
 	   string name,
 	   SexT sex,
 
-	   double risk_window = 1*30, // unit: [days]
+	   double risk_window = 6*30, // unit: [days]
 	   
 	   TBStatus tb_status = TBStatus::Susceptible) :
 		AgeStatus(initQueryHandlers.Age),
@@ -51,13 +51,11 @@ public:
 		CD4Count(initQueryHandlers.CD4Count),
 		HIVStatus(initQueryHandlers.HIVStatus),
 		GlobalTBPrevalence(initQueryHandlers.GlobalTBPrevalence),
-		HouseholdTBPrevalence(initQueryHandlers.HouseholdTBPrevalence),
 
 		name(name),
 		sex(sex),
 
 		DeathHandler(initHandlers.death),
-		ProgressionHandler(initHandlers.TBProgression),
 
 		data(initData),
 		eq(initCtx.event_queue),
@@ -81,6 +79,11 @@ public:
 	~TB(void);
 
 	TBStatus GetTBStatus(Time);
+
+	void SetHouseholdCallbacks(function<void(Time)> progression, 
+							   function<void(Time)> recovery,
+							   function<double(void)> householdPrevalence);
+	void ResetHouseholdCallbacks(void);
 
 	void RiskReeval(Time);
 	void Investigate(void);
@@ -158,8 +161,9 @@ private:
     function<CD4(Time)> CD4Count;
     function<HIVStatus(void)> HIVStatus;
     function<double(Time)> GlobalTBPrevalence;
-	function<double(Time)> HouseholdTBPrevalence;
+	function<double(void)> HouseholdTBPrevalence;
  
     function<void(Time)> DeathHandler;   
     function<void(Time)> ProgressionHandler;
+    function<void(Time)> RecoveryHandler;
 };

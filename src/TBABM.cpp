@@ -113,6 +113,8 @@ bool TBABM::Run(void)
 
     // Schedule(1, ExogenousBirth());
 
+    int events_processed {0};
+
     while (!eq.Empty()) {
         auto e = eq.Top();
 
@@ -121,7 +123,11 @@ bool TBABM::Run(void)
 
         e->run();
         eq.Pop();
+
+        events_processed += 1;
     }
+
+    printf("Events processed: %d\n", events_processed);
 
     births.Close();
     deaths.Close();

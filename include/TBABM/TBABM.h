@@ -183,15 +183,8 @@ public:
 					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment},
 					 CreateIndividualHandlers([this] (Pointer<Individual> i, int t, DeathCause dc) -> void \
 					 						  { return Schedule(t, Death(i, dc)); },
-					 						  std::bind(&TBABM::TBProgressionHandler, this, std::placeholders::_1, std::placeholders::_2),
-					 						  [this] (int t) -> double { return (double)tbInfectious(t)/(double)populationSize(t); },
-											  [this] (int t, int householdID) -> double {
-												auto household = households.at(householdID);
-												if (household)
-													return household->TBPrevalence(t); 
-												else
-													return 0;
-											  })) {
+					 						  [this] (int t) -> double { return (double)tbInfectious(t)/(double)populationSize(t); }
+											  )) {
 			for (auto it = params.begin(); it != params.end(); it++) {
 				if (it->second.getType() == SimulationLib::Type::file_type) {
 					auto j = JSONImport::fileToJSON(it->second.getFileName());
@@ -342,30 +335,6 @@ private:
 
 	bool ARTEligible(int t, Pointer<Individual> idv);
 	void HIVInfectionCheck(int t, Pointer<Individual> idv);
-
-	////////////////////////////////////////////////////////
-	/// TB Utilities
-	////////////////////////////////////////////////////////
-	void TBProgressionHandler(Pointer<Individual> idv, int t){
-		auto hh = households.at(idv->householdID);
-		assert(hh);
-
-		if (hh->head != idv)
-			hh->head->TB.RiskReeval(t);
-		if (hh->spouse && hh->spouse != idv)
-			hh->spouse->TB.RiskReeval(t);
-
-		for (auto p : hh->offspring)
-			if (p && p != idv)
-				p->TB.RiskReeval(t);
-
-		for (auto p : hh->other)
-			if (p && p != idv)
-				p->TB.RiskReeval(t);
-
-		// printf("TBProgressionHandler: Finished successfully\n");
-		return;
-	};
 
 	////////////////////////////////////////////////////////
 	/// Scheduling

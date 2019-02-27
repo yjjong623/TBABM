@@ -42,6 +42,29 @@ TB<T>::GetTBStatus(Time t)
 	return tb_status;
 }
 
+
+template <typename T>
+void
+TB<T>::SetHouseholdCallbacks(function<void(Time)>   progression, 
+							 function<void(Time)>   recovery,
+							 function<double(void)> householdPrevalence)
+{
+	if (progression && recovery && householdPrevalence) {
+		ProgressionHandler    = progression;
+		RecoveryHandler       = recovery;
+		HouseholdTBPrevalence = householdPrevalence;
+	}
+}
+
+template <typename T>
+void
+TB<T>::ResetHouseholdCallbacks(void)
+{
+	ProgressionHandler    = nullptr;
+	RecoveryHandler       = nullptr;
+	HouseholdTBPrevalence = nullptr;
+}
+
 // Right now, changing the risk window is disabled. However, calling this function will
 // still trigger an immediate InfectionRiskEvaluate and disable any other scheduled
 // InfectionRiskEvaluates.
@@ -155,12 +178,12 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 		double p_init_infection {0.12};
 
 		double risk_global     {GlobalTBPrevalence(ts) * (double)params["TB_risk_global"].Sample(rng)};
-		double risk_household  {HouseholdTBPrevalence(ts) * (double)params["TB_risk_household"].Sample(rng)};
+		double risk_household  {HouseholdTBPrevalence() * (double)params["TB_risk_household"].Sample(rng)};
 
 		// Time to infection for global and local. If any of these risks are zero,
 		// change to a really small number since you can't sample 0-rate exponentials
-		long double tti_global     {Exponential(risk_global     > 0 ? risk_global     : SMALLFLOAT)(rng.mt_)};
-		long double tti_household  {Exponential(risk_household  > 0 ? risk_household  : SMALLFLOAT)(rng.mt_)};
+		long double tti_global     {Exponential(risk_global    > 0 ? risk_global     : SMALLFLOAT)(rng.mt_)};
+		long double tti_household  {Exponential(risk_household > 0 ? risk_household  : SMALLFLOAT)(rng.mt_)};
 
 		// First risk window of the simulation, we infect a bunch of people
 		if (ts < risk_window && Bernoulli(p_init_infection)(rng.mt_))
@@ -259,7 +282,8 @@ TB<T>::InfectInfectious(Time t, Source s, StrainType)
 		// Mark as infectious
 		tb_status = TBStatus::Infectious;
 
-		ProgressionHandler(ts);
+		if (ProgressionHandler)
+			ProgressionHandler(ts);
 
 		// Decide whether individual will enter treatment
 		if (params["TB_Tx_init"].Sample(rng))
@@ -381,6 +405,9 @@ TB<T>::Recovery(Time t, RecoveryType)
 		data.tbLatent.Record((int)ts, +1);
 
 		tb_status = TBStatus::Latent;
+
+		if (RecoveryHandler)
+			RecoveryHandler(ts);
 
 		return true;
 	};

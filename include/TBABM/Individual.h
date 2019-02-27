@@ -66,6 +66,14 @@ public:
 	// TB stuff
 	TB<Sex> TB;
 
+	void ReceiveTBInfectiousChangeCallback(function<void(int)> f) {
+		TBInfectiousChangeCallback = f;
+	}
+
+	void ResetTBInfectiousChangeCallback(void) {
+		TBInfectiousChangeCallback = nullptr;
+	}
+
 	void TBDeathHandler(int t) {
 		return handles.Death(
 			std::shared_ptr<Individual>(this), 
@@ -74,18 +82,13 @@ public:
 		);
 	}
 
-	void TBProgressionHandler(int t) {
-		return handles.TBProgression(std::make_shared<Individual>(*this), t);
-	}
-
 	TBQueryHandlers TBQueryHandlersInit(void) {
 		return CreateTBQueryHandlers(
 			[this] (Time t) -> int     { return age(t); },
 			[this] (void) -> bool      { return !dead; },
 			[this] (Time t) -> double  { return CD4count(t, params["HIV_m_30"].Sample(rng)); },
 			[this] (void) -> HIVStatus { return hivStatus; },
-			[this] (Time t) -> double  { return handles.GlobalTBPrevalence(t); },
-			[this] (Time t) -> double  { return handles.HouseholdTBPrevalence(t, householdID); }
+			[this] (Time t) -> double  { return handles.GlobalTBPrevalence(t); }
 		);
 	}
 
@@ -185,8 +188,7 @@ public:
 	    dead(false),
 	    TB(CreateTBData(data),
 	  	   std::forward<IndividualSimContext>(isc),
-	  	   CreateTBHandlers(std::bind(&Individual::TBDeathHandler, this, std::placeholders::_1),
-	  	   					std::bind(&Individual::TBProgressionHandler, this, std::placeholders::_1)),
+	  	   CreateTBHandlers(std::bind(&Individual::TBDeathHandler, this, std::placeholders::_1)),
 	  	   TBQueryHandlersInit(),
 	  	   name,
 	  	   sex) {};
@@ -215,8 +217,6 @@ public:
 	             {}, 
 	             householdPosition, 
 	             marriageStatus) {
-	             // params,
-	             // fileData) {
 	  };
 private:
 	string name;
@@ -226,4 +226,6 @@ private:
 	Params& params;
 
 	IndividualHandlers handles;
+
+	function<void(int)> TBInfectiousChangeCallback;
 };

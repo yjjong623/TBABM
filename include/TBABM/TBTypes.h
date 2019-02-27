@@ -51,11 +51,9 @@ TBData CreateTBData(IndividualInitData data);
 
 typedef struct TBHandlers {
 	function<void(int)> death;
-	function<void(Time)> TBProgression;
 } TBHandlers;
 
-TBHandlers CreateTBHandlers(function<void(int)> death,
-							function<void(Time)> TBProgression);
+TBHandlers CreateTBHandlers(function<void(int)> death);
 
 typedef struct TBQueryHandlers {
 	function<int(Time)> Age;
@@ -63,14 +61,12 @@ typedef struct TBQueryHandlers {
 	function<double(Time)> CD4Count;
 	function<HIVStatus(void)> HIVStatus;
 	function<double(Time)> GlobalTBPrevalence;
-	function<double(Time)> HouseholdTBPrevalence;
 } TBQueryHandlers ;
 
 TBQueryHandlers CreateTBQueryHandlers(function<int(Time)> Age,
 									  function<bool(void)> Alive,
 									  function<double(Time)> CD4Count,
 									  function<HIVStatus(void)> HIVStatus,
-									  function<double(Time)> GlobalTBPrevalence,
-									  function<double(Time)> HouseholdTBPrevalence);
+									  function<double(Time)> GlobalTBPrevalence);
 
 typedef IndividualSimContext TBSimContext; // For right now these are the same
