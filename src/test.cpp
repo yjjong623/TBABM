@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
 {
 	Constants constants {};
 
-	constants["tMax"] = 365*50;
+	constants["tMax"] = 365*5;
 	constants["periodLength"] = 365;
 	constants["ageGroupWidth"] = 3;
 	constants["startYear"] = 1990;

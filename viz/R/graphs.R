@@ -5,6 +5,7 @@ source("R/graphs_population.R")
 source("R/graphs_household.R")
 source("R/graphs_death.R")
 source("R/graphs_HIV.R")
+source("R/graphs_TB.R")
 
 GetLatestPrefix <- function(location) paste(location, FindLatestTimestamp(location), "_", sep="")
 GetPrefix <- function(location, timestamp) paste(location, timestamp, "_", sep="")
@@ -65,25 +66,29 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     hivSurvivalNoART      = function() hivSurvivalNoART(ds),
     
     # All seems to check out, but are the rates realistic?
-    tbInfections = function() Graph(Loader, "tbInfections", "Time (years)", "Infections/year") + ggtitle("Infections"),
-    tbConversions = function() Graph(Loader, "tbConversions", "Time (years)", "Conversions/year") + ggtitle("Conversions Latent->Active"),
-    tbRecoveries = function() Graph(Loader, "tbRecoveries", "Time (years)", "Recoveries/year") + ggtitle("Recoveries"),
+    tbInfections          = function() Graph(Loader, "tbInfections", "Time (years)", "Infections/year") + ggtitle("Infections"),
+    tbConversions         = function() Graph(Loader, "tbConversions", "Time (years)", "Conversions/year") + ggtitle("Conversions Latent->Active"),
+    tbRecoveries          = function() Graph(Loader, "tbRecoveries", "Time (years)", "Recoveries/year") + ggtitle("Recoveries"),
+    
+    tbTransmission        = function() tbTransmission(Loader),
     
     # At end there are supposedly 8k Susceptible, but probably some of them are dead. Check
-    tbSusceptible = function() Graph(Loader, "tbSusceptible", "Time (years)", ""),
-    tbInfected = function() Graph(Loader, "tbInfected", "Time (years)", ""),
-    tbLatent = function() Graph(Loader, "tbLatent", "Time (years)", ""), # Good, seems like most people's TB never progresses
-    tbInfectious = function() Graph(Loader, "tbInfectious", "Time (years)", ""), # This is fixed now
+    tbSusceptible         = function() Graph(Loader, "tbSusceptible", "Time (years)", ""),
+    tbInfected            = function() Graph(Loader, "tbInfected", "Time (years)", ""),
+    tbLatent              = function() Graph(Loader, "tbLatent", "Time (years)", ""), # Good, seems like most people's TB never progresses
+    tbInfectious          = function() Graph(Loader, "tbInfectious", "Time (years)", ""), # This is fixed now
     
     # Seems good
-    tbTreatmentBegin = function() Graph(Loader, "tbTreatmentBegin", "Time (years)", ""),
-    tbTreatmentEnd = function() Graph(Loader, "tbTreatmentEnd", "Time (years)", ""),
-    tbTreatmentDropout = function() Graph(Loader, "tbTreatmentDropout", "Time (years)", ""),
+    tbTreatmentBegin      = function() Graph(Loader, "tbTreatmentBegin", "Time (years)", ""),
+    tbTreatmentEnd        = function() Graph(Loader, "tbTreatmentEnd", "Time (years)", ""),
+    tbTreatmentDropout    = function() Graph(Loader, "tbTreatmentDropout", "Time (years)", ""),
     
     # Might be screwy
-    tbInTreatment = function() Graph(Loader, "tbInTreatment", "Time (years)", "Individuals in treatment"),
-    tbCompletedTreatment = function() Graph(Loader, "tbCompletedTreatment", "Time (years)", "Individuals completing treatment"),
-    tbDroppedTreatment = function() Graph(Loader, "tbDroppedTreatment", "Time (years)", "Individuals dropping out"),
+    tbInTreatment         = function() Graph(Loader, "tbInTreatment", "Time (years)", "Individuals in treatment"),
+    tbCompletedTreatment  = function() Graph(Loader, "tbCompletedTreatment", "Time (years)", "Individuals completing treatment"),
+    tbDroppedTreatment    = function() Graph(Loader, "tbDroppedTreatment", "Time (years)", "Individuals dropping out"),
+    
+    
     
     # ageAtInfection        = function() Hist(Loader, "meanSurvivalTimeNoART", "age.at.infection", "Age at Infection"),
     # meanSurvivalTimeNoART = function() Hist(Loader, "meanSurvivalTimeNoART", "years.lived", "Years lived with HIV, no ART"),
@@ -105,52 +110,3 @@ cat <- CreateGraphCatalog(outputLocation)
   # geom_hline(yintercept = 16.99) + DEATHRATE
   # geom_hline(yintercept = 3) + MARRIAGERATE
   # geom_hline(yintercept = 0.4) + DIVORCERATE
-
-Prepper <- function(cat) function(string) mutate(cat$Loader(string), type=string)
-
-
-# TB events
-map(c("tbInfections", "tbConversions", "tbRecoveries"), Prepper(cat)) %>%
-  bind_rows() %>%
-  ggplot(aes(period, value, color=type, group=interaction(type, trajectory))) + 
-  geom_line() +
-  labs(x="Time (years)", y = "Events/year", title="Infection events") +
-  theme(legend.title = element_blank()) +
-  scale_color_discrete(name="Data type", 
-                       breaks=c("tbInfections", "tbConversions", "tbRecoveries"),
-                       labels=c("TB Conversions", "TB Infections", "TB Recoveries"))
-
-# TB compared to population size
-map(c("populationSize", "tbLatent", "tbInfectious"), Prepper(cat)) %>%
-  bind_rows() %>%
-  ggplot(aes(period, value, color=type, group=interaction(type, trajectory))) + 
-    geom_line() +
-    labs(x="Time (years)", y = "People", title="TB and Population Size") +
-    theme(legend.title = element_blank()) +
-    scale_color_discrete(name="Data type", 
-                         breaks=c("populationSize", "tbLatent", "tbInfectious"),
-                         labels=c("Population size", "Latent TB", "Infectious TB"))
-
-# TB + Tx events
-map(c("tbInfections", "tbConversions", "tbRecoveries", "tbTreatmentBegin", "tbTreatmentEnd", "tbTreatmentDropout"), Prepper(cat)) %>%
-  bind_rows() %>%
-  ggplot(aes(period, value, color=type, group=interaction(type, trajectory))) + 
-    geom_line() +
-  labs(x="Time (years)", y = "Events/year", title="All TB Events") +
-  theme(legend.title = element_blank()) +
-  scale_color_discrete(name="Data type", 
-                       breaks=c("tbInfections", "tbConversions", "tbRecoveries", "tbTreatmentBegin", "tbTreatmentEnd", "tbTreatmentDropout"),
-                       labels=c("TB Conversions", "TB Infections", "TB Recoveries", "Tx Init", "Tx End", "Tx Dropout"))
-
-
-# TB + Tx pools
-map(c("tbInTreatment", "tbCompletedTreatment", "tbDroppedTreatment"), Prepper(cat)) %>%
-  bind_rows() %>%
-  ggplot(aes(period, value, color=type, group=interaction(type, trajectory))) + 
-    geom_line() +
-  labs(x="Time (years)", y = "# People", title="Treatment status distribution") +
-  theme(legend.title = element_blank()) +
-  scale_color_discrete(name="Data type", 
-                       breaks=c("tbInTreatment", "tbCompletedTreatment", "tbDroppedTreatment"),
-                       labels=c("In Treatment", "Completed Treatment", "Dropped Treatment"))
-

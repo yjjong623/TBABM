@@ -34,7 +34,7 @@ EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 			if (!idv || idv->dead || idv->hivStatus == HIVStatus::Positive)
 				return true;
 
-			HIVInfectionLogger(idv, t);
+			// HIVInfectionLogger(idv, t);
 
 			idv->hivStatus = HIVStatus::Positive;
 

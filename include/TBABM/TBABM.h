@@ -363,7 +363,7 @@ private:
 			if (p && p != idv)
 				p->TB.RiskReeval(t);
 
-		printf("TBProgressionHandler: Finished successfully\n");
+		// printf("TBProgressionHandler: Finished successfully\n");
 		return;
 	};
 

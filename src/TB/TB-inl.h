@@ -55,7 +55,7 @@ TB<T>::RiskReeval(Time t)
 
 		auto old_risk_window = risk_window;
 
-		Log(ts, "TB: RiskReeval triggered");
+		// Log(ts, "TB: RiskReeval triggered");
 
 		// CONDITIONS THAT MAY CHANGE RISK WINDOW
 		// if (HIVStatus() == HIVStatus::Positive)
@@ -87,7 +87,6 @@ template <typename T>
 void
 TB<T>::HandleDeath(Time t)
 {
-	printf("Handling death at time %f\n", t);
 	switch(tb_status) {
 		case (TBStatus::Susceptible):
 			data.tbSusceptible.Record(t, -1); break;
@@ -204,7 +203,7 @@ TB<T>::InfectLatent(Time t, Source s, StrainType)
 		if (tb_status == TBStatus::Infectious)
 			return true;
 
-		Log(ts, "TB infection: Latent");
+		// Log(ts, "TB infection: Latent");
 
 		data.tbSusceptible.Record((int)ts, -1);
 		data.tbInfected.Record((int)ts, +1);
@@ -246,7 +245,7 @@ TB<T>::InfectInfectious(Time t, Source s, StrainType)
 		if (tb_status == TBStatus::Infectious)
 			return true;
 
-		Log(ts, "TB infection: Infectious");
+		// Log(ts, "TB infection: Infectious");
 
 		if (tb_status == TBStatus::Latent)
 			data.tbLatent.Record((int)ts, -1);
@@ -295,7 +294,7 @@ TB<T>::TreatmentBegin(Time t)
 			return true;
 		}
 
-		Log(ts, "TB treatment begin");
+		// Log(ts, "TB treatment begin");
 
 		data.tbInTreatment.Record((int)ts, +1);
 		data.tbTreatmentBegin.Record((int)ts, +1);
@@ -326,7 +325,7 @@ TB<T>::TreatmentDropout(Time t)
 		if (!AliveStatus())
 			return true;
 
-		Log(ts, "TB treatment dropout");
+		// Log(ts, "TB treatment dropout");
 
 		data.tbDroppedTreatment.Record((int)ts, +1); 
 		data.tbTreatmentDropout.Record((int)ts, +1);
@@ -349,7 +348,7 @@ TB<T>::TreatmentComplete(Time t)
 		if (!AliveStatus())
 			return true;
 
-		Log(ts, "TB treatment complete");
+		// Log(ts, "TB treatment complete");
 
 		data.tbTreatmentEnd.Record((int)ts, +1);
 		data.tbCompletedTreatment.Record((int)ts, +1);
@@ -375,7 +374,7 @@ TB<T>::Recovery(Time t, RecoveryType)
 		if (!AliveStatus())
 			return true;
 
-		Log(ts, "TB recovery");
+		// Log(ts, "TB recovery");
 
 		data.tbRecoveries.Record((int)ts, +1);
 		data.tbInfectious.Record((int)ts, -1);
