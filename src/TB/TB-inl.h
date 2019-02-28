@@ -193,8 +193,12 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 		if (ts < risk_window && Bernoulli(p_init_infection)(rng.mt_))
 			init_infection = true;
 
-		// If they do get infected, this is what the infection source is
+		// If they do get infected, this is what the infection source is. Note: During 'seeding'
+		// (0 < t < risk_window) all infection is from the community
 		Source infection_source {tti_global < tti_household ? Source::Global : Source::Household};
+		if (init_infection)
+			infection_source = Source::Global;
+
 		long double master_infection_time {init_infection ? 0.0 : std::min(tti_global, tti_household)};
 
 		if (master_infection_time < risk_window/365) // Will this individual be infected now?
