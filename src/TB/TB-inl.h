@@ -76,6 +76,10 @@ TB<T>::RiskReeval(Time t)
 		if (!AliveStatus())
 			return true;
 
+		// Don't do risk re-evals during the 'seeding' period
+		if (ts < risk_window)
+			return true;
+
 		auto old_risk_window = risk_window;
 
 		// Log(ts, "TB: RiskReeval triggered");

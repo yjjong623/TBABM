@@ -177,6 +177,8 @@ double Household::TBPrevalence() {
 }
 
 void Household::TriggerReeval(int t, Pointer<Individual> idv) {
+	
+	
 	if (head)
 		head->TB.RiskReeval(t);
 

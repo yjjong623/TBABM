@@ -121,12 +121,10 @@ void TBABM::CreatePopulation(int t, long size)
 		auto person = *it;
 		int gender = person->sex == Sex::Male ? 0 : 1;
 		
-		if (fileData["HIV_prevalence_1990"].getValue(1990, gender, person->age(t), rng) == 1) {
-			printf("HIV infection at initialization\n");
+		if (fileData["HIV_prevalence_1990"].getValue(1990, gender, person->age(t), rng) == 1)
 			Schedule(t, HIVInfection(person));
-		} else {
+		else
 			Schedule(t + 365, HIVInfectionCheck(person));
-		}
 	}
 
 	populationSize.Record(t, popChange);
