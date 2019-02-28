@@ -1,5 +1,10 @@
 #!/bin/bash
 csvjson "sampleParams.csv" > "sampleParams.json"
+csvjson "TBsource_1.csv" > "TBsource_1.json"
+csvjson "TBsource_2.csv" > "TBsource_2.json"
+csvjson "TBsource_3.csv" > "TBsource_3.json"
+csvjson "TBsource_4.csv" > "TBsource_4.json"
+csvjson "TBsource_5.csv" > "TBsource_5.json"
 
 csvjson "Demographic/probability of pregnant.csv"        > "Demographic/probability of pregnant.json"
 csvjson "Demographic/time in marriage.csv"               > "Demographic/time in marriage.json"
