@@ -114,6 +114,28 @@ cat$tbOverview() + geom_text(aes(label=trajectory))
 cat$tbEvents()
 cat$tbTransmission()
 
+runs <- c(1, 2, 3, 4, 5)
+household <- c(50, 5, 0.5, 0.05, 0.005)
+global <- c(0.005, 0.05, 0.5, 5, 50)
+datas <- c("tbInfectionsHousehold", "tbInfectionsCommunity")
+
+process <- function(run, household, global) {
+  Loader <- CSVLoaderGen(GetPrefix(outputLocation, as.character(run)))
+  
+  map(datas, ~mutate(Loader(.), type=., 
+                                household=household, 
+                                global=global,
+                                seed=run)) %>%
+    bind_rows()
+}
+
+process(runs[1], household[1], global[1])
+
+pmap(list(runs, household, global), ~process(..1, ..2, ..3)) %>%
+  bind_rows() %>%
+  ggplot(aes(period, value, color=type, group=interaction(trajectory, type, seed))) +
+    geom_line() +
+    facet_wrap(~interaction(household, global))
 
   # geom_hline(yintercept = 19.61) + BIRTHRATE
   # geom_hline(yintercept = 16.99) + DEATHRATE
