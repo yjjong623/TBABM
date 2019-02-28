@@ -32,7 +32,12 @@ int main(int argc, char const *argv[])
 
 	int nTrajectories = 5;
 
-	auto timestamp = argc == 1 ? std::time(NULL) : atol(argv[1]);
+	if (argc == 1) {
+		printf("Usage: ./TBABMTest param_name [seed]\n");
+		exit(1);
+	}
+
+	auto timestamp = argc == 2 ? std::time(NULL) : atol(argv[2]);
 
 	RNG rng(timestamp);
 
@@ -46,7 +51,7 @@ int main(int argc, char const *argv[])
 	std::vector<std::shared_ptr<TBABM>> trajectories{};
 	std::map<string, Param> params{};
 
-	mapShortNames(fileToJSON("../params/sampleParams.json"), params);
+	mapShortNames(fileToJSON(string("../params/") + string(argv[1]) + string(".json")), params);
 
 	string populationHeader = "trajectory,time,hash,age,sex,marital,household,householdHash,offspring,mom,dad,HIV,ART,CD4,TBStatus\n";
 	string householdHeader  = "trajectory,time,hash,size,head,spouse,directOffspring,otherOffspring,other\n";
