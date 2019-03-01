@@ -6,6 +6,7 @@ source("R/graphs_household.R")
 source("R/graphs_death.R")
 source("R/graphs_HIV.R")
 source("R/graphs_TB.R")
+source("R/multiplot.R")
 
 GetLatestPrefix <- function(location) paste(location, FindLatestTimestamp(location), "_", sep="")
 GetPrefix <- function(location, timestamp) paste(location, timestamp, "_", sep="")
@@ -80,6 +81,7 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     
     # Seems good
     tbTreatmentBegin      = function() Graph(Loader, "tbTreatmentBegin", "Time (years)", ""),
+    tbTreatmentBeginHIV   = function() GraphRate(Loader, "tbTreatmentBeginHIV", "tbTreatmentBegin", 1, "Time (years)", "Fraction"),
     tbTreatmentEnd        = function() Graph(Loader, "tbTreatmentEnd", "Time (years)", ""),
     tbTreatmentDropout    = function() Graph(Loader, "tbTreatmentDropout", "Time (years)", ""),
     
@@ -110,33 +112,93 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
 outputLocation <- "/Users/marcusrussi/Desktop/Yaesoubi-Cohen-Lab/repos/TBABM/output/"
 cat <- CreateGraphCatalog(outputLocation)
 
-cat$tbOverview() + geom_text(aes(label=trajectory))
+
+
+
+
+cat$tbTreatmentBegin()
+cat$tbTreatmentBeginHIV()
+cat$tbOverview()
 cat$tbEvents()
 cat$tbTransmission()
 
-runs <- c(1, 2, 3, 4, 5)
-household <- c(50, 5, 0.5, 0.05, 0.005)
-global <- c(0.005, 0.05, 0.5, 5, 50)
-datas <- c("tbInfectionsHousehold", "tbInfectionsCommunity")
+grid <- function(Loader, namesMap, startYear) {
+  lambda <- function(name) {
+    # 'item' is either a string describing the title, or a list
+    # with a 'data' key and a 'name' key
+    item <- namesMap[[name]]
+    title <- ifelse(is.list(item), item$title, item)
+    
+    if (!("factor") %in% names(item))
+      factor <- 1
+    else
+      factor <- item$factor
+    
+    if (!("data" %in% names(item)))
+      data <- Loader(name)
+    else
+      data <- JoinAndDivideTimeSeries(Loader(item$data[1]), Loader(item$data[2]), "value", factor)
 
-process <- function(run, household, global) {
-  Loader <- CSVLoaderGen(GetPrefix(outputLocation, as.character(run)))
+    mutate(data, title=title, year=period+startYear) %>%
+      ggplot(aes(year, value, group=trajectory)) +
+        geom_line(color="grey") +
+        geom_vline(xintercept=2002, linetype="dashed", color="grey") +
+        geom_vline(xintercept=2008, linetype="dashed", color="grey") +
+        theme_classic() +
+        theme(plot.title=element_text(face="bold", size=10)) +
+        labs(x="Year", y=item$y, title=title)
+  }
   
-  map(datas, ~mutate(Loader(.), type=., 
-                                household=household, 
-                                global=global,
-                                seed=run)) %>%
-    bind_rows()
+  map(names(namesMap), lambda)
 }
 
-process(runs[1], household[1], global[1])
+nIdv <- "Number of individuals"
+testMap  <- list(tbSusceptible  = list(title="TB-Susceptible Individuals", y=nIdv),
+                 tbLatent       = list(title="Latently-infected individuals", y=nIdv), 
+                 tbInfectious   = list(title="Actively-infected individuals", y=nIdv),
+                 populationSize = list(title="Population Size", y=nIdv),
+                 hivPrevalence  = list(data=c("hivPositive", "populationSize"), title="HIV Prevalence, All Individuals", y="Prevalence (%)", factor=100))
 
-pmap(list(runs, household, global), ~process(..1, ..2, ..3)) %>%
-  bind_rows() %>%
-  ggplot(aes(period, value, color=type, group=interaction(trajectory, type, seed))) +
-    geom_line() +
-    facet_wrap(~interaction(household, global))
+bigMap  <- list(birthRate         = list(data=c("births", "populationSize"), title="Birth rate", y="Births/1000/year", factor=1000),
+                deathRate         = list(data=c("deaths", "populationSize"), title="Death rate", y="Deaths/1000/year", factor=1000),
+                populationSize    = list(title="Population Size", y=nIdv),
+                marriageRate      = list(data=c("marriages", "populationSize"), title="Marriage rate", y="Marriages/1000/year", factor=1000),
+                divorceRate       = list(data=c("divorces", "populationSize"), title="Divorce rate", y="Divorces/1000/year", factor=1000),
+                hivPrevalence     = list(data=c("hivPositive", "populationSize"), title="HIV Prevalence, All Individuals", y="Prevalence (%)", factor=100),
+                hivARTPrevalence  = list(data=c("hivPositiveART", "populationSize"), title="HIV ART Prevalence, All Individuals", y="Prevalence (%)", factor=100),
+                tbSusceptible     = list(title="TB-Susceptible Individuals", y=nIdv),
+                tbLatent          = list(title="Latently-infected individuals", y=nIdv), 
+                tbInfectious      = list(title="Actively-infected individuals", y=nIdv),
+                tbConversions     = list(title="TB Conversions, all individuals", y="Infections/year"),
+                tbInfections      = list(title="TB Infections, all individuals", y="Infections/year"),
+                tbRecoveries      = list(title="TB Recoveries, all individuals", y="Recoveries/year"))
 
+do.call(multiplot, flatten(list(grid(cat$Loader, testMap, 1990), cols=3)))
+do.call(multiplot, flatten(list(grid(cat$Loader, bigMap, 1990), cols=4)))
+
+FOIs <- function() {
+  runs <- c(1, 2, 3, 4, 5)
+  household <- c(50, 5, 0.5, 0.05, 0.005)
+  global <- c(0.005, 0.05, 0.5, 5, 50)
+  datas <- c("tbInfectionsHousehold", "tbInfectionsCommunity")
+  
+  process <- function(run, household, global) {
+      Loader <- CSVLoaderGen(GetPrefix(outputLocation, as.character(run)))
+      
+      map(datas, ~mutate(Loader(.), type=., 
+                                    household=household, 
+                                    global=global,
+                                    seed=run)) %>%
+        bind_rows()
+    }
+    
+    pmap(list(runs, household, global), ~process(..1, ..2, ..3)) %>%
+      bind_rows() %>%
+      ggplot(aes(period, value, color=type, group=interaction(trajectory, type, seed))) +
+        geom_line() +
+        coord_cartesian(ylim=c(0, 500)) +
+        facet_wrap(vars(household, global), labeller = "label_both")
+}
   # geom_hline(yintercept = 19.61) + BIRTHRATE
   # geom_hline(yintercept = 16.99) + DEATHRATE
   # geom_hline(yintercept = 3) + MARRIAGERATE

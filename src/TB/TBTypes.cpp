@@ -12,6 +12,7 @@ TBData CreateTBData(IndividualInitData data) {
         data.tbLatent,
         data.tbInfectious,
         data.tbTreatmentBegin,
+        data.tbTreatmentBeginHIV,
         data.tbTreatmentEnd,
         data.tbTreatmentDropout,
         data.tbInTreatment,

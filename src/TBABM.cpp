@@ -72,6 +72,7 @@ TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
         case TBABMData::TBInfectionsCommunity: return &tbInfectionsCommunity;
 
         case TBABMData::TBTreatmentBegin:return &tbTreatmentBegin;
+        case TBABMData::TBTreatmentBeginHIV:return &tbTreatmentBeginHIV;
         case TBABMData::TBTreatmentEnd:  return &tbTreatmentEnd;
         case TBABMData::TBTreatmentDropout:
                                          return &tbTreatmentDropout;
@@ -104,7 +105,7 @@ TBABM::GetData<PrevalencePyramidTimeSeries>(TBABMData field)
 
 bool TBABM::Run(void)
 {
-    CreatePopulation(0, 10000);
+    CreatePopulation(0, 40000);
     Schedule(1, Matchmaking());
     Schedule(1, UpdatePyramid());
     Schedule(1, UpdateHouseholds());
@@ -165,6 +166,7 @@ bool TBABM::Run(void)
     tbInfectious.Close();
 
     tbTreatmentBegin.Close();
+    tbTreatmentBeginHIV.Close();
     tbTreatmentEnd.Close();
     tbTreatmentDropout.Close();
     

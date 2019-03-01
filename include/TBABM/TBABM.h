@@ -61,7 +61,6 @@ public:
 		HIVDiagnosed,
 		HIVDiagnosedVCT,
 		HIVDiagnosesVCT,
-		
 
 		TBSusceptible,
 		TBInfected,
@@ -80,6 +79,7 @@ public:
 		TBDroppedTreatment,
 
 		TBTreatmentBegin,
+		TBTreatmentBeginHIV,
 		TBTreatmentEnd,
 		TBTreatmentDropout,
 		// TBSusceptible,
@@ -146,9 +146,10 @@ public:
 		tbLatent(     "tbLatent",      constants["tMax"], constants["periodLength"]),
 		tbInfectious( "tbInfectious",  constants["tMax"], constants["periodLength"]),
 
-		tbTreatmentBegin(  "tbTreatmentBegin",   0, constants["tMax"], constants["periodLength"]),
-		tbTreatmentEnd(    "tbTreatmentEnd",     0, constants["tMax"], constants["periodLength"]),
-		tbTreatmentDropout("tbTreatmentDropout", 0, constants["tMax"], constants["periodLength"]),
+		tbTreatmentBegin(   "tbTreatmentBegin",   0, constants["tMax"], constants["periodLength"]),
+		tbTreatmentBeginHIV("tbTreatmentBeginHIV",0, constants["tMax"], constants["periodLength"]),
+		tbTreatmentEnd(     "tbTreatmentEnd",     0, constants["tMax"], constants["periodLength"]),
+		tbTreatmentDropout( "tbTreatmentDropout", 0, constants["tMax"], constants["periodLength"]),
 
 		tbInTreatment(       "tbInTreatment",        constants["tMax"], constants["periodLength"]),
 		tbCompletedTreatment("tbCompletedTreatment", constants["tMax"], constants["periodLength"]),
@@ -179,7 +180,7 @@ public:
 					 {tbInfections, tbConversions, tbRecoveries, \
 					  tbInfectionsHousehold, tbInfectionsCommunity,
 					  tbSusceptible, tbInfected, tbLatent, tbInfectious, \
-					  tbTreatmentBegin, tbTreatmentEnd, tbTreatmentDropout, \
+					  tbTreatmentBegin, tbTreatmentBeginHIV, tbTreatmentEnd, tbTreatmentDropout, \
 					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment},
 					 CreateIndividualHandlers([this] (Pointer<Individual> i, int t, DeathCause dc) -> void \
 					 						  { return Schedule(t, Death(i, dc)); },
@@ -239,6 +240,7 @@ private:
 	PrevalenceTimeSeries<int> tbInfectious;  // # Individuals in I
 
 	IncidenceTimeSeries<int>  tbTreatmentBegin;   // Individuals initiating treatment
+	IncidenceTimeSeries<int>  tbTreatmentBeginHIV;// Initiating but also HIV+
 	IncidenceTimeSeries<int>  tbTreatmentEnd;     // Individuals completing treatment
 	IncidenceTimeSeries<int>  tbTreatmentDropout; // Individuals dropping out
 

@@ -31,7 +31,7 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 			IndividualInitData initData {tbInfections, tbConversions, tbRecoveries, \
 				tbInfectionsHousehold, tbInfectionsCommunity,
 				tbSusceptible, tbInfected, tbLatent, tbInfectious, \
-				tbTreatmentBegin, tbTreatmentEnd, tbTreatmentDropout, \
+				tbTreatmentBegin, tbTreatmentBeginHIV, tbTreatmentEnd, tbTreatmentDropout, \
 				tbInTreatment, tbCompletedTreatment, tbDroppedTreatment};
 
 			auto deathHandler = [this] (Pointer<Individual> idv, int t, DeathCause cause) -> void { 
@@ -51,7 +51,6 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 				mother->householdID, t, sex,
 				Pointer<Individual>(), mother, father,
 				vector<Pointer<Individual>>{}, householdPosition, marriageStatus);
-				// std::make_shared<Params>(params), std::make_shared<map<string, DataFrameFile>>(fileData));
 
 			// printf("[%d] Baby born: %ld::%lu\n", (int)t, mother->householdID, std::hash<Pointer<Individual>>()(baby));
 

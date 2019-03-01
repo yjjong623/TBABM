@@ -313,6 +313,8 @@ TB<T>::InfectInfectious(Time t, Source s, StrainType)
 // Marks an individual as having begun treatment.
 // Decides if they will complete treatment, or drop
 // out. Schedules either event.
+// For the purposes of surveillance, etc.. this is 
+// also considered diagnosis right now
 template <typename T>
 void
 TB<T>::TreatmentBegin(Time t)
@@ -328,8 +330,14 @@ TB<T>::TreatmentBegin(Time t)
 
 		// Log(ts, "TB treatment begin");
 
+		// printf("%d,%4f\n", (int)ts, HouseholdTBPrevalence());
+
 		data.tbInTreatment.Record((int)ts, +1);
 		data.tbTreatmentBegin.Record((int)ts, +1);
+
+		// If HIV+, record
+		if (HIVStatus() == HIVStatus::Positive)
+			data.tbTreatmentBeginHIV.Record((int)ts, +1);
 
 		tb_treatment_status = TBTreatmentStatus::Incomplete;
 
@@ -362,7 +370,9 @@ TB<T>::TreatmentDropout(Time t)
 		data.tbDroppedTreatment.Record((int)ts, +1); 
 		data.tbTreatmentDropout.Record((int)ts, +1);
 
-		tb_treatment_status = TBTreatmentStatus::Incomplete;
+
+
+		tb_treatment_status = TBTreatmentStatus::Dropout;
 		
 		return true;
 	};

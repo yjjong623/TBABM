@@ -39,6 +39,7 @@ typedef struct TBData {
 	PrevalenceTimeSeries<int>&     tbInfectious;  // # Individuals in I
 
 	IncidenceTimeSeries<int>& tbTreatmentBegin;   // Individuals initiating treatment
+	IncidenceTimeSeries<int>& tbTreatmentBeginHIV;// Initiating treatment and HIV+
 	IncidenceTimeSeries<int>& tbTreatmentEnd;     // Individuals completing treatment
 	IncidenceTimeSeries<int>& tbTreatmentDropout; // Individuals dropping out
 

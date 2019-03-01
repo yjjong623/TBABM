@@ -106,6 +106,7 @@ int main(int argc, char const *argv[])
 	TimeSeriesExport<int> tbLatent(outputPrefix + "tbLatent.csv");
 	TimeSeriesExport<int> tbInfectious(outputPrefix + "tbInfectious.csv");
 	TimeSeriesExport<int> tbTreatmentBegin(outputPrefix + "tbTreatmentBegin.csv");
+	TimeSeriesExport<int> tbTreatmentBeginHIV(outputPrefix + "tbTreatmentBeginHIV.csv");
 	TimeSeriesExport<int> tbTreatmentEnd(outputPrefix + "tbTreatmentEnd.csv");
 	TimeSeriesExport<int> tbTreatmentDropout(outputPrefix + "tbTreatmentDropout.csv");
 	TimeSeriesExport<int> tbInTreatment(outputPrefix + "tbInTreatment.csv");
@@ -149,9 +150,12 @@ int main(int argc, char const *argv[])
 		success &= tbInfected.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBInfected));
 		success &= tbLatent.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBLatent));
 		success &= tbInfectious.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBInfectious));
+
 		success &= tbTreatmentBegin.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBTreatmentBegin));
+		success &= tbTreatmentBeginHIV.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBTreatmentBeginHIV));
 		success &= tbTreatmentEnd.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBTreatmentEnd));
 		success &= tbTreatmentDropout.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::TBTreatmentDropout));
+		
 		success &= tbInTreatment.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBInTreatment));
 		success &= tbCompletedTreatment.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBCompletedTreatment));
 		success &= tbDroppedTreatment.Add(trajectories[i]->GetData<PrevalenceTimeSeries<int>>(TBABMData::TBDroppedTreatment));
@@ -199,7 +203,9 @@ int main(int argc, char const *argv[])
 		tbInfected.Write()           &&
 		tbLatent.Write()             &&
 		tbInfectious.Write()         &&
+
 		tbTreatmentBegin.Write()     &&
+		tbTreatmentBeginHIV.Write()  &&
 		tbTreatmentEnd.Write()       &&
 		tbTreatmentDropout.Write()   &&
 		tbInTreatment.Write()        &&
