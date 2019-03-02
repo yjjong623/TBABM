@@ -1,3 +1,5 @@
+#pragma once
+
 #include <functional>
 #include <map>
 #include <string>
@@ -75,8 +77,6 @@ public:
 
 		data.tbSusceptible.Record(initCtx.current_time, +1);
 	}
-
-	~TB(void);
 
 	TBStatus GetTBStatus(Time);
 
