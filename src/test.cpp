@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <future>
 
 #include <Normal.h>
 #include <Weibull.h>
@@ -30,7 +31,7 @@ int main(int argc, char const *argv[])
 
 	const char *householdsFile = "household_structure.csv";
 
-	int nTrajectories = 5;
+	const int nTrajectories = 2;
 
 	if (argc == 1) {
 		printf("Usage: ./TBABMTest param_name [seed]\n");
@@ -53,6 +54,36 @@ int main(int argc, char const *argv[])
 
 	mapShortNames(fileToJSON(string("../params/") + string(argv[1]) + string(".json")), params);
 
+	for (int i = 0; i < nTrajectories; i++) {
+		auto traj = std::make_shared<TBABM>(params, 
+											constants, 
+											householdsFile, 
+											rng.mt_());
+		trajectories.push_back(traj);
+	}
+
+	// for (int i = 0; i < nTrajectories; i++)
+	// 	trajectories[i]->Run();
+
+	std::array<future<bool>, nTrajectories> futures {};
+
+	for (int i = 0; i < nTrajectories; ++i)
+		futures[i] = async(launch::async | launch::deferred, \
+						  &TBABM::Run, \
+						  trajectories[i]);
+
+	bool success {true};
+
+	for (int i = 0; i < nTrajectories; ++i)
+		success &= futures[i].get();
+
+	if (success)
+		printf("All threads finished successfully!\n");
+	else {
+		printf("One or more threads finished unsuccessfully\n");
+		exit(1);
+	}
+
 	string populationHeader = "trajectory,time,hash,age,sex,marital,household,householdHash,offspring,mom,dad,HIV,ART,CD4,TBStatus\n";
 	string householdHeader  = "trajectory,time,hash,size,head,spouse,directOffspring,otherOffspring,other\n";
 	string deathHeader = "trajectory,time,hash,age,sex,cause,HIV,HIV_date,ART,ART_date,CD4,baseline_CD4\n";
@@ -62,20 +93,6 @@ int main(int argc, char const *argv[])
 	*populationSurvey << populationHeader;
 	*householdSurvey  << householdHeader;
 	*deathSurvey      << deathHeader;
-
-	for (int i = 0; i < nTrajectories; i++) {
-		auto traj = std::make_shared<TBABM>(params, 
-											constants, 
-											householdsFile, 
-											rng.mt_(),
-											populationSurvey,
-											householdSurvey,
-											deathSurvey);
-		trajectories.push_back(traj);
-	}
-
-	for (int i = 0; i < nTrajectories; i++)
-		trajectories[i]->Run();
 
 	TimeSeriesExport<int> births(outputPrefix + "births.csv");
 	TimeSeriesExport<int> deaths(outputPrefix + "deaths.csv");
@@ -129,7 +146,6 @@ int main(int argc, char const *argv[])
 
 	using TBABMData = TBABM::TBABMData;
 
-	bool success = true;
 	for (int i = 0; i < nTrajectories; i++) {
 		success &= births.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Births));
 		success &= deaths.Add(trajectories[i]->GetData<IncidenceTimeSeries<int>>(TBABMData::Deaths));
@@ -177,9 +193,13 @@ int main(int argc, char const *argv[])
 		success &= activeHouseholdContacts.Add(trajectories[i]->GetData<DiscreteTimeStatistic>(TBABMData::ActiveHouseholdContacts));
 	}
 
+	for (int i = 0; i < nTrajectories; i++) {
+		success &= trajectories[i]->WriteSurveys(populationSurvey, householdSurvey, deathSurvey);
+	}
+
 
 	if (!success) {
-		printf("An attempt to add a data source to the CSV exporter failed. Quitting.\n");
+		printf("Some step of data export failed. Quitting.\n");
 		return 0;
 	}
 

@@ -53,7 +53,7 @@ EventFunc TBABM::Survey(void)
 				buf += line;
 			}
 
-			*populationSurvey << buf;
+			populationSurvey += buf;
 			buf.clear();
 
 			///////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ EventFunc TBABM::Survey(void)
 				buf += line;
 			}
 
-			*householdSurvey << buf;
+			householdSurvey += buf;
 
 			Schedule(t + 10*365, Survey());
 

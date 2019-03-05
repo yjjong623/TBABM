@@ -113,9 +113,22 @@ TBABM::GetData<DiscreteTimeStatistic>(TBABMData field)
     }
 }
 
+bool
+TBABM::WriteSurveys(Pointer<ofstream> ps, 
+                    Pointer<ofstream> hs, 
+                    Pointer<ofstream> ds)
+{
+    if ((*ps << populationSurvey) &&
+        (*hs << householdSurvey) &&
+        (*ds << deathSurvey))
+        return true;
+    else
+        return false;
+}
+
 bool TBABM::Run(void)
 {
-    CreatePopulation(0, 40000);
+    CreatePopulation(0, 5000);
     Schedule(1, Matchmaking());
     Schedule(1, UpdatePyramid());
     Schedule(1, UpdateHouseholds());

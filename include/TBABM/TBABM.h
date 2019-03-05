@@ -110,10 +110,7 @@ public:
 	TBABM(Params _params, 
 		  std::map<string, long double> constants,
 		  const char *householdsFile, 
-		  long _seed,
-		  std::shared_ptr<ofstream> populationSurvey,
-		  std::shared_ptr<ofstream> householdSurvey,
-		  std::shared_ptr<ofstream> deathSurvey) : 
+		  long _seed) : 
 
 		params(_params),
 		constants(constants),
@@ -165,9 +162,6 @@ public:
 
 		population({}),
 		households({}),
-		populationSurvey(populationSurvey),
-		householdSurvey(householdSurvey),
-		deathSurvey(deathSurvey),
 
 		maleSeeking({}),
 		femaleSeeking({}),
@@ -208,6 +202,11 @@ public:
 
 	template <typename T>
 	T* GetData(TBABMData field);
+
+	bool WriteSurveys(Pointer<ofstream> ps, 
+					  Pointer<ofstream> hs, 
+					  Pointer<ofstream> ds);
+
 
 private:
 	IncidenceTimeSeries<int> births;
@@ -378,7 +377,7 @@ private:
 	long seed;
 
 	ofstream meanSurvivalTime;
-	std::shared_ptr<ofstream> populationSurvey;
-	std::shared_ptr<ofstream> householdSurvey;
-	std::shared_ptr<ofstream> deathSurvey;
+	string populationSurvey;
+	string householdSurvey;
+	string deathSurvey;
 };

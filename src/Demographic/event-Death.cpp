@@ -117,7 +117,7 @@ void TBABM::SurveyDeath(Pointer<Individual> idv, int t, DeathCause deathCause)
 				+ ART_baseline_CD4(idv, params["HIV_m_30"].Sample(rng))
 				+ "\n";
 
-	*deathSurvey << line;
+	deathSurvey += line;
 
 	return;
 }
