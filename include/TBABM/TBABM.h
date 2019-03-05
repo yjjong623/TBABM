@@ -82,6 +82,8 @@ public:
 		TBTreatmentBeginHIV,
 		TBTreatmentEnd,
 		TBTreatmentDropout,
+
+		ActiveHouseholdContacts,
 		// TBSusceptible,
 		// TBLatentTN, 
 		// TBLatentTC, 
@@ -155,6 +157,8 @@ public:
 		tbCompletedTreatment("tbCompletedTreatment", constants["tMax"], constants["periodLength"]),
 		tbDroppedTreatment(  "tbDroppedTreatment",   constants["tMax"], constants["periodLength"]),
 
+		activeHouseholdContacts("activeHouseholdContacts"),
+
 		pyramid("Population pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
 		deathPyramid("Death pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
 		householdsCount("households", 0, constants["tMax"], 365),
@@ -181,7 +185,7 @@ public:
 					  tbInfectionsHousehold, tbInfectionsCommunity,
 					  tbSusceptible, tbInfected, tbLatent, tbInfectious, \
 					  tbTreatmentBegin, tbTreatmentBeginHIV, tbTreatmentEnd, tbTreatmentDropout, \
-					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment},
+					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment, activeHouseholdContacts},
 					 CreateIndividualHandlers([this] (Pointer<Individual> i, int t, DeathCause dc) -> void \
 					 						  { return Schedule(t, Death(i, dc)); },
 					 						  [this] (int t) -> double { return (double)tbInfectious(t)/(double)populationSize(t); }
@@ -247,6 +251,10 @@ private:
 	PrevalenceTimeSeries<int> tbInTreatment;        // Individuals in treatment
 	PrevalenceTimeSeries<int> tbCompletedTreatment; // Individuals who completed
 	PrevalenceTimeSeries<int> tbDroppedTreatment;   // Individuals who dropped
+
+	DiscreteTimeStatistic  activeHouseholdContacts; // For each individual diagnosed with active TB,
+													// the percentage of household contacts who have
+													// active TB.
 
 	////////////////////////////////////////////////////////
 	/// Demographic Events

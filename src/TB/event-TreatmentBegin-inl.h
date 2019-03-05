@@ -20,10 +20,9 @@ TB<T>::TreatmentBegin(Time t)
 
 		// Log(ts, "TB treatment begin");
 
-		// printf("%d,%4f\n", (int)ts, HouseholdTBPrevalence());
-
 		data.tbInTreatment.Record((int)ts, +1);
 		data.tbTreatmentBegin.Record((int)ts, +1);
+		data.activeHouseholdContacts.Record(HouseholdTBPrevalence());
 
 		// If HIV+, record
 		if (HIVStatus() == HIVStatus::Positive)

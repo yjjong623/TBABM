@@ -129,16 +129,23 @@ grid <- function(Loader, namesMap, startYear) {
     item <- namesMap[[name]]
     title <- ifelse(is.list(item), item$title, item)
     
+    # Determine factor to multiply each value by, useful for 
+    # rate-based and per-X-capita data
     if (!("factor") %in% names(item))
       factor <- 1
     else
       factor <- item$factor
     
+    # If 'data' isn't a key, use highest-level key as name of 
+    # data source. If it is a key, divide the data source named by 
+    # the first element in the character vector by the data source
+    # named by the second element in the character vector
     if (!("data" %in% names(item)))
       data <- Loader(name)
     else
       data <- JoinAndDivideTimeSeries(Loader(item$data[1]), Loader(item$data[2]), "value", factor)
 
+    # Produce ggplot2 object which will eventually be passed to 'multiplot'
     mutate(data, title=title, year=period+startYear) %>%
       ggplot(aes(year, value, group=trajectory)) +
         geom_line(color="grey") +
@@ -173,10 +180,21 @@ bigMap  <- list(birthRate         = list(data=c("births", "populationSize"), tit
                 tbInfections      = list(title="TB Infections, all individuals", y="Infections/year"),
                 tbRecoveries      = list(title="TB Recoveries, all individuals", y="Recoveries/year"))
 
+mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", y="Number of case notifications"),
+                 populationSize       = list(title="All individuals", y="Number of individuals"),
+                 txIndividuals        = list(data=c("tbCompletedTreatment", "populationSize"), title="Treatment-experienced individuals", y="Proportion of individuals (%)", factor=100),
+                 tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", y="Number of case notifications"),
+                 populationSize       = list(title="All individuals", y="Number of individuals"),
+                 tbInfectious         = list(data=c("tbInfectious", "populationSize"), title="Adults", y="Tuberculosis prevalence (%)", factor=100),
+                 tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", y="Number of case notifications"),
+                 hivPrevalence        = list(data=c("hivPositive", "populationSize"), title="HIV prevalence, all individuals", y="Prevalence (%)", factor=100),
+                 tbInfectious         = list(data=c("tbInfectious", "populationSize"), title="Adults", y="Tuberculosis prevalence (%)", factor=100))
+
 do.call(multiplot, flatten(list(grid(cat$Loader, testMap, 1990), cols=3)))
 do.call(multiplot, flatten(list(grid(cat$Loader, bigMap, 1990), cols=4)))
+do.call(multiplot, flatten(list(grid(cat$Loader, mimicMap, 1990), cols=3)))
 
-FOIs <- function() {
+  FOIs <- function() {
   runs <- c(1, 2, 3, 4, 5)
   household <- c(50, 5, 0.5, 0.05, 0.005)
   global <- c(0.005, 0.05, 0.5, 5, 50)

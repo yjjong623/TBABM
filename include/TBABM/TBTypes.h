@@ -1,5 +1,8 @@
 #pragma once
 
+#include <IncidenceTimeSeries.h>
+#include <PrevalenceTimeSeries.h>
+#include <DiscreteTimeStatistic.h>
 #include "IndividualTypes.h"
 
 using Time = int;
@@ -46,6 +49,10 @@ typedef struct TBData {
 	PrevalenceTimeSeries<int>&     tbInTreatment;        // Individuals in treatment
 	PrevalenceTimeSeries<int>&     tbCompletedTreatment; // Individuals who completed
 	PrevalenceTimeSeries<int>&     tbDroppedTreatment;   // Individuals who dropped
+
+	DiscreteTimeStatistic& activeHouseholdContacts; // For each individual diagnosed with active TB,
+													// the percentage of household contacts who have
+													// active TB.
 } TBData;
 
 TBData CreateTBData(IndividualInitData data);

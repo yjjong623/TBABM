@@ -17,7 +17,8 @@ TBData CreateTBData(IndividualInitData data) {
         data.tbTreatmentDropout,
         data.tbInTreatment,
         data.tbCompletedTreatment,
-        data.tbDroppedTreatment
+        data.tbDroppedTreatment,
+        data.activeHouseholdContacts
     };
 }
 

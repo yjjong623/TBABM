@@ -118,6 +118,15 @@ int main(int argc, char const *argv[])
 	PyramidTimeSeriesExport hivInfectionsPyramid(outputPrefix + "hivInfectionsPyramid.csv");
 	PyramidTimeSeriesExport hivPositivePyramid(outputPrefix + "hivPositivePyramid.csv");
 
+	map<TimeStatType, string> columns {
+        {TimeStatType::Sum,  "Total"},
+        {TimeStatType::Mean, "Average"},
+        {TimeStatType::Min,  "Minimum"},
+        {TimeStatType::Max,  "Maximum"}
+    };
+
+	TimeStatisticsExport activeHouseholdContacts(outputPrefix + "activeHouseholdContacts.csv", columns);
+
 	using TBABMData = TBABM::TBABMData;
 
 	bool success = true;
@@ -164,6 +173,8 @@ int main(int argc, char const *argv[])
 		success &= deathPyramid.Add(trajectories[i]->GetData<IncidencePyramidTimeSeries>(TBABMData::DeathPyramid));
 		success &= hivInfectionsPyramid.Add(trajectories[i]->GetData<IncidencePyramidTimeSeries>(TBABMData::HIVInfectionsPyramid));
 		success &= hivPositivePyramid.Add(trajectories[i]->GetData<PrevalencePyramidTimeSeries>(TBABMData::HIVPositivePyramid));
+
+		success &= activeHouseholdContacts.Add(trajectories[i]->GetData<DiscreteTimeStatistic>(TBABMData::ActiveHouseholdContacts));
 	}
 
 
@@ -210,7 +221,10 @@ int main(int argc, char const *argv[])
 		tbTreatmentDropout.Write()   &&
 		tbInTreatment.Write()        &&
 		tbCompletedTreatment.Write() &&
-		tbDroppedTreatment.Write()       ) {
+		tbDroppedTreatment.Write()   &&
+
+		activeHouseholdContacts.Write())
+	{
 		printf("Everything was written successfully!\n");
 	} else {
 		printf("Somethihg didn't write correctly\n");

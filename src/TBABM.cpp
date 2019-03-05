@@ -103,6 +103,16 @@ TBABM::GetData<PrevalencePyramidTimeSeries>(TBABMData field)
     }
 }
 
+template <>
+DiscreteTimeStatistic*
+TBABM::GetData<DiscreteTimeStatistic>(TBABMData field)
+{
+    switch(field) {
+        case TBABMData::ActiveHouseholdContacts: return &activeHouseholdContacts;
+        default:                                 return nullptr;
+    }
+}
+
 bool TBABM::Run(void)
 {
     CreatePopulation(0, 40000);

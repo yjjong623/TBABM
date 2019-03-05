@@ -32,7 +32,7 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 				tbInfectionsHousehold, tbInfectionsCommunity,
 				tbSusceptible, tbInfected, tbLatent, tbInfectious, \
 				tbTreatmentBegin, tbTreatmentBeginHIV, tbTreatmentEnd, tbTreatmentDropout, \
-				tbInTreatment, tbCompletedTreatment, tbDroppedTreatment};
+				tbInTreatment, tbCompletedTreatment, tbDroppedTreatment, activeHouseholdContacts};
 
 			auto deathHandler = [this] (Pointer<Individual> idv, int t, DeathCause cause) -> void { 
 				return Schedule(t, Death(idv, cause));

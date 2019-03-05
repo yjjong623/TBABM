@@ -2,6 +2,7 @@
 
 #include <IncidenceTimeSeries.h>
 #include <PrevalenceTimeSeries.h>
+#include <DiscreteTimeStatistic.h>
 #include <EventQueue.h>
 #include <RNG.h>
 #include <Param.h>
@@ -63,6 +64,10 @@ typedef struct IndividualInitData {
 	PrevalenceTimeSeries<int>& tbInTreatment;        // Individuals in treatment
 	PrevalenceTimeSeries<int>& tbCompletedTreatment; // Individuals who completed
 	PrevalenceTimeSeries<int>& tbDroppedTreatment;   // Individuals who dropped
+
+	DiscreteTimeStatistic& activeHouseholdContacts; // For each individual diagnosed with active TB,
+													// the percentage of household contacts who have
+													// active TB.
 } IndividualInitData;
 
 typedef struct IndividualHandlers {
