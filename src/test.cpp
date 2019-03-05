@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <vector>
 #include <iostream>
 #include <string>
@@ -20,7 +21,7 @@ using namespace SimulationLib::JSONImport;
 
 using std::vector;
 
-int main(int argc, char const *argv[])
+int main(int argc, char *argv[])
 {
 	Constants constants {};
 
@@ -28,17 +29,62 @@ int main(int argc, char const *argv[])
 	constants["periodLength"] = 365;
 	constants["ageGroupWidth"] = 3;
 	constants["startYear"] = 1990;
+	constants["populationSize"] = 10000;
 
 	const char *householdsFile = "household_structure.csv";
-
-	const int nTrajectories = 2;
-
-	if (argc == 1) {
-		printf("Usage: ./TBABMTest param_name [seed]\n");
-		exit(1);
-	}
+	int nTrajectories = 5;
 
 	auto timestamp = argc == 2 ? std::time(NULL) : atol(argv[2]);
+
+	std::string parameter_sheet {"sampleParams"};
+
+	bool parallel {false};
+
+	// Arguments:
+	// -t NUMBER
+	// 		The number of trajectories to run.
+	// -n NUMBER
+	// 		The initial population size
+	// -p SHEET_NAME
+	// 		Optional. Names a parameter sheet. Do not use file extension
+	// 		and do not specify directory; it is assumed to be .json and 
+	// 		exist in 'params/'. Without specification, 'sampleParams' is
+	// 		used.
+	// -y YEARS
+	// 		Optional. Specifies the number of years for the model to run.
+	// -s SEED
+	// 		Optional. RNG seed. Default is std::time(NULL).
+	// -m
+	// 	    Run in parallel
+	int opt;
+	while ((opt = getopt(argc, argv, ":t:n:p:y:s:m")) != -1)
+	{
+		switch (opt)
+		{
+			case 't':
+				nTrajectories = atoi(optarg);
+				break;
+			case 'n':
+				constants["populationSize"] = atoi(optarg);
+				break;
+			case 'p':
+				parameter_sheet = optarg;
+				break;
+			case 'y':
+				constants["tMax"] = 365*atoi(optarg);
+				break;
+			case 's':
+				timestamp = atol(optarg);
+				break;
+			case 'm':
+				parallel = true;
+				break;
+			case '?':
+				printf("Illegal option!\n");
+				exit(1);
+				break;
+		}
+	}
 
 	RNG rng(timestamp);
 
@@ -46,13 +92,12 @@ int main(int argc, char const *argv[])
 	seedLog.open("../output/seed_log.txt", std::ios_base::app);
 	seedLog << timestamp << std::endl;
 
-
 	string outputPrefix = "../output/" + to_string(timestamp) + "_";
 
 	std::vector<std::shared_ptr<TBABM>> trajectories{};
 	std::map<string, Param> params{};
 
-	mapShortNames(fileToJSON(string("../params/") + string(argv[1]) + string(".json")), params);
+	mapShortNames(fileToJSON(string("../params/") + parameter_sheet + string(".json")), params);
 
 	for (int i = 0; i < nTrajectories; i++) {
 		auto traj = std::make_shared<TBABM>(params, 
@@ -62,20 +107,22 @@ int main(int argc, char const *argv[])
 		trajectories.push_back(traj);
 	}
 
-	// for (int i = 0; i < nTrajectories; i++)
-	// 	trajectories[i]->Run();
-
-	std::array<future<bool>, nTrajectories> futures {};
-
-	for (int i = 0; i < nTrajectories; ++i)
-		futures[i] = async(launch::async | launch::deferred, \
-						  &TBABM::Run, \
-						  trajectories[i]);
-
 	bool success {true};
+	if (!parallel)
+		for (int i = 0; i < nTrajectories; i++)
+			success &= trajectories[i]->Run();
+	else {
+		std::vector<future<bool>> futures {};
 
-	for (int i = 0; i < nTrajectories; ++i)
-		success &= futures[i].get();
+		for (int i = 0; i < nTrajectories; ++i)
+			futures.push_back(async(launch::async | launch::deferred, \
+							  &TBABM::Run, \
+							  trajectories[i]));
+
+
+		for (int i = 0; i < nTrajectories; ++i)
+			success &= futures[i].get();
+	}
 
 	if (success)
 		printf("All threads finished successfully!\n");

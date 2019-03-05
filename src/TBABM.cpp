@@ -128,7 +128,7 @@ TBABM::WriteSurveys(Pointer<ofstream> ps,
 
 bool TBABM::Run(void)
 {
-    CreatePopulation(0, 5000);
+    CreatePopulation(0, constants["populationSize"]);
     Schedule(1, Matchmaking());
     Schedule(1, UpdatePyramid());
     Schedule(1, UpdateHouseholds());
