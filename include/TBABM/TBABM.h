@@ -191,10 +191,6 @@ public:
 				}
 			}
 
-			// Open file for mean survival time
-			meanSurvivalTime.open("../output/meanSurvivalTimeNoART.csv", ios_base::app);
-			meanSurvivalTime << "years lived,age at infection\n";
-
 			printf("Seed is %ld\n", seed);
 		};
 
@@ -376,7 +372,6 @@ private:
 	RNG rng;
 	long seed;
 
-	ofstream meanSurvivalTime;
 	string populationSurvey;
 	string householdSurvey;
 	string deathSurvey;

@@ -197,8 +197,6 @@ bool TBABM::Run(void)
     tbCompletedTreatment.Close();
     tbDroppedTreatment.Close();
 
-    meanSurvivalTime.close();
-
     return true;
 }
 

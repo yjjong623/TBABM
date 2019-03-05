@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <future>
+#include <sys/stat.h>
 
 #include <Normal.h>
 #include <Weibull.h>
@@ -34,11 +35,13 @@ int main(int argc, char *argv[])
 	const char *householdsFile = "household_structure.csv";
 	int nTrajectories = 5;
 
-	auto timestamp = argc == 2 ? std::time(NULL) : atol(argv[2]);
+	auto timestamp = std::time(NULL);
 
 	std::string parameter_sheet {"sampleParams"};
 
 	bool parallel {false};
+
+	string folder {""};
 
 	// Arguments:
 	// -t NUMBER
@@ -54,10 +57,12 @@ int main(int argc, char *argv[])
 	// 		Optional. Specifies the number of years for the model to run.
 	// -s SEED
 	// 		Optional. RNG seed. Default is std::time(NULL).
+	// -o FOLDER_NAME
+	// 		Optional. Folder to store outputs in.
 	// -m
 	// 	    Run in parallel
 	int opt;
-	while ((opt = getopt(argc, argv, ":t:n:p:y:s:m")) != -1)
+	while ((opt = getopt(argc, argv, ":t:n:p:y:s:o:m")) != -1)
 	{
 		switch (opt)
 		{
@@ -79,6 +84,9 @@ int main(int argc, char *argv[])
 			case 'm':
 				parallel = true;
 				break;
+			case 'o':
+				folder = std::string(optarg);
+				break;
 			case '?':
 				printf("Illegal option!\n");
 				exit(1);
@@ -92,7 +100,12 @@ int main(int argc, char *argv[])
 	seedLog.open("../output/seed_log.txt", std::ios_base::app);
 	seedLog << timestamp << std::endl;
 
-	string outputPrefix = "../output/" + to_string(timestamp) + "_";
+	string outputPrefix = "../output/" + folder + '/' + to_string(timestamp) + "_";
+
+	if (folder != "")
+		mkdir(std::string("../output/" + folder).c_str(), S_IRWXU);
+
+	printf("outputPrefix is %s\n", outputPrefix.c_str());
 
 	std::vector<std::shared_ptr<TBABM>> trajectories{};
 	std::map<string, Param> params{};
@@ -243,7 +256,6 @@ int main(int argc, char *argv[])
 	for (int i = 0; i < nTrajectories; i++) {
 		success &= trajectories[i]->WriteSurveys(populationSurvey, householdSurvey, deathSurvey);
 	}
-
 
 	if (!success) {
 		printf("Some step of data export failed. Quitting.\n");
