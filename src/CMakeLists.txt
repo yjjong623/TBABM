@@ -13,6 +13,11 @@ find_package(SimulationLib REQUIRED)
 find_package(StatisticalDistributionsLib REQUIRED)
 find_package(Boost REQUIRED)
 
+# Require C++14 compilation
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+
 # Set Demographic files
 set(demographic_path "${TBABM_SOURCE_DIR}/src/Demographic")
 set(demographic ${demographic_path}/event-Birth.cpp
