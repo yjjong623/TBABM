@@ -8,6 +8,11 @@
 # 		   ${header_path}/TB.h
 # 		   ${header_path}/Names.h)
 
+# Include SimulationLib
+find_package(SimulationLib REQUIRED)
+find_package(StatisticalDistributionsLib REQUIRED)
+find_package(Boost REQUIRED)
+
 # Set Demographic files
 set(demographic_path "${TBABM_SOURCE_DIR}/src/Demographic")
 set(demographic ${demographic_path}/event-Birth.cpp
@@ -59,12 +64,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
-# Include SimulationLib
-find_package(SimulationLib REQUIRED)
-find_package(StatisticalDistributionsLib REQUIRED)
-find_package(Boost REQUIRED)
-
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_executable(TBABMTest test.cpp TBABM.cpp ${src})
+add_executable(TBABMTest test.cpp ${src})
 target_link_libraries(TBABMTest PUBLIC SimulationLib StatisticalDistributionsLib)

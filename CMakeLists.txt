@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.3)
 project (TBABMTest)
 
 find_package(Boost REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-
+find_package(SimulationLib REQUIRED)
+find_package(StatisticalDistributionsLib REQUIRED)
 
 # Define library version
 # set(TBABM_VERSION_MAJOR 0 CACHE STRING "major version" FORCE)
@@ -18,6 +18,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 # Define options here
 
 # Add subdirectories
+include_directories(${Boost_INCLUDE_DIRS})
 add_subdirectory(src)
 
 enable_testing()
