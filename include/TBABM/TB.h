@@ -51,7 +51,7 @@ public:
 		AgeStatus(initQueryHandlers.Age),
 		AliveStatus(initQueryHandlers.Alive),
 		CD4Count(initQueryHandlers.CD4Count),
-		HIVStatus(initQueryHandlers.HIVStatus),
+		GetHIVStatus(initQueryHandlers.GetHIVStatus),
 		GlobalTBPrevalence(initQueryHandlers.GlobalTBPrevalence),
 
 		name(name),
@@ -159,7 +159,7 @@ private:
     function<Age(Time)> AgeStatus;
     function<Alive(void)> AliveStatus;
     function<CD4(Time)> CD4Count;
-    function<HIVStatus(void)> HIVStatus;
+    function<HIVStatus(void)> GetHIVStatus;
     function<double(Time)> GlobalTBPrevalence;
 	function<double(void)> HouseholdTBPrevalence;
  

@@ -79,7 +79,7 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 				}
 			
 			// Advise TB object that individual has died
-			idv->TB.HandleDeath(t);
+			idv->tb.HandleDeath(t);
 
 			// Update various metrics
 			populationSize.Record(t, -1);

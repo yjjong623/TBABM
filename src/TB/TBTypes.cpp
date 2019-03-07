@@ -32,10 +32,10 @@ TBHandlers CreateTBHandlers(function<void(int)> death) {
 TBQueryHandlers CreateTBQueryHandlers(function<int(Time)> Age,
                                       function<bool(void)> Alive,
                                       function<double(Time)> CD4Count,
-                                      function<HIVStatus(void)> HIVStatus,
+                                      function<HIVStatus(void)> GetHIVStatus,
                                       function<double(Time)> GlobalTBPrevalence)
 {
-    if (!Age || !Alive || !CD4Count || !HIVStatus || !GlobalTBPrevalence) {
+    if (!Age || !Alive || !CD4Count || !GetHIVStatus || !GlobalTBPrevalence) {
         printf("Error: >= 1 argument to CreateTBHandlers contained empty std::function\n");
         exit(1);
     }
@@ -44,7 +44,7 @@ TBQueryHandlers CreateTBQueryHandlers(function<int(Time)> Age,
         Age,
         Alive,
         CD4Count,
-        HIVStatus,
+        GetHIVStatus,
         GlobalTBPrevalence
     };
 }

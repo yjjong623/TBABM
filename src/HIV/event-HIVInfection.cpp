@@ -50,7 +50,7 @@ EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 			Schedule(t, MortalityCheck(idv));
 
 			// Reevaluate risk for tuberculosis, and change risk window
-			idv->TB.RiskReeval(t);
+			idv->tb.RiskReeval(t);
 
 			int sex {idv->sex == Sex::Male ? 0 : 1};
 			int age {idv->age(t)};

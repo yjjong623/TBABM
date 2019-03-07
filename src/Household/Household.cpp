@@ -54,10 +54,10 @@ void Household::AddIndividual(Pointer<Individual> idv, int t, HouseholdPosition 
 	}
 
 	nIndividuals += 1;
-	if (idv->TB.GetTBStatus(t) == TBStatus::Infectious)
+	if (idv->tb.GetTBStatus(t) == TBStatus::Infectious)
 		nInfectiousTBIndivduals += 1;
 
-	idv->TB.SetHouseholdCallbacks(
+	idv->tb.SetHouseholdCallbacks(
 		[this, idv] (int t) -> void   { nInfectiousTBIndivduals += 1; TriggerReeval(t, idv); },
 		[this]      (int)   -> void   { nInfectiousTBIndivduals -= 1; },
 		[this]      (void)  -> double { return TBPrevalence(); }
@@ -120,10 +120,10 @@ void Household::RemoveIndividual(Pointer<Individual> idv, int t) {
 		}
 
 	nIndividuals -= 1;
-	if (idv->TB.GetTBStatus(t) == TBStatus::Infectious)
+	if (idv->tb.GetTBStatus(t) == TBStatus::Infectious)
 		nInfectiousTBIndivduals -= 1;
 
-	idv->TB.ResetHouseholdCallbacks();
+	idv->tb.ResetHouseholdCallbacks();
 
 	return;
 }
@@ -180,18 +180,18 @@ void Household::TriggerReeval(int t, Pointer<Individual> idv) {
 	
 	
 	if (head)
-		head->TB.RiskReeval(t);
+		head->tb.RiskReeval(t);
 
 	if (spouse)
-		spouse->TB.RiskReeval(t);
+		spouse->tb.RiskReeval(t);
 	
 	for (auto person : offspring)
 		if (person)
-			person->TB.RiskReeval(t);
+			person->tb.RiskReeval(t);
 
 	for (auto person : other)
 		if (person)
-			person->TB.RiskReeval(t);
+			person->tb.RiskReeval(t);
 
 	return;
 }

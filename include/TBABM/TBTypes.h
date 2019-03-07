@@ -67,7 +67,7 @@ typedef struct TBQueryHandlers {
 	function<int(Time)> Age;
 	function<bool(void)> Alive;
 	function<double(Time)> CD4Count;
-	function<HIVStatus(void)> HIVStatus;
+	function<HIVStatus(void)> GetHIVStatus;
 	function<double(Time)> GlobalTBPrevalence;
 } TBQueryHandlers ;
 

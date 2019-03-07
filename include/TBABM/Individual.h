@@ -26,13 +26,6 @@ using EQ = EventQueue<double, bool>;
 
 class Individual {
 public:
-	// using Sex = Sex;
-	using HouseholdPosition = HouseholdPosition;
-	using MarriageStatus = MarriageStatus;
-	using HIVStatus = HIVStatus;
-	using TBStatus = TBStatus;
-	using DeathCause = DeathCause;
-	
 	long householdID;
 
 	int birthDate; // In units of 't'
@@ -64,7 +57,7 @@ public:
 	int ARTInitTime;
 
 	// TB stuff
-	TB<Sex> TB;
+	TB<Sex> tb;
 
 	void ReceiveTBInfectiousChangeCallback(function<void(int)> f) {
 		TBInfectiousChangeCallback = f;
@@ -186,7 +179,7 @@ public:
 	    onART(false),
 	    hivStatus(HIVStatus::Negative),
 	    dead(false),
-	    TB(CreateTBData(data),
+	    tb(CreateTBData(data),
 	  	   std::forward<IndividualSimContext>(isc),
 	  	   CreateTBHandlers(std::bind(&Individual::TBDeathHandler, this, std::placeholders::_1)),
 	  	   TBQueryHandlersInit(),

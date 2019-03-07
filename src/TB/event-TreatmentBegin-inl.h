@@ -25,7 +25,7 @@ TB<T>::TreatmentBegin(Time t)
 		data.activeHouseholdContacts.Record(HouseholdTBPrevalence());
 
 		// If HIV+, record
-		if (HIVStatus() == HIVStatus::Positive)
+		if (GetHIVStatus() == HIVStatus::Positive)
 			data.tbTreatmentBeginHIV.Record((int)ts, +1);
 
 		tb_treatment_status = TBTreatmentStatus::Incomplete;

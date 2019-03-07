@@ -43,24 +43,27 @@ int main(int argc, char *argv[])
 
 	string folder {""};
 
-	// Arguments:
-	// -t NUMBER
+	// Required rguments:
+	// -t INTEGER
 	// 		The number of trajectories to run.
-	// -n NUMBER
-	// 		The initial population size
+	// -n INTEGER
+	// 		The initial population size.
+	// 		
+	// Optional arguments:
 	// -p SHEET_NAME
 	// 		Optional. Names a parameter sheet. Do not use file extension
-	// 		and do not specify directory; it is assumed to be .json and 
+	// 		and do not specify directory; it is assumed to be '.json' and 
 	// 		exist in 'params/'. Without specification, 'sampleParams' is
 	// 		used.
-	// -y YEARS
+	// -y INTEGER
 	// 		Optional. Specifies the number of years for the model to run.
-	// -s SEED
+	// -s INTEGER
 	// 		Optional. RNG seed. Default is std::time(NULL).
 	// -o FOLDER_NAME
-	// 		Optional. Folder to store outputs in.
+	// 		Optional. Folder to store outputs in. Include trailing 
+	// 		forward-slash.
 	// -m
-	// 	    Run in parallel
+	// 	    Run in parallel.
 	int opt;
 	while ((opt = getopt(argc, argv, ":t:n:p:y:s:o:m")) != -1)
 	{
@@ -100,7 +103,7 @@ int main(int argc, char *argv[])
 	seedLog.open("../output/seed_log.txt", std::ios_base::app);
 	seedLog << timestamp << std::endl;
 
-	string outputPrefix = "../output/" + folder + '/' + to_string(timestamp) + "_";
+	string outputPrefix = "../output/" + folder + to_string(timestamp) + "_";
 
 	if (folder != "")
 		mkdir(std::string("../output/" + folder).c_str(), S_IRWXU);
