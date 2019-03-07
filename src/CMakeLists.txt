@@ -12,6 +12,7 @@
 find_package(SimulationLib REQUIRED)
 find_package(StatisticalDistributionsLib REQUIRED)
 find_package(Boost REQUIRED)
+find_package(Threads)
 
 # Require C++14 compilation
 set(CMAKE_CXX_STANDARD 14)
@@ -72,4 +73,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(TBABM test.cpp ${src})
-target_link_libraries(TBABM PUBLIC SimulationLib StatisticalDistributionsLib)
+target_link_libraries(TBABM PUBLIC SimulationLib StatisticalDistributionsLib ${CMAKE_THREAD_LIBS_INIT})
