@@ -16,100 +16,97 @@ using SchedulerT = EventQueue<double,bool>::SchedulerT;
 using namespace StatisticalDistributions;
 
 template <>
-PrevalenceTimeSeries<int> *
+PrevalenceTimeSeries<int>
 TBABM::GetData<PrevalenceTimeSeries<int>>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::Marriages:       return nullptr;
-        case TBABMData::Births:          return nullptr;
-        case TBABMData::Deaths:          return nullptr;
-        case TBABMData::PopulationSize:  return &populationSize;
-        case TBABMData::Divorces:        return nullptr;
+        case TBABMData::PopulationSize:  return populationSize;
  
-        case TBABMData::HIVNegative:     return &hivNegative;
-        case TBABMData::HIVPositive:     return &hivPositive;
-        case TBABMData::HIVPositiveART:  return &hivPositiveART;
+        case TBABMData::HIVNegative:     return hivNegative;
+        case TBABMData::HIVPositive:     return hivPositive;
+        case TBABMData::HIVPositiveART:  return hivPositiveART;
  
-        case TBABMData::HIVDiagnosed:    return &hivDiagnosed;
-        case TBABMData::HIVDiagnosedVCT: return &hivDiagnosedVCT;
+        case TBABMData::HIVDiagnosed:    return hivDiagnosed;
+        case TBABMData::HIVDiagnosedVCT: return hivDiagnosedVCT;
 
-        case TBABMData::TBSusceptible:   return &tbSusceptible;
-        case TBABMData::TBInfected:      return &tbInfected;
-        case TBABMData::TBLatent:        return &tbLatent;
-        case TBABMData::TBInfectious:    return &tbInfectious;
+        case TBABMData::TBSusceptible:   return tbSusceptible;
+        case TBABMData::TBInfected:      return tbInfected;
+        case TBABMData::TBLatent:        return tbLatent;
+        case TBABMData::TBInfectious:    return tbInfectious;
 
-        case TBABMData::TBInTreatment:   return &tbInTreatment;
+        case TBABMData::TBInTreatment:   return tbInTreatment;
         case TBABMData::TBCompletedTreatment:
-                                         return &tbCompletedTreatment;
+                                         return tbCompletedTreatment;
         case TBABMData::TBDroppedTreatment:
-                                         return &tbDroppedTreatment;
+                                         return tbDroppedTreatment;
  
-        default:                         return nullptr;
+        default:                         throw std::invalid_argument;
     }
 }
 
 template <>
-IncidenceTimeSeries<int> *
+IncidenceTimeSeries<int>
 TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::Marriages:       return &marriages;
-        case TBABMData::Births:          return &births;
-        case TBABMData::Deaths:          return &deaths;
-        case TBABMData::PopulationSize:  return nullptr;
-        case TBABMData::Divorces:        return &divorces;
-        case TBABMData::Households:      return &householdsCount;
-        case TBABMData::SingleToLooking: return &singleToLooking;
+        case TBABMData::Marriages:       return marriages;
+        case TBABMData::Births:          return births;
+        case TBABMData::Deaths:          return deaths;
+        case TBABMData::Divorces:        return divorces;
+        case TBABMData::Households:      return householdsCount;
+        case TBABMData::SingleToLooking: return singleToLooking;
 
-        case TBABMData::HIVInfections:   return &hivInfections;
-        case TBABMData::HIVDiagnosesVCT: return &hivDiagnosesVCT;
+        case TBABMData::HIVInfections:   return hivInfections;
+        case TBABMData::HIVDiagnosesVCT: return hivDiagnosesVCT;
 
-        case TBABMData::TBInfections:    return &tbInfections;
-        case TBABMData::TBConversions:   return &tbConversions;
-        case TBABMData::TBRecoveries:    return &tbRecoveries;
+        case TBABMData::TBInfections:    return tbInfections;
+        case TBABMData::TBConversions:   return tbConversions;
+        case TBABMData::TBRecoveries:    return tbRecoveries;
 
-        case TBABMData::TBInfectionsHousehold: return &tbInfectionsHousehold;
-        case TBABMData::TBInfectionsCommunity: return &tbInfectionsCommunity;
+        case TBABMData::TBInfectionsHousehold: return tbInfectionsHousehold;
+        case TBABMData::TBInfectionsCommunity: return tbInfectionsCommunity;
 
-        case TBABMData::TBTreatmentBegin:return &tbTreatmentBegin;
-        case TBABMData::TBTreatmentBeginHIV:return &tbTreatmentBeginHIV;
-        case TBABMData::TBTreatmentEnd:  return &tbTreatmentEnd;
+        case TBABMData::TBTreatmentBegin:return tbTreatmentBegin;
+        case TBABMData::TBTreatmentBeginHIV:return tbTreatmentBeginHIV;
+        case TBABMData::TBTreatmentEnd:  return tbTreatmentEnd;
         case TBABMData::TBTreatmentDropout:
-                                         return &tbTreatmentDropout;
+                                         return tbTreatmentDropout;
 
-        default:                         return nullptr;
+        default:
+            printf("TBABM::GetData<IncidenceTimeSeries<int>>: Could not satisfy request\n");
+            throw std::invalid_argument;
     }
 }
 
 template <>
-IncidencePyramidTimeSeries*
+IncidencePyramidTimeSeries
 TBABM::GetData<IncidencePyramidTimeSeries>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::Pyramid:              return &pyramid;
-        case TBABMData::DeathPyramid:         return &deathPyramid;
-        case TBABMData::HIVInfectionsPyramid: return &hivInfectionsPyramid;
-        default:                              return nullptr;
+        case TBABMData::Pyramid:              return pyramid;
+        case TBABMData::DeathPyramid:         return deathPyramid;
+        case TBABMData::HIVInfectionsPyramid: return hivInfectionsPyramid;
+        default:                              throw std::invalid_argument;
     }
 }
 
 template <>
-PrevalencePyramidTimeSeries*
+PrevalencePyramidTimeSeries
 TBABM::GetData<PrevalencePyramidTimeSeries>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::HIVPositivePyramid: return &hivPositivePyramid;
-        default:                            return nullptr;
+        case TBABMData::HIVPositivePyramid: return hivPositivePyramid;
+        default:                            throw std::invalid_argument;
     }
 }
 
 template <>
-DiscreteTimeStatistic*
+DiscreteTimeStatistic
 TBABM::GetData<DiscreteTimeStatistic>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::ActiveHouseholdContacts: return &activeHouseholdContacts;
-        default:                                 return nullptr;
+        case TBABMData::ActiveHouseholdContacts: return activeHouseholdContacts;
+        default:                                 throw std::invalid_argument;
     }
 }
 
