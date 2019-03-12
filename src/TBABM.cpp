@@ -40,7 +40,8 @@ TBABM::GetData<PrevalenceTimeSeries<int>>(TBABMData field)
         case TBABMData::TBDroppedTreatment:
                                          return tbDroppedTreatment;
  
-        default:                         throw std::invalid_argument;
+        default:                         
+            throw std::invalid_argument("Asked for a PrevalenceTimeSeries that doesn't exist");
     }
 }
 
@@ -73,8 +74,7 @@ TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
                                          return tbTreatmentDropout;
 
         default:
-            printf("TBABM::GetData<IncidenceTimeSeries<int>>: Could not satisfy request\n");
-            throw std::invalid_argument;
+            throw std::invalid_argument("Asked for an IncidenceTimeSeries that doesn't exist");
     }
 }
 
@@ -86,7 +86,8 @@ TBABM::GetData<IncidencePyramidTimeSeries>(TBABMData field)
         case TBABMData::Pyramid:              return pyramid;
         case TBABMData::DeathPyramid:         return deathPyramid;
         case TBABMData::HIVInfectionsPyramid: return hivInfectionsPyramid;
-        default:                              throw std::invalid_argument;
+        default:
+            throw std::invalid_argument("Asked for a IncidencePyramidTimeSeries that doesn't exist");
     }
 }
 
@@ -96,7 +97,8 @@ TBABM::GetData<PrevalencePyramidTimeSeries>(TBABMData field)
 {
     switch(field) {
         case TBABMData::HIVPositivePyramid: return hivPositivePyramid;
-        default:                            throw std::invalid_argument;
+        default:
+            throw std::invalid_argument("Asked for a PrevalencePyramidTimeSeries that doesn't exist");
     }
 }
 
@@ -106,18 +108,19 @@ TBABM::GetData<DiscreteTimeStatistic>(TBABMData field)
 {
     switch(field) {
         case TBABMData::ActiveHouseholdContacts: return activeHouseholdContacts;
-        default:                                 throw std::invalid_argument;
+        default:
+            throw std::invalid_argument("Asked for a DiscreteTimeStatistic that doesn't exist");
     }
 }
 
 bool
-TBABM::WriteSurveys(Pointer<ofstream> ps, 
-                    Pointer<ofstream> hs, 
-                    Pointer<ofstream> ds)
+TBABM::WriteSurveys(ofstream& ps, 
+                    ofstream& hs, 
+                    ofstream& ds)
 {
-    if ((*ps << populationSurvey) &&
-        (*hs << householdSurvey) &&
-        (*ds << deathSurvey))
+    if ((ps << populationSurvey) &&
+        (hs << householdSurvey) &&
+        (ds << deathSurvey))
         return true;
     else
         return false;

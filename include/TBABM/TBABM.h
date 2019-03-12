@@ -197,11 +197,12 @@ public:
 	bool Run(void);
 
 	template <typename T>
-	T* GetData(TBABMData field);
+	T
+	GetData(TBABMData field);
 
-	bool WriteSurveys(Pointer<ofstream> ps, 
-					  Pointer<ofstream> hs, 
-					  Pointer<ofstream> ds);
+	bool WriteSurveys(ofstream& ps, 
+					  ofstream& hs, 
+					  ofstream& ds);
 
 
 private:
