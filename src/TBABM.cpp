@@ -142,13 +142,19 @@ bool TBABM::Run(void)
     while (!eq.Empty()) {
         auto e = eq.Top();
 
-        if (e->t > constants["tMax"])
+        if (e.t > constants["tMax"])
             break;
 
-        e->run();
+        e.run();
         eq.Pop();
 
         events_processed += 1;
+    }
+
+    // Pop off all the events that were greater than tMax
+    while (!eq.Empty()) {
+        auto e = eq.Top();
+        eq.Pop();
     }
 
     printf("Events processed: %d\n", events_processed);

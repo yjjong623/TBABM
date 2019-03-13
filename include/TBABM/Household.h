@@ -22,11 +22,24 @@ public:
 
 	void PrintHousehold(int t);
 
+	// Right now, these functions mean the same thing,
+	// and 't' is not used.
+	int size(int t);
 	int size(void);
 
 	bool hasMember(Pointer<Individual> idv);
 
-	double TBPrevalence(void);
+	// ActiveTBPrevalence is simply the fraction of individuals
+	// in the household who have active TB. Right now,
+	// ActiveTBPrevalence(1) defers to ActiveTBPrevalence().
+	double ActiveTBPrevalence(void);
+	double ActiveTBPrevalence(int t);
+
+	// ContactActiveTBPrevalence returne the fraction of household
+	// contacts (excluding the individual with the passed-in TBStatus)
+	// who have active TB.
+	double ContactActiveTBPrevalence(TBStatus);
+	double ContactActiveTBPrevalence(TBStatus, int t);
 
 	Household(Pointer<Individual> head,
 			  Pointer<Individual> spouse,

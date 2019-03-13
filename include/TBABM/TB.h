@@ -82,7 +82,8 @@ public:
 
 	void SetHouseholdCallbacks(function<void(Time)> progression, 
 							   function<void(Time)> recovery,
-							   function<double(void)> householdPrevalence);
+							   function<double(void)> householdPrevalence,
+							   function<double(TBStatus)> contactHouseholdPrevalence);
 	void ResetHouseholdCallbacks(void);
 
 	void RiskReeval(Time);
@@ -162,6 +163,7 @@ private:
     function<HIVStatus(void)> GetHIVStatus;
     function<double(Time)> GlobalTBPrevalence;
 	function<double(void)> HouseholdTBPrevalence;
+	function<double(TBStatus)> ContactHouseholdTBPrevalence;
  
     function<void(Time)> DeathHandler;   
     function<void(Time)> ProgressionHandler;

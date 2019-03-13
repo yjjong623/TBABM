@@ -22,7 +22,7 @@ TB<T>::TreatmentBegin(Time t)
 
 		data.tbInTreatment.Record((int)ts, +1);
 		data.tbTreatmentBegin.Record((int)ts, +1);
-		data.activeHouseholdContacts.Record(HouseholdTBPrevalence());
+		data.activeHouseholdContacts.Record(ContactHouseholdTBPrevalence(tb_status));
 
 		// If HIV+, record
 		if (GetHIVStatus() == HIVStatus::Positive)

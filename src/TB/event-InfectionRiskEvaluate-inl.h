@@ -42,10 +42,10 @@ TB<T>::InfectionRiskEvaluate(Time t, int risk_window_local)
 		// 		  << HouseholdTBPrevalence(ts) << " h_prev" << termcolor::reset << std::endl;
 
 		bool init_infection {false};
-		double p_init_infection {0.12};
+		long double p_init_infection {0.12};
 
-		double risk_global     {GlobalTBPrevalence(ts) * (double)params["TB_risk_global"].Sample(rng)};
-		double risk_household  {HouseholdTBPrevalence() * (double)params["TB_risk_household"].Sample(rng)};
+		long double risk_global     {GlobalTBPrevalence(ts) * params["TB_risk_global"].Sample(rng)};
+		long double risk_household  {ContactHouseholdTBPrevalence(tb_status) * params["TB_risk_household"].Sample(rng)};
 
 		// Time to infection for global and local. If any of these risks are zero,
 		// change to a really small number since you can't sample 0-rate exponentials

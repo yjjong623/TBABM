@@ -60,7 +60,8 @@ void Household::AddIndividual(Pointer<Individual> idv, int t, HouseholdPosition 
 	idv->tb.SetHouseholdCallbacks(
 		[this, idv] (int t) -> void   { nInfectiousTBIndivduals += 1; TriggerReeval(t, idv); },
 		[this]      (int)   -> void   { nInfectiousTBIndivduals -= 1; },
-		[this]      (void)  -> double { return TBPrevalence(); }
+		[this]      (void)  -> double { return ActiveTBPrevalence(); },
+		[this]      (TBStatus s)  -> double { return ContactActiveTBPrevalence(s); }
 	);
 
 	return;
@@ -101,10 +102,8 @@ void Household::RemoveIndividual(Pointer<Individual> idv, int t) {
 		}
 	}
 
-
 	if (spouse == idv)
 		spouse.reset();
-
 
 	for (auto it = offspring.begin(); it != offspring.end(); it++) {
 		if (*it == idv) {
@@ -148,6 +147,10 @@ void Household::PrintHousehold(int t) {
 	printf("\n");
 }
 
+int Household::size(int t) {
+	return size();
+}
+
 int Household::size(void) {
 	return nIndividuals;
 }
@@ -167,30 +170,47 @@ bool Household::hasMember(Pointer<Individual> idv) {
 	return false;
 }
 
-double Household::TBPrevalence() {
-	if (nIndividuals > 1)
-		return nInfectiousTBIndivduals/((double)size() - 1);
-	else if (nIndividuals == 1)
-		return nInfectiousTBIndivduals;
-	else // size() == 0
-		return 0.;
+double Household::ActiveTBPrevalence() {
+	assert(nIndividuals >= nInfectiousTBIndivduals);
+	assert(nIndividuals > 0);
+
+	return nInfectiousTBIndivduals / nIndividuals;
+}
+
+double Household::ActiveTBPrevalence(int t) {
+	return ActiveTBPrevalence();
+}
+
+double Household::ContactActiveTBPrevalence(TBStatus s) {
+	assert(nIndividuals >= nInfectiousTBIndivduals);
+	assert(nIndividuals > 0);
+
+	if (nIndividuals == 1)
+		return 0;
+
+	if (s == TBStatus::Infectious)
+		return (nInfectiousTBIndivduals-1) / ((double)size() - 1);
+	else
+		return nInfectiousTBIndivduals / ((double)size() - 1);
+}
+
+double Household::ContactActiveTBPrevalence(TBStatus s, int t) {
+	return ContactActiveTBPrevalence(s);
 }
 
 void Household::TriggerReeval(int t, Pointer<Individual> idv) {
-	
-	
-	if (head)
+	if (head && head != idv)
 		head->tb.RiskReeval(t);
 
-	if (spouse)
+	if (spouse && spouse != idv)
 		spouse->tb.RiskReeval(t);
 	
 	for (auto person : offspring)
-		if (person)
+		if (person && person != idv)
 			person->tb.RiskReeval(t);
 
 	for (auto person : other)
-		if (person)
+		if (person && person != idv)
 			person->tb.RiskReeval(t);
 
 	return;

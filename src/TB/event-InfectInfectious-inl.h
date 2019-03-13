@@ -37,9 +37,8 @@ TB<T>::InfectInfectious(Time t, Source s, StrainType)
 			TreatmentBegin(ts); // They begin treatment immediately
 		else if (params["TB_p_recov"].Sample(rng)) // Decide whether individual recovers or dies
 			Recovery(ts + 365*params["TB_t_recov"].Sample(rng), RecoveryType::Natural);
-		else {
+		else
 			DeathHandler(ts + 365*params["TB_t_death"].Sample(rng));
-		}
 		
 		return true;
 	};
