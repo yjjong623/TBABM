@@ -16,7 +16,9 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 		[this, mother, father](double t, SchedulerT scheduler) {
 
 			// If mother is dead
-			if (!mother || mother->dead)
+			if (!mother.use_count())
+				return true;
+			if (mother->dead)
 				return true;
 
 			mother->pregnant = false;
@@ -43,7 +45,7 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 			};
 
 			// Construct baby
-			auto baby = std::make_shared<Individual>(
+			auto baby = makeIndividual(
 				CreateIndividualSimContext(t, eq, rng, fileData, params),
 				initData,
 				CreateIndividualHandlers(deathHandler, GlobalTBHandler),

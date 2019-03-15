@@ -37,11 +37,21 @@ string numChildren(IPt idv) {
 }
 
 string mom(IPt idv) {
-	return (!idv->mother || idv->mother->dead) ? "dead" : "alive";
+	assert(idv);
+
+	if (!idv->mother.use_count())
+		return "dead";
+	else
+		return idv->mother->dead ? "dead" : "alive";
 }
 
 string dad(IPt idv) {
-	return (!idv->father || idv->father->dead) ? "dead" : "alive";
+	assert(idv);
+
+	if (!idv->father.use_count())
+		return "dead";
+	else
+		return idv->father->dead ? "dead" : "alive";
 }
 
 

@@ -19,8 +19,11 @@ EventFunc TBABM::HIVInfectionCheck(Pointer<Individual> idv)
 	EventFunc ef = 
 		[this, idv](double t, SchedulerT scheduler) {
 			// printf("[%s %d] HIVInfectionCheck\n", idv->Name().c_str(), (int)t);
+			// printf("Use count: %ld\n", idv.use_count());
+			if (!idv.use_count())
+				return true;
 
-			if (!idv || idv->dead || idv->hivStatus == HIVStatus::Positive)
+			if (idv->dead || idv->hivStatus == HIVStatus::Positive)
 				return true;
 
 			int startYear   = constants["startYear"];

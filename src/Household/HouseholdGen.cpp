@@ -27,7 +27,7 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 		*params
 	);
 
-	auto head = std::make_shared<Individual>(
+	auto head = makeIndividual(
 		initSimContext,
 		initData,
 		initHandles,
@@ -52,7 +52,7 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 	for (int i = 1; i < family.size(); ++i)
 	{
 		MicroIndividual midv = family[i];
-		auto idv = std::make_shared<Individual>(
+		auto idv = makeIndividual(
 			initSimContext,
 			initData,
 			initHandles,

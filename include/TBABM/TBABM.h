@@ -281,7 +281,7 @@ private:
 	EventFunc ChangeAgeGroup(Pointer<Individual>);
 
 	// Algorithm S10: Natural death
-	EventFunc Death(Pointer<Individual>, DeathCause deathCause);
+	EventFunc Death(const Pointer<Individual>, DeathCause deathCause);
 
 	// Algorithm S11: Leave current household to form new household
 	EventFunc LeaveHousehold(Pointer<Individual>);

@@ -9,7 +9,9 @@ using namespace StatisticalDistributions;
 bool TBABM::ARTEligible(int t, Pointer<Individual> idv)
 {
 	// Ensure individual is still alive, and has HIV
-	if (!idv || idv->dead || idv->hivStatus == HIVStatus::Negative)
+	if (!idv.use_count())
+		return true;
+	if (idv->dead || idv->hivStatus == HIVStatus::Negative)
 		return false;
 
 	int year      = constants["startYear"] + (int)t/365;

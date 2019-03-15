@@ -222,3 +222,18 @@ private:
 
 	function<void(int)> TBInfectiousChangeCallback;
 };
+
+template <typename... Ts>
+std::shared_ptr<Individual>
+makeIndividual(Ts&&... params)
+{
+	auto deleter = [](Individual *idv) {
+		printf("Not Deleting %s\n", idv->Name().c_str());
+		// delete idv;
+	};
+
+	std::shared_ptr<Individual>
+		ptr(new Individual(std::forward<Ts>(params)...), deleter);
+
+	return ptr;
+}

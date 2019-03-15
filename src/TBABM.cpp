@@ -140,24 +140,37 @@ bool TBABM::Run(void)
     int events_processed {0};
 
     while (!eq.Empty()) {
-        auto e = eq.Top();
-
-        if (e.t > constants["tMax"])
+        auto e = std::move(eq.Top());
+        if (e->t > constants["tMax"])
             break;
 
-        e.run();
+        e->run();
         eq.Pop();
-
+        // assert(e.unique());
         events_processed += 1;
     }
 
     // Pop off all the events that were greater than tMax
-    while (!eq.Empty()) {
-        auto e = eq.Top();
+    while (!eq.Empty())
         eq.Pop();
-    }
 
     printf("Events processed: %d\n", events_processed);
+
+    // printf("Making individual\n");
+    // auto household = householdGen.GetHousehold(1000000,0,rng);
+    // auto head = household->head;
+    // printf("Individual allocated\n");
+    // printf("Use count before reset: %ld\n", head.use_count());
+    // household->head.reset();
+    // printf("Individual reset()\n");
+    // printf("Household size: %d\n", household->size());
+    // printf("Use count: %ld\n", head.use_count());
+    // assert(head.unique());
+
+
+
+    for (auto idv : population)
+        printf("Use count: %ld\n", idv.use_count());
 
     births.Close();
     deaths.Close();
@@ -222,23 +235,23 @@ void TBABM::PurgeReferencesToIndividual(Pointer<Individual> host,
 
     // Reset pointers for spouse, mother, father (rough equivalent of setting
     // pointers to NULL)
-    if (host->spouse == idv)
+    if (host->spouse && host->spouse == idv)
         host->spouse.reset();
-    if (host->mother == idv)
+    if (host->mother && host->mother == idv)
         host->mother.reset();
-    if (host->father == idv)
+    if (host->father && host->father == idv)
         host->father.reset();
 
     // Erase 'idv' from offspring
     for (auto it = host->offspring.begin(); it != host->offspring.end(); it++)
-        if ((*it) == idv) {
+        if (*it && *it == idv) {
             host->offspring.erase(it);
             break;
         }
 
     // Erase 'idv' from list of people 'idv' has lived with before
     for (auto it = host->livedWithBefore.begin(); it != host->livedWithBefore.end(); it++)
-        if ((*it) == idv) {
+        if (*it && *it == idv) {
             it = host->livedWithBefore.erase(it);
             break;
         }
@@ -246,6 +259,7 @@ void TBABM::PurgeReferencesToIndividual(Pointer<Individual> host,
 
 void TBABM::DeleteIndividual(Pointer<Individual> idv)
 {
+    assert(idv);
     for (size_t i = 0; i < idv->livedWithBefore.size(); i++)
         PurgeReferencesToIndividual(idv->livedWithBefore[i], idv);
 }
