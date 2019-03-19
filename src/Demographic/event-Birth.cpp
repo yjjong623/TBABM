@@ -1,24 +1,20 @@
 #include "../../include/TBABM/TBABM.h"
 #include <cassert>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
 using std::vector;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EQ::SchedulerT;
 
 // Algorithm S6: Birth
-EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
+EventFunc TBABM::Birth(weak_p<Individual> mother_w, weak_p<Individual> father_w)
 {
 	EventFunc ef = 
-		[this, mother, father](double t, SchedulerT scheduler) {
+		[this, mother_w, father_w](double t, SchedulerT scheduler) {
+			auto mother = mother_w.lock();
+			auto father = father_w.lock();
 
 			// If mother is dead
-			if (!mother.use_count())
-				return true;
-			if (mother->dead)
+			if (!mother || mother->dead)
 				return true;
 
 			mother->pregnant = false;
@@ -36,7 +32,7 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 				tbTreatmentBegin, tbTreatmentBeginHIV, tbTreatmentEnd, tbTreatmentDropout, \
 				tbInTreatment, tbCompletedTreatment, tbDroppedTreatment, activeHouseholdContacts};
 
-			auto deathHandler = [this] (Pointer<Individual> idv, int t, DeathCause cause) -> void { 
+			auto deathHandler = [this] (weak_p<Individual> idv, int t, DeathCause cause) -> void { 
 				return Schedule(t, Death(idv, cause));
 			};
 
@@ -51,8 +47,8 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 				CreateIndividualHandlers(deathHandler, GlobalTBHandler),
 				name_gen.getName(rng),
 				mother->householdID, t, sex,
-				Pointer<Individual>(), mother, father,
-				vector<Pointer<Individual>>{}, householdPosition, marriageStatus);
+				weak_p<Individual>(), mother, father,
+				vector<weak_p<Individual>>{}, householdPosition, marriageStatus);
 
 			// printf("[%d] Baby born: %ld::%lu\n", (int)t, mother->householdID, std::hash<Pointer<Individual>>()(baby));
 
@@ -69,7 +65,6 @@ EventFunc TBABM::Birth(Pointer<Individual> mother, Pointer<Individual> father)
 
 			populationSize.Record(t, +1);
 			births.Record(t, +1);
-
 
 			// Schedule the next birth
 			auto yearsToNextBirth = fileData["timeToSubsequentBirths"].getValue(0,0,(t-mother->birthDate)/365,rng);

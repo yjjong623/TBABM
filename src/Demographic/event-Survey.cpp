@@ -9,10 +9,6 @@ EventFunc TBABM::Survey(void)
 {
 	using MS  = MarriageStatus;
 	
-	using IPt = Pointer<Individual>;
-	using HPt = Pointer<Household>;
-
-
 	EventFunc ef = 
 		[&] (double t, SchedulerT scheduler) {
 			string buf;
@@ -71,8 +67,8 @@ EventFunc TBABM::Survey(void)
 				int otherOffspring  {0};
 
 				for (auto i : hh->offspring)
-					if (i->father == head || i->mother == head || \
-						i->father == spouse || i->mother == spouse)
+					if (i->father.lock() == head || i->mother.lock() == head || \
+						i->father.lock() == spouse || i->mother.lock() == spouse)
 						directOffspring += 1;
 					else
 						otherOffspring += 1;

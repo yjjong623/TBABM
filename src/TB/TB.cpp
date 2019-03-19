@@ -10,5 +10,5 @@
 #include "event-TreatmentComplete-inl.h"
 #include "event-Recovery-inl.h"
 
-template class TB<Sex>;
+class TB;
 // Add more supported types here...

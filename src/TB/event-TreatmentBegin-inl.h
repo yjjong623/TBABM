@@ -5,11 +5,10 @@
 // out. Schedules either event.
 // For the purposes of surveillance, etc.. this is 
 // also considered diagnosis right now
-template <typename T>
 void
-TB<T>::TreatmentBegin(Time t)
+TB::TreatmentBegin(Time t)
 {
-	auto lambda = [this] (auto ts, auto) -> bool {
+	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts, auto) -> bool {
 		if (!AliveStatus())
 			return true;
 

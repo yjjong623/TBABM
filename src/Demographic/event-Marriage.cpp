@@ -5,26 +5,26 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::vector;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using namespace StatisticalDistributions;
-
 // Algorithm S13: Marriage
-EventFunc TBABM::Marriage(Pointer<Individual> m, Pointer<Individual> f)
+EventFunc TBABM::Marriage(weak_p<Individual> m_weak, weak_p<Individual> f_weak)
 {
 	EventFunc ef = 
-		[this, m, f](double t, SchedulerT scheduler) {
+		[this, m_weak, f_weak](double t, SchedulerT scheduler) {
 
 			// printf("[%d] Marriage, populationSize=%lu, people: m=%ld::%lu f=%ld::%lu\n", (int)t, population.size(), m->householdID, std::hash<Pointer<Individual>>()(m), f->householdID, std::hash<Pointer<Individual>>()(f));
-			assert(m && f && (m != f));
-
+			auto m = m_weak.lock();
+			auto f = f_weak.lock();
+			assert(m != f);
+			if (!m || !f)
+				return true;
 			if (m->dead || f->dead)
+				return true;
+			if (m->spouse.lock() || f->spouse.lock())
 				return true;
 
 			bool canDivorce {true};

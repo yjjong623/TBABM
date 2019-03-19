@@ -4,23 +4,18 @@
 
 #include "../../include/TBABM/TBABM.h"
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::pair;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using namespace StatisticalDistributions;
-
 EventFunc TBABM::ExogenousBirth(void)
 {
-	using IPt = Pointer<Individual>;
+	using IPt = weak_p<Individual>;
 	using Couple = pair<IPt, IPt>;
 
 	auto sampleSpouse = 
-		[this] (void) -> Pointer<Couple> {
+		[this] (void) -> shared_p<Couple> {
 			
 			// Get the length of the population array. Note this is different
 			// from the number of individuals (at least as large).
@@ -49,11 +44,11 @@ EventFunc TBABM::ExogenousBirth(void)
 
 				couple->first = *it;
 				
-				if (couple->first)
-					couple->second = couple->first->spouse;
+				if (couple->first.lock())
+					couple->second = couple->first.lock()->spouse;
 
-				if (couple->first  && !couple->first->dead &&\
-					couple->second && !couple->second->dead)
+				if (couple->first.lock()  && !couple->first.lock()->dead &&\
+					couple->second.lock() && !couple->second.lock()->dead)
 					flag = true;
 
 				nTries++;
@@ -87,9 +82,11 @@ EventFunc TBABM::ExogenousBirth(void)
 
 				// Find a random couple from the population
 				auto couple = sampleSpouse();
+				auto first  = couple->first.lock();
+				auto second = couple->second.lock();
 
-				auto mother = couple->first->sex == Sex::Female ? couple->first  : couple->second;
-				auto father = couple->first->sex == Sex::Female ? couple->second : couple->first;
+				auto mother = first->sex == Sex::Female ? first  : second;
+				auto father = first->sex == Sex::Female ? second : first;
 
 				// Immediately schedule birth
 				Schedule(t, Birth(mother, father));

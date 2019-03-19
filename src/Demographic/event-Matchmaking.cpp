@@ -5,15 +5,10 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::vector;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
-
-using namespace StatisticalDistributions;
 
 // Algorithm S3: Match making
 EventFunc TBABM::Matchmaking(void)
@@ -36,11 +31,15 @@ EventFunc TBABM::Matchmaking(void)
 				int j = 0;
 				double denominator = 0;
 
+				auto male_w = *it;
+				auto male = (*it).lock();
 				for (auto it2 = femaleSeeking.begin(); j < 100 && it2 != femaleSeeking.end(); it2++) {
-					assert(*it2);
-					assert(*it);
-					int maleAge = (t - (*it)->birthDate) / 365;
-					int femaleAge = (t - (*it2)->birthDate) / 365;
+					auto female = (*it2).lock();
+					
+					assert(male && female);
+
+					int maleAge = (t - male->birthDate) / 365;
+					int femaleAge = (t - female->birthDate) / 365;
 					int ageDifference = std::abs(maleAge-femaleAge);
 
 					long double weight = params["marriageAgeDifference"].pdf(ageDifference);
@@ -61,10 +60,9 @@ EventFunc TBABM::Matchmaking(void)
 				assert(wifeIdx < femaleSeeking.size());
 
 				std::advance(wife, wifeIdx);
-				assert(*wife);
+				assert((*wife).lock());
 
-
-				Schedule(t, Marriage(*it, *wife));
+				Schedule(t, Marriage(male_w, *wife));
 				marriages++;
 
 				femaleSeeking.erase(wife);

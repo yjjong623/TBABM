@@ -5,20 +5,18 @@
 #include "Individual.h"
 #include "IndividualTypes.h"
 #include "TBTypes.h"
-
-template <typename T>
-using Pointer = std::shared_ptr<T>;
+#include "Pointers.h"
 
 class Household {
 public:
-	Pointer<Individual> head;
-	Pointer<Individual> spouse;
-	std::vector<Pointer<Individual>> offspring;
-	std::vector<Pointer<Individual>> other;
+	shared_p<Individual> head;
+	shared_p<Individual> spouse;
+	std::vector<shared_p<Individual>> offspring;
+	std::vector<shared_p<Individual>> other;
 
-	void AddIndividual(Pointer<Individual> idv, int t, HouseholdPosition hp);
+	void AddIndividual(shared_p<Individual> idv, int t, HouseholdPosition hp);
 
-	void RemoveIndividual(Pointer<Individual> idv, int t);
+	void RemoveIndividual(weak_p<Individual> idv, int t);
 
 	void PrintHousehold(int t);
 
@@ -27,7 +25,7 @@ public:
 	int size(int t);
 	int size(void);
 
-	bool hasMember(Pointer<Individual> idv);
+	bool hasMember(weak_p<Individual> idv);
 
 	// ActiveTBPrevalence is simply the fraction of individuals
 	// in the household who have active TB. Right now,
@@ -41,10 +39,10 @@ public:
 	double ContactActiveTBPrevalence(TBStatus);
 	double ContactActiveTBPrevalence(TBStatus, int t);
 
-	Household(Pointer<Individual> head,
-			  Pointer<Individual> spouse,
-			  std::vector<Pointer<Individual>> offspring,
-			  std::vector<Pointer<Individual>> other,
+	Household(shared_p<Individual> head,
+			  shared_p<Individual> spouse,
+			  std::vector<shared_p<Individual>> offspring,
+			  std::vector<shared_p<Individual>> other,
 			  int t,
 			  int hid) : 
 		head(head), 
@@ -76,5 +74,5 @@ private:
 	int nIndividuals;
 	int nInfectiousTBIndivduals;
 
-	void TriggerReeval(int t, Pointer<Individual> idv);
+	void TriggerReeval(int t, weak_p<Individual> idv);
 };

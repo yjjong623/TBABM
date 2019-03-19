@@ -6,15 +6,10 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::vector;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
-
-using namespace StatisticalDistributions;
 
 // Algorithm S2: Create a population at simulation time 0
 void TBABM::CreatePopulation(int t, long size)
@@ -24,7 +19,7 @@ void TBABM::CreatePopulation(int t, long size)
 
 	while (popChange < size) {
 		long hid = nHouseholds++;
-		Pointer<Household> hh = householdGen.GetHousehold(t, hid, rng);
+		shared_p<Household> hh = householdGen.GetHousehold(t, hid, rng);
 		households[hid] = hh;
 
 		assert(hh->head);
@@ -54,7 +49,7 @@ void TBABM::CreatePopulation(int t, long size)
 		for (auto it = hh->offspring.begin(); it != hh->offspring.end(); it++) {
 			double dt = constants["ageGroupWidth"] - fmod((*it)->age<double>(t), constants["ageGroupWidth"]);
 			popChange++;
-			population.push_back(*it);
+			population.push_back((*it));
 			assert((*it)->householdID == hid);
 			Schedule(t + dt, ChangeAgeGroup(*it));
 			InitialEvents(*it, t, dt);
@@ -62,7 +57,7 @@ void TBABM::CreatePopulation(int t, long size)
 		for (auto it = hh->other.begin(); it != hh->other.end(); it++) {
 			double dt = constants["ageGroupWidth"] - fmod((*it)->age<double>(t), constants["ageGroupWidth"]);
 			popChange++;
-			population.push_back(*it);
+			population.push_back((*it));
 			assert((*it)->householdID == hid);
 			Schedule(t + dt, ChangeAgeGroup(*it));
 
@@ -101,7 +96,7 @@ void TBABM::CreatePopulation(int t, long size)
 		auto person = *it;
 
 		if (person->sex == Sex::Male || \
-			!person->spouse || \
+			!person->spouse.lock() || \
 			person->age(t) < 15)
 			continue;
 

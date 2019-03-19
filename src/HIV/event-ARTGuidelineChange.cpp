@@ -4,15 +4,10 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::vector;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
-
-using namespace StatisticalDistributions;
 
 EventFunc TBABM::ARTGuidelineChange(void)
 {
@@ -20,11 +15,11 @@ EventFunc TBABM::ARTGuidelineChange(void)
 		[this](double t, SchedulerT scheduler) {
 			// printf("[%d] ARTGuidelineChange\n", (int)t);
 			for (auto it = seekingART.begin(); it != seekingART.end();) {
-				if (!*it || (*it)->dead) {
+				auto idv = (*it).lock();
+				if (!idv || idv->dead) {
 					it++; continue;
 				}
 
-				auto idv = *it;
 				bool initiateART;
 				double m_30 = params["HIV_m_30"].Sample(rng);
 				double CD4 = idv->CD4count(t, m_30);

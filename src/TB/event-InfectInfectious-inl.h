@@ -4,11 +4,10 @@
 // schedule the beginning of treatment.
 // 
 // If no treatment, recovery or death is scheduled.
-template <typename T>
 void
-TB<T>::InfectInfectious(Time t, Source s, StrainType)
+TB::InfectInfectious(Time t, Source s, StrainType)
 {
-	auto lambda = [this] (auto ts, auto) -> bool {
+	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts, auto) {
 		if (!AliveStatus())
 			return true;
 

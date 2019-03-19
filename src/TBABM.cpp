@@ -5,9 +5,6 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
 using std::vector;
 
 using EventFunc = TBABM::EventFunc;
@@ -158,19 +155,15 @@ bool TBABM::Run(void)
 
     // printf("Making individual\n");
     // auto household = householdGen.GetHousehold(1000000,0,rng);
-    // auto head = household->head;
-    // printf("Individual allocated\n");
-    // printf("Use count before reset: %ld\n", head.use_count());
-    // household->head.reset();
-    // printf("Individual reset()\n");
+    // printf("Household generated\n");
     // printf("Household size: %d\n", household->size());
-    // printf("Use count: %ld\n", head.use_count());
-    // assert(head.unique());
-
-
-
-    for (auto idv : population)
-        printf("Use count: %ld\n", idv.use_count());
+    // printf("HEAD Use count without extra ptr: %ld\n", household->head.use_count());
+    // auto head = household->head;
+    // printf("HEAD Use count with extra ptr: %ld\n", household->head.use_count());
+    // printf("HOUSEHOLD Use count before household reset: %ld\n", household.use_count());
+    // household.reset(); // Now, the only pointer to the household should be the one we have
+    // printf("HEAD Use count after household reset: %ld\n", head.use_count());
+    // // assert(head.unique());
 
     births.Close();
     deaths.Close();
@@ -226,47 +219,54 @@ void TBABM::Schedule(int t, EventQueue<>::EventFunc ef)
     return;
 }
 
-void TBABM::PurgeReferencesToIndividual(Pointer<Individual> host,
-                                        Pointer<Individual> idv)
+void TBABM::PurgeReferencesToIndividual(weak_p<Individual> host_w,
+                                        weak_p<Individual> idv_w)
 {
     // Return if host or individual do not exist
+    auto host = host_w.lock();
+    auto idv = idv_w.lock();
     if (!host || !idv)
         return;
 
     // Reset pointers for spouse, mother, father (rough equivalent of setting
     // pointers to NULL)
-    if (host->spouse && host->spouse == idv)
+    if (host->spouse.lock() && host->spouse.lock() == idv)
         host->spouse.reset();
-    if (host->mother && host->mother == idv)
+    if (host->mother.lock() && host->mother.lock() == idv)
         host->mother.reset();
-    if (host->father && host->father == idv)
+    if (host->father.lock() && host->father.lock() == idv)
         host->father.reset();
 
     // Erase 'idv' from offspring
     for (auto it = host->offspring.begin(); it != host->offspring.end(); it++)
-        if (*it && *it == idv) {
+        if ((*it).lock() == idv) {
             host->offspring.erase(it);
             break;
         }
 
     // Erase 'idv' from list of people 'idv' has lived with before
     for (auto it = host->livedWithBefore.begin(); it != host->livedWithBefore.end(); it++)
-        if (*it && *it == idv) {
+        if ((*it).lock() == idv) {
             it = host->livedWithBefore.erase(it);
             break;
         }
 }
 
-void TBABM::DeleteIndividual(Pointer<Individual> idv)
+void TBABM::DeleteIndividual(weak_p<Individual> idv_w)
 {
+    auto idv = idv_w.lock();
     assert(idv);
+
     for (size_t i = 0; i < idv->livedWithBefore.size(); i++)
         PurgeReferencesToIndividual(idv->livedWithBefore[i], idv);
 }
 
-void TBABM::ChangeHousehold(Pointer<Individual> idv, int t, int newHID, HouseholdPosition newRole)
+void TBABM::ChangeHousehold(weak_p<Individual> idv_w, int t, int newHID, HouseholdPosition newRole)
 {
-    if (!idv || idv->dead)
+    auto idv = idv_w.lock();
+    if (!idv)
+        return;
+    if (idv->dead)
         return;
 
     // printf("\tChanging household of %ld::%lu\n", idv->householdID, std::hash<Pointer<Individual>>()(idv));
@@ -285,8 +285,8 @@ void TBABM::ChangeHousehold(Pointer<Individual> idv, int t, int newHID, Househol
     newHousehold->AddIndividual(idv, t, newRole);
 
     // Clear household if there's nobody left in it
-    if (oldHousehold->size() == 0)
-        households[oldHID].reset();
+    // if (oldHousehold->size() == 0)
+        // households[oldHID].reset();
 
     return;
 }

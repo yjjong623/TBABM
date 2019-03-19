@@ -10,21 +10,17 @@
 
 #include <EventQueue.h>
 
+#include "Pointers.h"
 #include "IndividualTypes.h"
-#include "TB.h"
 #include "TBTypes.h"
-
-template <typename T>
-using Pointer = std::shared_ptr<T>;
+#include "TB.h"
 
 using Time = int;
-
 using std::vector;
 using std::string;
-
 using EQ = EventQueue<double, bool>;
 
-class Individual {
+class Individual : public std::enable_shared_from_this<Individual> {
 public:
 	long householdID;
 
@@ -33,12 +29,12 @@ public:
 	long double marriageDate;
 	bool pregnant;
 
-	Pointer<Individual> spouse;
-	Pointer<Individual> mother;
-	Pointer<Individual> father;
-	std::vector<Pointer<Individual>> offspring; // Can have multiple children	
+	weak_p<Individual> spouse;
+	weak_p<Individual> mother;
+	weak_p<Individual> father;
+	std::vector<weak_p<Individual>> offspring; // Can have multiple children	
 
-	std::vector<Pointer<Individual>> livedWithBefore; // People lived with before
+	std::vector<weak_p<Individual>> livedWithBefore; // People lived with before
 
 	HouseholdPosition householdPosition;
 
@@ -57,7 +53,7 @@ public:
 	int ARTInitTime;
 
 	// TB stuff
-	TB<Sex> tb;
+	TB tb;
 
 	void ReceiveTBInfectiousChangeCallback(function<void(int)> f) {
 		TBInfectiousChangeCallback = f;
@@ -69,7 +65,7 @@ public:
 
 	void TBDeathHandler(int t) {
 		return handles.Death(
-			std::shared_ptr<Individual>(this), 
+			shared_from_this(), 
 			t, 
 			DeathCause::TB
 		);
@@ -77,11 +73,12 @@ public:
 
 	TBQueryHandlers TBQueryHandlersInit(void) {
 		return CreateTBQueryHandlers(
-			[this] (Time t) -> int     { return age(t); },
-			[this] (void) -> bool      { return !dead; },
-			[this] (Time t) -> double  { return CD4count(t, params["HIV_m_30"].Sample(rng)); },
-			[this] (void) -> HIVStatus { return hivStatus; },
-			[this] (Time t) -> double  { return handles.GlobalTBPrevalence(t); }
+			[this] (Time t) -> int        { return age(t); },
+			[this] (void) -> bool         { return !dead; },
+			[this] (Time t) -> double     { return CD4count(t, params["HIV_m_30"].Sample(rng)); },
+			[this] (void) -> HIVStatus    { return hivStatus; },
+			[this] (Time t) -> double     { return handles.GlobalTBPrevalence(t); },
+			[this] (void) -> shared_p<TB> { return shared_p<TB>(shared_from_this(), &this->tb); }
 		);
 	}
 
@@ -131,11 +128,12 @@ public:
 		return std::min(5000., std::max(BaseCD4 + increase, 0.));
 	}
 
-	void LivedWith(Pointer<Individual> idv) {
-		if (!idv || idv->dead)
+	void LivedWith(weak_p<Individual> idv_w) {
+		auto idv = idv_w.lock();
+		if (!idv ||idv->dead)
 			return;
 
-		idv->livedWithBefore.push_back(idv);
+		livedWithBefore.push_back(idv_w);
 	}
 
 	void Widowed() {
@@ -152,10 +150,10 @@ public:
 			   IndividualHandlers handles_,
 			   string name,
 			   long householdID_, int birthDate, Sex sex,
-			   Pointer<Individual> spouse,
-			   Pointer<Individual> mother,
-			   Pointer<Individual> father,
-			   std::vector<Pointer<Individual>> offspring,
+			   weak_p<Individual> spouse,
+			   weak_p<Individual> mother,
+			   weak_p<Individual> father,
+			   std::vector<weak_p<Individual>> offspring,
 			   HouseholdPosition householdPosition,
 			   MarriageStatus marriageStatus) :
 			   // Pointer<Params> params,
@@ -204,9 +202,9 @@ public:
 	  			 hid, 
 	  			 birthDate, 
 	  			 sex, 
-	             Pointer<Individual>(), 
-	             Pointer<Individual>(), 
-	             Pointer<Individual>(), 
+	             weak_p<Individual>(), 
+	             weak_p<Individual>(), 
+	             weak_p<Individual>(), 
 	             {}, 
 	             householdPosition, 
 	             marriageStatus) {
@@ -228,8 +226,8 @@ std::shared_ptr<Individual>
 makeIndividual(Ts&&... params)
 {
 	auto deleter = [](Individual *idv) {
-		printf("Not Deleting %s\n", idv->Name().c_str());
-		// delete idv;
+		// printf("Deleting %s\n", idv->Name().c_str());
+		delete idv;
 	};
 
 	std::shared_ptr<Individual>

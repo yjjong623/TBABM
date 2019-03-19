@@ -1,7 +1,7 @@
 #include "../../include/TBABM/IndividualTypes.h"
 
 IndividualHandlers 
-CreateIndividualHandlers(function<void(Pointer<Individual>, int, DeathCause)> Death,
+CreateIndividualHandlers(function<void(weak_p<Individual>, int, DeathCause)> Death,
 						 function<double(int)> GlobalTBPrevalence)
 {
 	return {

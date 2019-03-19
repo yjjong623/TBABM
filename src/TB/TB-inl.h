@@ -3,9 +3,8 @@
 #include "../../include/TBABM/TB.h"
 #include "../../include/TBABM/utils/termcolor.h"
 
-template <typename T>
 void
-TB<T>::Log(Time t, string msg)
+TB::Log(Time t, string msg)
 {
     std::cout << termcolor::on_green << "[" << std::left \
               << std::setw(12) << name << std::setw(5) << std::right \
@@ -13,17 +12,15 @@ TB<T>::Log(Time t, string msg)
               << msg << termcolor::reset << std::endl;
 }
 
-template <typename T>
 TBStatus
-TB<T>::GetTBStatus(Time t)
+TB::GetTBStatus(Time t)
 {
     return tb_status;
 }
 
 
-template <typename T>
 void
-TB<T>::SetHouseholdCallbacks(function<void(Time)>       progression, 
+TB::SetHouseholdCallbacks(function<void(Time)>       progression, 
                              function<void(Time)>       recovery,
                              function<double(void)>     householdPrevalence,
                              function<double(TBStatus)> contactHouseholdPrevalence)
@@ -39,9 +36,8 @@ TB<T>::SetHouseholdCallbacks(function<void(Time)>       progression,
     ContactHouseholdTBPrevalence = contactHouseholdPrevalence;
 }
 
-template <typename T>
 void
-TB<T>::ResetHouseholdCallbacks(void)
+TB::ResetHouseholdCallbacks(void)
 {
     ProgressionHandler    = nullptr;
     RecoveryHandler       = nullptr;
@@ -50,17 +46,15 @@ TB<T>::ResetHouseholdCallbacks(void)
 
 
 
-template <typename T>
 void
-TB<T>::Investigate(void)
+TB::Investigate(void)
 {
-    printf("TB<T>::Investigate\n");
+    printf("TB::Investigate\n");
     return;
 }
 
-template <typename T>
 void
-TB<T>::HandleDeath(Time t)
+TB::HandleDeath(Time t)
 {
     switch(tb_status) {
         case (TBStatus::Susceptible):

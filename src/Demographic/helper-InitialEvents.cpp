@@ -5,9 +5,6 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
 using std::vector;
 
 using EventFunc = TBABM::EventFunc;
@@ -16,8 +13,12 @@ using SchedulerT = EventQueue<double,bool>::SchedulerT;
 using namespace StatisticalDistributions;
 
 // Unit of dt is years
-void TBABM::InitialEvents(Pointer<Individual> idv, double t, double dt)
+void TBABM::InitialEvents(weak_p<Individual> idv_w, double t, double dt)
 {
+	auto idv = idv_w.lock();
+	if (!idv)
+		return;
+
 	int gender = idv->sex == Sex::Male ? 0 : 1;
 	double age = idv->age(t);
 	auto startYear = constants["startYear"];

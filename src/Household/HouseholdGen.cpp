@@ -4,7 +4,7 @@
 
 #include "../../include/TBABM/HouseholdGen.h"
 
-Pointer<Household>
+shared_p<Household>
 HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 {
 	// Create a blank Household object
@@ -39,8 +39,6 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 		MarriageStatus::Single
 	); //, params, fileData);
 	
-	auto newIndividuals = std::vector<Pointer<Individual>> { head };
-
 	// Add this object to the household as the head
 	household->AddIndividual(head, current_time, HouseholdPosition::Head);
 
@@ -64,12 +62,11 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 			MarriageStatus::Single
 		);
 
-		newIndividuals.push_back(idv);
-
 		switch (idv->householdPosition) {
 			case (HouseholdPosition::Head):
 				std::cout << "Error: Can't have two household heads" << std::endl;
 				break;
+
 			case (HouseholdPosition::Spouse):
 				idv->marriageStatus = MarriageStatus::Married;
 				idv->spouse = household->head; // bidirectional
@@ -78,6 +75,7 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 
 				household->AddIndividual(idv, current_time, HouseholdPosition::Spouse);
 				break;
+
 			case (HouseholdPosition::Offspring):
 				// Add offspring to head and spouse
 				household->head->offspring.push_back(idv);
@@ -104,18 +102,14 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 
 			case (HouseholdPosition::Other):
 				idv->marriageStatus = MarriageStatus::Single;
-				household->AddIndividual(idv, current_time, HouseholdPosition::Offspring);
+				household->AddIndividual(idv, current_time, HouseholdPosition::Other);
 				break;
+
 			default:
-				printf("\t\tError!!\n");
+				printf("Error: Unsupported HouseholdPosition\n");
+				exit(1);
 		}
 	}
-
-	// Keep track of who the individuals have lived with before
-	for (size_t i = 0; i < newIndividuals.size(); i++)
-		for (size_t j = 0; j < newIndividuals.size(); j++)
-			if (newIndividuals[i] != newIndividuals[j])
-				newIndividuals[i]->livedWithBefore.push_back(newIndividuals[j]);
 
 	return household;
 }

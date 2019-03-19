@@ -5,32 +5,28 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::vector;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using namespace StatisticalDistributions;
-
 // Algorithm S12: Change of marital status from single to looking
-EventFunc TBABM::SingleToLooking(Pointer<Individual> idv)
+EventFunc TBABM::SingleToLooking(weak_p<Individual> idv_w)
 {
 	EventFunc ef = 
-		[this, idv](double t, SchedulerT scheduler) {
+		[this, idv_w](double t, SchedulerT scheduler) {
 			// printf("[%d] SingleToLooking: %s, %ld::%lu\n", (int)t, idv->sex == Sex::Male ? "Male" : "Female", idv->householdID, std::hash<Pointer<Individual>>()(idv));
-			if (idv->dead)
+			auto idv = idv_w.lock();
+			if (!idv)
 				return true;
 
-			if (idv->marriageStatus == MarriageStatus::Married)
-				return true;	
+			if (idv->dead || idv->marriageStatus == MarriageStatus::Married)
+				return true;
 
 			if (idv->sex == Sex::Male)
-				maleSeeking.push_back(idv);
+				maleSeeking.push_back(idv_w);
 			else
-				femaleSeeking.push_back(idv);
+				femaleSeeking.push_back(idv_w);
 
 			idv->marriageStatus = MarriageStatus::Looking;
 

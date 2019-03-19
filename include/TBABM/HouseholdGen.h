@@ -9,6 +9,7 @@
 #include "Individual.h"
 #include "IndividualTypes.h"
 #include "Names.h"
+#include "Pointers.h"
 
 #include <StatisticalDistribution.h>
 #include <EventQueue.h>
@@ -18,15 +19,11 @@ using std::map;
 using std::string;
 
 using namespace StatisticalDistributions;
-
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
 using EQ = EventQueue<double, bool>;
 
 class HouseholdGen {
 public:
-	using Distributions = map<string, Pointer<StatisticalDistribution<long double>>>;
+	using Distributions = map<string, shared_p<StatisticalDistribution<long double>>>;
 	using Constants = map<string, double>;
 
 	struct MicroIndividual {
@@ -37,11 +34,11 @@ public:
 
 	using MicroFamily = std::vector<MicroIndividual>;
 
-	Pointer<Household> GetHousehold(int current_time, int hid, RNG &rng);
+	shared_p<Household> GetHousehold(int current_time, int hid, RNG &rng);
 
 	HouseholdGen(const char *file,
-                 std::shared_ptr<Params>(params),
-				 std::shared_ptr<map<string, DataFrameFile>>(fileData),
+                 shared_p<Params>(params),
+				 shared_p<map<string, DataFrameFile>>(fileData),
                  EQ& event_queue,
                  IndividualInitData initData,
                  IndividualHandlers handles) : 

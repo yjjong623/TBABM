@@ -3,11 +3,10 @@
 // Right now, changing the risk window is disabled. However, calling this function will
 // still trigger an immediate InfectionRiskEvaluate and disable any other scheduled
 // InfectionRiskEvaluates.
-template <typename T>
 void
-TB<T>::RiskReeval(Time t)
+TB::RiskReeval(Time t)
 {
-	auto lambda = [this] (auto ts, auto) -> bool {
+	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts, auto) -> bool {
 		if (!AliveStatus())
 			return true;
 

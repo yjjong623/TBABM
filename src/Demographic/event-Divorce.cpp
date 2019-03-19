@@ -5,25 +5,24 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::vector;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using namespace StatisticalDistributions;
-
 // Algorithm S14: Divorce
-EventFunc TBABM::Divorce(Pointer<Individual> m, Pointer<Individual> f)
+EventFunc TBABM::Divorce(weak_p<Individual> m_weak, weak_p<Individual> f_weak)
 {
 	EventFunc ef = 
-		[this, m, f](double t, SchedulerT scheduler) {
+		[this, m_weak, f_weak](double t, SchedulerT scheduler) {
 
 			// printf("[%d] Divorce, populationSize=%lu, people: m=%ld::%lu f=%ld::%lu\n", (int)t, population.size(), m->householdID, std::hash<Pointer<Individual>>()(m), f->householdID, std::hash<Pointer<Individual>>()(f));
 
 			// If someone is dead they can't divorce
+			auto m = m_weak.lock();
+			auto f = f_weak.lock();
+			if (!m || !f)
+				return true;
 			if (m->dead || f->dead)
 				return true;
 
@@ -36,18 +35,23 @@ EventFunc TBABM::Divorce(Pointer<Individual> m, Pointer<Individual> f)
 
 			// Identify a new household for whoever left
 			int newHouseholdID = -1;
-			for (size_t i = 0; i < booted->offspring.size(); i++)
-				if (booted->offspring[i]->householdID != m->householdID && \
-					households[booted->offspring[i]->householdID])
-					newHouseholdID = booted->offspring[i]->householdID;
+			for (size_t i = 0; i < booted->offspring.size(); i++) {
+				auto kid = booted->offspring[i].lock();
+				if (!kid || kid->dead) continue;
+				if (kid->householdID != m->householdID && \
+					households[kid->householdID])
+					newHouseholdID = kid->householdID;
+			}
 
-			if (booted->mother && !booted->mother->dead && booted->mother->householdID != m->householdID && \
-				households[booted->mother->householdID != m->householdID])
-				newHouseholdID = booted->mother->householdID;
+			auto mom = booted->mother.lock();
+			if (mom && !mom->dead && mom->householdID != m->householdID && \
+				households[mom->householdID != m->householdID])
+				newHouseholdID = mom->householdID;
 
-			if (booted->father && !booted->father->dead && booted->father->householdID != m->householdID && \
-				households[booted->father->householdID])
-				newHouseholdID = booted->father->householdID;
+			auto dad = booted->father.lock();
+			if (dad && !dad->dead && dad->householdID != m->householdID && \
+				households[dad->householdID])
+				newHouseholdID = dad->householdID;
 
 			if (newHouseholdID > -1) {
 				assert(households[newHouseholdID]);
@@ -55,7 +59,7 @@ EventFunc TBABM::Divorce(Pointer<Individual> m, Pointer<Individual> f)
 				// If another household was found for the booted individual
 				ChangeHousehold(booted, t, newHouseholdID, HouseholdPosition::Other);
 			} else {
-				Schedule(t, CreateHousehold(booted, Pointer<Individual>(), {}, {}));
+				Schedule(t, CreateHousehold(booted, weak_p<Individual>(), {}, {}));
 			}
 
 			divorces.Record(t, +1);

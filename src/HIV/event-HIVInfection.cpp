@@ -4,17 +4,12 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::vector;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using namespace StatisticalDistributions;
-
-void HIVInfectionLogger(Pointer<Individual> idv, double t)
+void HIVInfectionLogger(shared_p<Individual> idv, double t)
 {
 	std::cout << termcolor::on_magenta << 
 		"[" << 
@@ -25,13 +20,16 @@ void HIVInfectionLogger(Pointer<Individual> idv, double t)
 		termcolor::reset << std::endl;
 }
 
-EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
+EventFunc TBABM::HIVInfection(weak_p<Individual> idv_w)
 {
 	EventFunc ef = 
-		[this, idv](double t, SchedulerT scheduler) {
+		[this, idv_w](double t, SchedulerT scheduler) {
 
 			// Have to be alive and seronegative to get infected
-			if (!idv || idv->dead || idv->hivStatus == HIVStatus::Positive)
+			auto idv = idv_w.lock();
+			if (!idv)
+				return true;
+			if (idv->dead || idv->hivStatus == HIVStatus::Positive)
 				return true;
 
 			// HIVInfectionLogger(idv, t);
@@ -46,8 +44,8 @@ EventFunc TBABM::HIVInfection(Pointer<Individual> idv)
 
 			// Immediately schedule possible VCT diagnosis, and begin checking
 			// their HIV-related mortality
-			Schedule(t, VCTDiagnosis(idv));
-			Schedule(t, MortalityCheck(idv));
+			Schedule(t, VCTDiagnosis(idv_w));
+			Schedule(t, MortalityCheck(idv_w));
 
 			// Reevaluate risk for tuberculosis, and change risk window
 			idv->tb.RiskReeval(t);

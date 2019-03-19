@@ -5,15 +5,10 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::vector;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
-
-using namespace StatisticalDistributions;
 
 // Algorithm S4: Adding new residents
 EventFunc TBABM::NewHouseholds(int num)
@@ -25,7 +20,7 @@ EventFunc TBABM::NewHouseholds(int num)
 
 			while (popChange < num) {
 				long hid = nHouseholds++;
-				Pointer<Household> hh = householdGen.GetHousehold(t, hid, rng);
+				shared_p<Household> hh = householdGen.GetHousehold(t, hid, rng);
 				households[hid] = hh;
 
 				// Insert all members of the household into the population

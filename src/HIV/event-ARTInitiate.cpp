@@ -4,27 +4,26 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::vector;
-
 using EventFunc  = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using namespace StatisticalDistributions;
-
-EventFunc TBABM::ARTInitiate(Pointer<Individual> idv)
+EventFunc TBABM::ARTInitiate(weak_p<Individual> idv_w)
 {
 	EventFunc ef = 
-		[this, idv](double t, SchedulerT scheduler) {
+		[this, idv_w](double t, SchedulerT scheduler) {
+			auto idv = idv_w.lock();
+			if (!idv)
+				return true;
+			if (idv->dead || idv->hivStatus != HIVStatus::Positive)
+				return true;
+
 			double m_30   = params["HIV_m_30"].Sample(rng);
 			int CD4       = idv->CD4count(t, m_30);
 			// printf("[%d] ARTInitiate: %ld::%lu, CD4=%d\n", (int)t, idv->householdID, \
 														// std::hash<Pointer<Individual>>()(idv), CD4);
 
-			if (!idv || idv->dead || idv->hivStatus != HIVStatus::Positive)
-				return true;
 
 			idv->ARTInitTime = t;
 			idv->ART_init_CD4 = CD4;

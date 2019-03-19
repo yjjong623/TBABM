@@ -7,16 +7,14 @@
 #include <RNG.h>
 #include <Param.h>
 #include <DataFrame.h>
+#include "Pointers.h"
 
-using std::function;
-using std::map;
 using namespace SimulationLib;
 using StatisticalDistributions::RNG;
+using std::function;
+using std::map;
 using EQ = EventQueue<double, bool>;
 using Params = map<string, Param>;
-
-template <typename T>
-using Pointer = std::shared_ptr<T>;
 
 using Time = int;
 
@@ -71,12 +69,12 @@ typedef struct IndividualInitData {
 } IndividualInitData;
 
 typedef struct IndividualHandlers {
-	function<void(Pointer<Individual>, int, DeathCause)> Death;
+	function<void(weak_p<Individual>, int, DeathCause)> Death;
 	function<double(int)> GlobalTBPrevalence;
 } IndividualHandlers;
 
 IndividualHandlers CreateIndividualHandlers(
-	function<void(Pointer<Individual>, int, DeathCause)> Death,
+	function<void(weak_p<Individual>, int, DeathCause)> Death,
 	function<double(int)> GlobalTBPrevalence
 );
 

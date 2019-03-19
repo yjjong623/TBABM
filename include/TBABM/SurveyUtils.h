@@ -2,8 +2,8 @@
 #include "Individual.h"
 #include "Household.h"
 
-using IPt = Pointer<Individual>;
-using HPt = Pointer<Household>;
+using IPt = shared_p<Individual>;
+using HPt = shared_p<Household>;
 
 string Ihash(IPt idv); // Hash of individual
 string Hhash(HPt hh);  // Hash of household

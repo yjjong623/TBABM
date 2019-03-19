@@ -1,6 +1,6 @@
 #include "../../include/TBABM/Household.h"
 
-void Household::AddIndividual(Pointer<Individual> idv, int t, HouseholdPosition hp) {
+void Household::AddIndividual(shared_p<Individual> idv, int t, HouseholdPosition hp) {
 
 	if (!idv)
 		return;
@@ -41,8 +41,8 @@ void Household::AddIndividual(Pointer<Individual> idv, int t, HouseholdPosition 
 	}
 	else if (hp == HouseholdPosition::Spouse) {
 		if (spouse) {
-			other.push_back(spouse);
 			spouse->householdPosition = HouseholdPosition::Other;
+			other.push_back(spouse);
 		}
 		spouse = idv;
 	}
@@ -54,6 +54,7 @@ void Household::AddIndividual(Pointer<Individual> idv, int t, HouseholdPosition 
 	}
 
 	nIndividuals += 1;
+	
 	if (idv->tb.GetTBStatus(t) == TBStatus::Infectious)
 		nInfectiousTBIndivduals += 1;
 
@@ -67,8 +68,10 @@ void Household::AddIndividual(Pointer<Individual> idv, int t, HouseholdPosition 
 	return;
 }
 
-void Household::RemoveIndividual(Pointer<Individual> idv, int t) {
-	assert(idv);
+void Household::RemoveIndividual(weak_p<Individual> idv_w, int t) {
+	auto idv = idv_w.lock();
+	if (!idv)
+		assert(false);
 	
 	if (!hasMember(idv))
 		return;
@@ -155,7 +158,11 @@ int Household::size(void) {
 	return nIndividuals;
 }
 
-bool Household::hasMember(Pointer<Individual> idv) {
+bool Household::hasMember(weak_p<Individual> idv_w) {
+	auto idv = idv_w.lock();
+	if (!idv)
+		return false;
+
 	if ((head == idv) || (spouse == idv))
 		return true;
 
@@ -198,7 +205,11 @@ double Household::ContactActiveTBPrevalence(TBStatus s, int t) {
 	return ContactActiveTBPrevalence(s);
 }
 
-void Household::TriggerReeval(int t, Pointer<Individual> idv) {
+void Household::TriggerReeval(int t, weak_p<Individual> idv_w) {
+	auto idv = idv_w.lock();
+	if (!idv)
+		return;
+
 	if (head && head != idv)
 		head->tb.RiskReeval(t);
 

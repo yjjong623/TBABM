@@ -5,25 +5,22 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::vector;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using namespace StatisticalDistributions;
-
-
 // Algorithm S10: Natural death
-EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
+EventFunc TBABM::Death(weak_p<Individual> idv_w, DeathCause deathCause)
 {
 	EventFunc ef = 
-		[this, idv, deathCause](double t, SchedulerT scheduler) {
+		[this, idv_w, deathCause](double t, SchedulerT scheduler) {
 
 			// Be sure this individual is alive
-			if (!idv || idv->dead)
+			auto idv = idv_w.lock();
+			if (!idv)
+				return true;
+			if (idv->dead)
 				return true;
 
 			SurveyDeath(idv, t, deathCause);
@@ -35,21 +32,21 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 			// Eliminate from Looking pools
 			if (idv->sex == Sex::Male) {
 				for (auto it = maleSeeking.begin(); it != maleSeeking.end(); it++)
-					if (*it == idv) {
+					if (it->lock() == idv) {
 						maleSeeking.erase(it);
 						break;
 					}
 			} else {
 				for (auto it = femaleSeeking.begin(); it != femaleSeeking.end(); it++)
-					if (*it == idv) {
+					if (it->lock() == idv) {
 						femaleSeeking.erase(it);
 						break;
 					}
 			}
 
 			// Advise spouse that they are now widowed
-			if (idv->spouse)
-				idv->spouse->Widowed();
+			if (auto spouse = idv->spouse.lock())
+				spouse->Widowed();
 
 			int age = idv->age(t);
 			int sex = idv->sex == Sex::Male ? 0 : 1;
@@ -99,7 +96,7 @@ EventFunc TBABM::Death(Pointer<Individual> idv, DeathCause deathCause)
 	return ef;
 }
 
-void TBABM::SurveyDeath(Pointer<Individual> idv, int t, DeathCause deathCause)
+void TBABM::SurveyDeath(shared_p<Individual> idv, int t, DeathCause deathCause)
 {
 	string s = ",";
 

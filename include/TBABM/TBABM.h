@@ -28,6 +28,8 @@
 #include "Household.h"
 #include "HouseholdGen.h"
 
+#include "Pointers.h"
+
 #include "utils/termcolor.h"
 
 using std::map;
@@ -37,9 +39,6 @@ using std::string;
 using namespace StatisticalDistributions;
 using namespace SimulationLib;
 using namespace SimulationLib::JSONImport;
-
-template <typename T>
-using Pointer = std::shared_ptr<T>;
 
 class TBABM {
 public:
@@ -180,7 +179,7 @@ public:
 					  tbSusceptible, tbInfected, tbLatent, tbInfectious, \
 					  tbTreatmentBegin, tbTreatmentBeginHIV, tbTreatmentEnd, tbTreatmentDropout, \
 					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment, activeHouseholdContacts},
-					 CreateIndividualHandlers([this] (Pointer<Individual> i, int t, DeathCause dc) -> void \
+					 CreateIndividualHandlers([this] (weak_ptr<Individual> i, int t, DeathCause dc) -> void \
 					 						  { return Schedule(t, Death(i, dc)); },
 					 						  [this] (int t) -> double { return (double)tbInfectious(t)/(double)populationSize(t); }
 											  )) {
@@ -266,36 +265,36 @@ private:
 	EventFunc NewHouseholds(int num);
 
 	// Algorithm S5: Create a household
-	EventFunc CreateHousehold(Pointer<Individual> head,
-						      Pointer<Individual> spouse,
-							  std::vector<Pointer<Individual>> offspring,
-							  std::vector<Pointer<Individual>> other);
+	EventFunc CreateHousehold(weak_p<Individual> head,
+						      weak_p<Individual> spouse,
+							  std::vector<weak_p<Individual>> offspring,
+							  std::vector<weak_p<Individual>> other);
 
 	// Algorithm S6: Birth
-	EventFunc Birth(Pointer<Individual> mother, Pointer<Individual> father);
+	EventFunc Birth(weak_p<Individual> mother, weak_p<Individual> father);
 
 	// Algorithm S7: Joining a household
-	EventFunc JoinHousehold(Pointer<Individual>, long hid);
+	EventFunc JoinHousehold(weak_p<Individual>, long hid);
 
 	// Algorithm S9: Change of age groups
-	EventFunc ChangeAgeGroup(Pointer<Individual>);
+	EventFunc ChangeAgeGroup(weak_p<Individual>);
 
 	// Algorithm S10: Natural death
-	EventFunc Death(const Pointer<Individual>, DeathCause deathCause);
+	EventFunc Death(weak_p<Individual>, DeathCause deathCause);
 
 	// Algorithm S11: Leave current household to form new household
-	EventFunc LeaveHousehold(Pointer<Individual>);
+	EventFunc LeaveHousehold(weak_p<Individual>);
 
 	// Algorithm S12: Change of marital status from single to looking
-	EventFunc SingleToLooking(Pointer<Individual>);
+	EventFunc SingleToLooking(weak_p<Individual>);
 
 	// Algorithm S13: Marriage
-	EventFunc Marriage(Pointer<Individual> m, Pointer<Individual> f);
+	EventFunc Marriage(weak_p<Individual> m, weak_p<Individual> f);
 
 	// Algorithm S14: Divorce
-	EventFunc Divorce(Pointer<Individual> m, Pointer<Individual> f);
+	EventFunc Divorce(weak_p<Individual> m, weak_p<Individual> f);
 
-	EventFunc Pregnancy(Pointer<Individual> f, Pointer<Individual> m);
+	EventFunc Pregnancy(weak_p<Individual> f, weak_p<Individual> m);
 
 	// Update the population pyramid
 	EventFunc UpdatePyramid(void);
@@ -312,16 +311,16 @@ private:
 	////////////////////////////////////////////////////////
 	/// Demographic Utilities
 	////////////////////////////////////////////////////////
-	void InitialEvents(Pointer<Individual> idv, double t, double dt);
+	void InitialEvents(weak_p<Individual> idv, double t, double dt);
 
-	void PurgeReferencesToIndividual(Pointer<Individual> host,
-										    Pointer<Individual> idv);
+	void PurgeReferencesToIndividual(weak_p<Individual> host,
+								     weak_p<Individual> idv);
 
-	void DeleteIndividual(Pointer<Individual> idv);
+	void DeleteIndividual(weak_p<Individual> idv);
 
-	void ChangeHousehold(Pointer<Individual> idv, int time, int newHID, HouseholdPosition newRole);
+	void ChangeHousehold(weak_p<Individual> idv, int time, int newHID, HouseholdPosition newRole);
 
-	void SurveyDeath(Pointer<Individual> idv, int t, DeathCause deathCause);
+	void SurveyDeath(shared_p<Individual> idv, int t, DeathCause deathCause);
 
 	Names name_gen;
 
@@ -329,18 +328,18 @@ private:
 	/// HIV Events
 	////////////////////////////////////////////////////////
 	EventFunc ARTGuidelineChange(void);
-	EventFunc ARTInitiate(Pointer<Individual>);
-	EventFunc HIVInfectionCheck(Pointer<Individual>);
-	EventFunc HIVInfection(Pointer<Individual>);
-	EventFunc MortalityCheck(Pointer<Individual>);
-	EventFunc VCTDiagnosis(Pointer<Individual>);
+	EventFunc ARTInitiate(weak_p<Individual>);
+	EventFunc HIVInfectionCheck(weak_p<Individual>);
+	EventFunc HIVInfection(weak_p<Individual>);
+	EventFunc MortalityCheck(weak_p<Individual>);
+	EventFunc VCTDiagnosis(weak_p<Individual>);
 
 	////////////////////////////////////////////////////////
 	/// HIV Utilities
 	////////////////////////////////////////////////////////
 
-	bool ARTEligible(int t, Pointer<Individual> idv);
-	void HIVInfectionCheck(int t, Pointer<Individual> idv);
+	bool ARTEligible(int t, weak_p<Individual> idv);
+	void HIVInfectionCheck(int t, weak_p<Individual> idv);
 
 	////////////////////////////////////////////////////////
 	/// Scheduling
@@ -356,13 +355,13 @@ private:
 	map<string, DataFrameFile> fileData;
 	Params params;
 
-	vector<Pointer<Individual>> population;
-	map<long, Pointer<Household>> households;
+	vector<shared_p<Individual>> population;
+	map<long, shared_p<Household>> households;
 
-	vector<Pointer<Individual>> maleSeeking;
-	vector<Pointer<Individual>> femaleSeeking;
+	vector<weak_p<Individual>> maleSeeking;
+	vector<weak_p<Individual>> femaleSeeking;
 
-	vector<Pointer<Individual>> seekingART; // Individuals seeking ART
+	vector<weak_p<Individual>> seekingART; // Individuals seeking ART
 
 	Constants constants;
 

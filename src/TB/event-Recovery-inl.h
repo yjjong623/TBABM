@@ -1,10 +1,9 @@
 #include "../../include/TBABM/TB.h"
 
-template <typename T>
 void
-TB<T>::Recovery(Time t, RecoveryType)
+TB::Recovery(Time t, RecoveryType)
 {
-	auto lambda = [this] (auto ts, auto) -> bool {
+	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts, auto) -> bool {
 		if (!AliveStatus())
 			return true;
 

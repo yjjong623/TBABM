@@ -178,7 +178,10 @@ bigMap  <- list(birthRate         = list(data=c("births", "populationSize"), tit
                 tbInfectious      = list(title="Actively-infected individuals", y=nIdv),
                 tbConversions     = list(title="TB Conversions, all individuals", y="Infections/year"),
                 tbInfections      = list(title="TB Infections, all individuals", y="Infections/year"),
-                tbRecoveries      = list(title="TB Recoveries, all individuals", y="Recoveries/year"))
+                tbRecoveries      = list(title="TB Recoveries, all individuals", y="Recoveries/year"),
+                tbTreatmentBegin     = list(title="TB case notifications, all", y="Case notifications/year"),
+                tbTreatmentEnd     = list(title="TB Treatment Completion", y="Completions/year"),
+                tbTreatmentDropout     = list(title="TB Treatment Dropous", y="Dropouts/year"))
 
 mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", y="Number of case notifications"),
                  populationSize       = list(title="All individuals", y="Number of individuals"),
@@ -190,12 +193,12 @@ mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notificati
                  hivPrevalence        = list(data=c("hivPositive", "populationSize"), title="HIV prevalence, all individuals", y="Prevalence (%)", factor=100),
                  tbInfectious         = list(data=c("tbInfectious", "populationSize"), title="Adults", y="Tuberculosis prevalence (%)", factor=100))
 
-do.call(multiplot, flatten(list(grid(cat$Loader, testMap, 1990), cols=3)))
+#do.call(multiplot, flatten(list(grid(cat$Loader, testMap, 1990), cols=3)))
 do.call(multiplot, flatten(list(grid(cat$Loader, bigMap, 1990), cols=4)))
 do.call(multiplot, flatten(list(grid(cat$Loader, mimicMap, 1990), cols=3)))
 
-  FOIs <- function() {
-  runs <- c(1, 2, 3, 4, 5)
+insFOIs <- function() {
+  runs <- c(1552405442, 1552405546, 1552405640, 1552405734, 1552405813)
   household <- c(50, 5, 0.5, 0.05, 0.005)
   global <- c(0.005, 0.05, 0.5, 5, 50)
   datas <- c("tbInfectionsHousehold", "tbInfectionsCommunity")
@@ -208,16 +211,35 @@ do.call(multiplot, flatten(list(grid(cat$Loader, mimicMap, 1990), cols=3)))
                                     global=global,
                                     seed=run)) %>%
         bind_rows()
-    }
+  }
     
     pmap(list(runs, household, global), ~process(..1, ..2, ..3)) %>%
       bind_rows() %>%
       ggplot(aes(period, value, color=type, group=interaction(trajectory, type, seed))) +
         geom_line() +
-        coord_cartesian(ylim=c(0, 500)) +
-        facet_wrap(vars(household, global), labeller = "label_both")
+        coord_cartesian(ylim=c(0, 300)) +
+        theme_classic() +
+        theme(legend.position = "top") +
+        theme(legend.background = element_rect(fill="lightblue",
+                                               size=0.5, linetype="solid", 
+                                               colour ="darkblue")) +
+        scale_color_discrete(name="Infection source", breaks=c("tbInfectionsCommunity", "tbInfectionsHousehold"), labels=c("Global/Community", "Household")) +
+        labs(x="Time (years)", y="Infections/year", color="Infection source") +
+        facet_grid(vars(household, global), labeller = "label_both")
 }
+
+insFOIs()
   # geom_hline(yintercept = 19.61) + BIRTHRATE
   # geom_hline(yintercept = 16.99) + DEATHRATE
   # geom_hline(yintercept = 3) + MARRIAGERATE
   # geom_hline(yintercept = 0.4) + DIVORCERATE
+
+
+
+pool_size <- c(1, 2, 4, 8)
+times <- c(123.13, 72.73, 56.94, 56.78)
+tibble(pool_size=pool_size, times=times, relative_improvement=map()) %>%
+  ggplot(aes(pool_size, times)) +
+    geom_line() +
+    geom_point() +
+    lims(x=c(0,8), y=c(0,150))

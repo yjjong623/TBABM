@@ -14,19 +14,13 @@
 #include "IndividualTypes.h"
 #include "TBTypes.h"
 
-using std::function;
-using std::string;
-
 using namespace SimulationLib;
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using std::function;
+using std::string;
 using Params = std::map<std::string, Param>;
-
 using EQ = EventQueue<double, bool>;
 
-template <typename SexT>
 class TB
 {
 public:
@@ -43,7 +37,7 @@ public:
 	   TBQueryHandlers initQueryHandlers,
 
 	   string name,
-	   SexT sex,
+	   Sex sex,
 
 	   double risk_window = 6*30, // unit: [days]
 	   
@@ -56,6 +50,8 @@ public:
 
 		name(name),
 		sex(sex),
+
+		GetLifetimePtr(initQueryHandlers.Lifetime),
 
 		DeathHandler(initHandlers.death),
 
@@ -73,7 +69,16 @@ public:
 	{
 		double firstRiskEval = Uniform(0, risk_window)(rng.mt_);
 
-		InfectionRiskEvaluate(initCtx.current_time + firstRiskEval);
+		// Forcing first risk evaluation to occur at initialization to avoid
+		// bug where dead individual tries to do an initial InfectionRiskEvaluation.
+		// This is a consquence of the fact that an aliasing constructor for a
+		// this-pointer cannot be created in the TB constructor – the Individual
+		// object has not finished construction and thus such a pointer is unavailable,
+		// probably. However, more research should be done into object init to figure
+		// out the first point where the 'this' pointer exists. If 'this' DOES
+		// indeed exist by this point, it will be possible to make sure the Individual
+		// object is not deleted before the first call to InfectionRiskEvaluate.
+		InfectionRiskEvaluate_initial(initCtx.current_time + 0/*firstRiskEval*/, 0);
 
 		data.tbSusceptible.Record(initCtx.current_time, +1);
 	}
@@ -109,7 +114,9 @@ private:
 	// 
 	// When scheduling an infection, the only StrainType
 	// supported right now is 'Unspecified'.
-	void InfectionRiskEvaluate(Time, int local_risk_window = 0);
+	void InfectionRiskEvaluate(Time, int local_risk_window = 0, shared_p<TB> = {});
+	void InfectionRiskEvaluate_initial(Time, int local_risk_window = 0);
+	bool InfectionRiskEvaluate_impl(Time, int local_risk_window = 0, shared_p<TB> = {});
 
 	// Marks an individual as latently infected. May transition
 	// to infectous TB through reactivation.
@@ -148,7 +155,7 @@ private:
 
 	// All of these are from the constructor
 	string name;
-	SexT sex;
+	Sex sex;
 
 	EQ& eq;
 	RNG& rng;
@@ -164,6 +171,8 @@ private:
     function<double(Time)> GlobalTBPrevalence;
 	function<double(void)> HouseholdTBPrevalence;
 	function<double(TBStatus)> ContactHouseholdTBPrevalence;
+
+	function<shared_p<TB>(void)> GetLifetimePtr;
  
     function<void(Time)> DeathHandler;   
     function<void(Time)> ProgressionHandler;

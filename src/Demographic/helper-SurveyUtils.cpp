@@ -1,28 +1,27 @@
 #include "../../include/TBABM/SurveyUtils.h"
 
-
 using MS = MarriageStatus;
 
 using std::to_string;
 
-string Ihash(IPt idv) {
-	return to_string(std::hash<IPt>()(idv));
+string Ihash(shared_p<Individual> idv) {
+	return to_string(std::hash<shared_p<Individual>>()(idv));
 }
 
-string Hhash(HPt hh) {
-	return to_string(std::hash<HPt>()(hh));
+string Hhash(shared_p<Household> hh) {
+	return to_string(std::hash<shared_p<Household>>()(hh));
 }
 
 
-string age(IPt idv, int t) {
+string age(shared_p<Individual> idv, int t) {
 	return to_string(idv->age(t));
 }
 
-string sex(IPt idv) {
+string sex(shared_p<Individual> idv) {
 	return idv->sex == Sex::Male ? "male" : "female";
 }
 
-string marital(IPt idv) {
+string marital(shared_p<Individual> idv) {
 	switch (idv->marriageStatus) {
 		case MS::Single:   return "single";   break;			
 		case MS::Married:  return "married";  break;
@@ -32,26 +31,28 @@ string marital(IPt idv) {
 	}
 }
 
-string numChildren(IPt idv) {
+string numChildren(shared_p<Individual> idv) {
 	return to_string(idv->numOffspring());
 }
 
-string mom(IPt idv) {
+string mom(shared_p<Individual> idv) {
 	assert(idv);
 
-	if (!idv->mother.use_count())
+	auto mom = idv->mother.lock();
+	if (!mom)
 		return "dead";
 	else
-		return idv->mother->dead ? "dead" : "alive";
+		return mom->dead ? "dead" : "alive";
 }
 
-string dad(IPt idv) {
+string dad(shared_p<Individual> idv) {
 	assert(idv);
 
-	if (!idv->father.use_count())
+	auto father = idv->father.lock();
+	if (!father)
 		return "dead";
 	else
-		return idv->father->dead ? "dead" : "alive";
+		return father->dead ? "dead" : "alive";
 }
 
 
@@ -64,34 +65,34 @@ string causeDeath(DeathCause cause_death) {
 	}
 }
 
-string HIV(IPt idv) {
+string HIV(shared_p<Individual> idv) {
 	return idv->hivStatus == HIVStatus::Positive ? "true" : "false";
 }
 
-string HIV_date(IPt idv) {
+string HIV_date(shared_p<Individual> idv) {
 	if (idv->hivStatus == HIVStatus::Positive)
 		return to_string(idv->t_HIV_infection);
 	else
 		return to_string(0);
 }
 
-string ART(IPt idv) {
+string ART(shared_p<Individual> idv) {
 	return idv->onART ? "true" : "false";
 }
 
-string ART_date(IPt idv) {
+string ART_date(shared_p<Individual> idv) {
 	return to_string(idv->onART ? idv->ARTInitTime : 0);
 }
 
-string CD4(IPt idv, double t, double m_30) {
+string CD4(shared_p<Individual> idv, double t, double m_30) {
 	return to_string(idv->CD4count(t, m_30));
 }
 
-string ART_baseline_CD4(IPt idv, double m_30) {
+string ART_baseline_CD4(shared_p<Individual> idv, double m_30) {
 	return to_string(idv->onART ? idv->ART_init_CD4 : 0);
 }
 
-string TBStatus(IPt idv, int t) {
+string TBStatus(shared_p<Individual> idv, int t) {
 	switch (idv->tb.GetTBStatus(t)) {
 		case TBStatus::Susceptible: return "Susceptible"; break;
 		case TBStatus::Latent:		return "Latent"; break;

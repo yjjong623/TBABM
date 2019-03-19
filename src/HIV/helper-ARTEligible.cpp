@@ -1,15 +1,15 @@
 #include "../../include/TBABM/TBABM.h"
 #include <Bernoulli.h>
 
+using namespace StatisticalDistributions;
 using EventFunc  = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using namespace StatisticalDistributions;
-
-bool TBABM::ARTEligible(int t, Pointer<Individual> idv)
+bool TBABM::ARTEligible(int t, weak_p<Individual> idv_w)
 {
 	// Ensure individual is still alive, and has HIV
-	if (!idv.use_count())
+	auto idv = idv_w.lock();
+	if (!idv)
 		return true;
 	if (idv->dead || idv->hivStatus == HIVStatus::Negative)
 		return false;

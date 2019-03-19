@@ -4,21 +4,15 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::vector;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
-
-using namespace StatisticalDistributions;
-
 			
-EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
+EventFunc TBABM::VCTDiagnosis(weak_p<Individual> idv_w)
 {
 	EventFunc ef = 
-		[this, idv](double t, SchedulerT scheduler) {
+		[this, idv_w](double t, SchedulerT scheduler) {
 			// printf("[%d] VCTDiagnosis: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 
 			int startYear     = constants["startYear"];
@@ -26,7 +20,10 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 
 			// Make sure the individual is not dead, and has not
 			// already been diagnosed
-			if (!idv || idv->dead || idv->hivDiagnosed) {
+			auto idv = idv_w.lock();
+			if (!idv)
+				return true;
+			if (idv->dead || idv->hivDiagnosed) {
 				// printf("\tDead or already diagnosed\n");
 				return true;
 			}
@@ -63,20 +60,20 @@ EventFunc TBABM::VCTDiagnosis(Pointer<Individual> idv)
 
 				if (ARTEligible(t, idv) && initiateART) {
 					// printf("\tART eligible\n");
-					Schedule(t + 365*timeToDiagnosis, ARTInitiate(idv));
+					Schedule(t + 365*timeToDiagnosis, ARTInitiate(idv_w));
 				}
 				else if (!ARTEligible(t, idv)) {
 					// printf("\tART ineligible\n");
-					seekingART.push_back(idv);
+					seekingART.push_back(idv_w);
 				}
 				else {
 					// printf("\tART eligible, but not initiating\n");
-					seekingART.push_back(idv);
+					seekingART.push_back(idv_w);
 				}
 			}
 			else {
 				// printf("\tNot diagnosed during this period\n");
-				Schedule(t + 365*ageGroupWidth, VCTDiagnosis(idv));
+				Schedule(t + 365*ageGroupWidth, VCTDiagnosis(idv_w));
 			}
 
 			return true;

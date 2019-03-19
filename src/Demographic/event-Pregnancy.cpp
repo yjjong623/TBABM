@@ -3,22 +3,23 @@
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-
-EventFunc TBABM::Pregnancy(Pointer<Individual> mother, 
-						   Pointer<Individual> father)
+EventFunc TBABM::Pregnancy(weak_p<Individual> mother_w, 
+						   weak_p<Individual> father_w)
 {
 	EventFunc ef = 
-		[this, mother, father] (double t, SchedulerT scheduler) {
+		[this, mother_w, father_w] (double t, SchedulerT scheduler) {
 
-			if (!mother || mother->dead)
+			auto mother = mother_w.lock();
+			auto father = father_w.lock();
+
+			if (!mother)
 				return true;
-
-			if (mother->pregnant)
+			if (mother->dead || mother->pregnant)
 				return true;
 
 			mother->pregnant = true;
 
-			Schedule(t + 9*30, Birth(mother, father));
+			Schedule(t + 9*30, Birth(mother_w, father_w));
 
 			return true;
 		};

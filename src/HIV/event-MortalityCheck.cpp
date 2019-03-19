@@ -5,26 +5,24 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T>
-using Pointer = std::shared_ptr<T>;
-
+using namespace StatisticalDistributions;
 using std::vector;
-
 using EventFunc = TBABM::EventFunc;
 using SchedulerT = EventQueue<double,bool>::SchedulerT;
 
-using namespace StatisticalDistributions;
-
-EventFunc TBABM::MortalityCheck(Pointer<Individual> idv)
+EventFunc TBABM::MortalityCheck(weak_p<Individual> idv_w)
 {
 	EventFunc ef = 
-		[this, idv](double t, SchedulerT scheduler) {
+		[this, idv_w](double t, SchedulerT scheduler) {
 			// printf("[%d] MortalityCheck: %ld::%lu\n", (int)t, idv->householdID, std::hash<Pointer<Individual>>()(idv));
 
 			double samplingWidth = 1/12.;
 
 			// Make sure the individual is alive and HIV-positive
-			if (!idv || idv->dead || idv->hivStatus != HIVStatus::Positive)
+			auto idv = idv_w.lock();
+			if (!idv)
+				return true;
+			if (idv->dead || idv->hivStatus != HIVStatus::Positive)
 				return true;
 
 			// Retrieve constant parameters m, p, and m_30
@@ -45,9 +43,9 @@ EventFunc TBABM::MortalityCheck(Pointer<Individual> idv)
 			double timeToMortality = Exponential(M_c)(rng.mt_);
 
 			if (timeToMortality < samplingWidth)
-				Schedule(t + 365.*timeToMortality, Death(idv, DeathCause::HIV));
+				Schedule(t + 365.*timeToMortality, Death(idv_w, DeathCause::HIV));
 			else
-				Schedule(t + 365.*samplingWidth, MortalityCheck(idv));
+				Schedule(t + 365.*samplingWidth, MortalityCheck(idv_w));
 			
 			return true;
 		};

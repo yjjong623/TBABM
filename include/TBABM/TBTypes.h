@@ -4,8 +4,11 @@
 #include <PrevalenceTimeSeries.h>
 #include <DiscreteTimeStatistic.h>
 #include "IndividualTypes.h"
+#include "Pointers.h"
 
 using Time = int;
+
+class TB;
 
 enum class TBStatus {
 	Susceptible, Latent, Infectious
@@ -69,12 +72,14 @@ typedef struct TBQueryHandlers {
 	function<double(Time)> CD4Count;
 	function<HIVStatus(void)> GetHIVStatus;
 	function<double(Time)> GlobalTBPrevalence;
+	function<shared_p<TB>(void)> Lifetime;
 } TBQueryHandlers ;
 
 TBQueryHandlers CreateTBQueryHandlers(function<int(Time)> Age,
 									  function<bool(void)> Alive,
 									  function<double(Time)> CD4Count,
 									  function<HIVStatus(void)> HIVStatus,
-									  function<double(Time)> GlobalTBPrevalence);
+									  function<double(Time)> GlobalTBPrevalence,
+									  function<shared_p<TB>(void)> Lifetime);
 
 typedef IndividualSimContext TBSimContext; // For right now these are the same
