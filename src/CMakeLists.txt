@@ -18,6 +18,7 @@ find_package(Threads)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
+set(CLANG_DEFAULT_CXX_STDLIB "libc++")
 
 # Set Demographic files
 set(demographic_path "${TBABM_SOURCE_DIR}/src/Demographic")
