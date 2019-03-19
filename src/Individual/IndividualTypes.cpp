@@ -5,8 +5,8 @@ CreateIndividualHandlers(function<void(weak_p<Individual>, int, DeathCause)> Dea
 						 function<double(int)> GlobalTBPrevalence)
 {
 	return {
-		Death, 
-		GlobalTBPrevalence, 
+		std::move(Death), 
+		std::move(GlobalTBPrevalence), 
 	};
 }
 

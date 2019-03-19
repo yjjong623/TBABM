@@ -42,11 +42,11 @@ TBQueryHandlers CreateTBQueryHandlers(function<int(Time)> Age,
     }
 
     return {
-        Age,
-        Alive,
-        CD4Count,
-        GetHIVStatus,
-        GlobalTBPrevalence,
-        Lifetime
+        std::move(Age),
+        std::move(Alive),
+        std::move(CD4Count),
+        std::move(GetHIVStatus),
+        std::move(GlobalTBPrevalence),
+        std::move(Lifetime)
     };
 }
