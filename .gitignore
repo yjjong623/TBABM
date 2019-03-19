@@ -1,6 +1,5 @@
 *.a
 *.o
-run-SIRlib
 Makefile
 CMakeCache.txt
 CMakeFiles/
@@ -13,14 +12,11 @@ SIRsim
 *.dSym
 /.vs
 /Debug
-SerialSIRsim
-ParallelSIRsim
 /Win32/Debug/ZERO_CHECK/ZERO_CHECK.log
 /Win32/Debug/ZERO_CHECK
 /Win32/Debug/INSTALL/INSTALL.log
 /Win32/Debug/INSTALL
 /Win32/Debug
-TBABMTestoutput/
 output/
 **/*.xlsx
 .Rproj.user
