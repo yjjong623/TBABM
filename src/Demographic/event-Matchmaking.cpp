@@ -18,25 +18,34 @@ EventFunc TBABM::Matchmaking(void)
 
 			int msSize = maleSeeking.size();
 			int fsSize = femaleSeeking.size();
+
 			int marriages = 0;
 
 			auto it = maleSeeking.begin();
 			for (; it != maleSeeking.end(); it++) {
-				if (femaleSeeking.size() == 0) {
-					break;
+				auto male_w = *it;
+				auto male = (*it).lock();
+
+				if (!male || male->dead) {
+					it = maleSeeking.erase(it);
+					continue;
 				}
+
+				if (femaleSeeking.size() == 0)
+					break;
 
 				auto weights = std::vector<long double>{};
 
 				int j = 0;
 				double denominator = 0;
 
-				auto male_w = *it;
-				auto male = (*it).lock();
 				for (auto it2 = femaleSeeking.begin(); j < 100 && it2 != femaleSeeking.end(); it2++) {
 					auto female = (*it2).lock();
 					
-					assert(male && female);
+					if (!female || female->dead) {
+						it = femaleSeeking.erase(it2);
+						continue;
+					}
 
 					int maleAge = (t - male->birthDate) / 365;
 					int femaleAge = (t - female->birthDate) / 365;

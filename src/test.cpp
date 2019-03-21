@@ -40,20 +40,21 @@ TimeSeriesExport<int> hivDiagnosedVCT;
 TimeSeriesExport<int> hivDiagnosesVCT;
 
 TimeSeriesExport<int> tbInfections;
-TimeSeriesExport<int> tbConversions;
+TimeSeriesExport<int> tbIncidence;
 TimeSeriesExport<int> tbRecoveries;
 
 TimeSeriesExport<int> tbInfectionsHousehold;
 TimeSeriesExport<int> tbInfectionsCommunity;
 
 TimeSeriesExport<int> tbSusceptible;
-TimeSeriesExport<int> tbInfected;
 TimeSeriesExport<int> tbLatent;
 TimeSeriesExport<int> tbInfectious;
+
 TimeSeriesExport<int> tbTreatmentBegin;
 TimeSeriesExport<int> tbTreatmentBeginHIV;
 TimeSeriesExport<int> tbTreatmentEnd;
 TimeSeriesExport<int> tbTreatmentDropout;
+
 TimeSeriesExport<int> tbInTreatment;
 TimeSeriesExport<int> tbCompletedTreatment;
 TimeSeriesExport<int> tbDroppedTreatment;
@@ -97,12 +98,11 @@ bool ExportTrajectory(TBABM& t,
 	auto HIVDiagnosedVCT         = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::HIVDiagnosedVCT);
 	auto HIVDiagnosesVCT         = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::HIVDiagnosesVCT);
 	auto TBInfections            = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBInfections);
-	auto TBConversions           = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBConversions);
+	auto TBIncidence             = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBIncidence);
 	auto TBRecoveries            = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBRecoveries);
 	auto TBInfectionsHousehold   = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBInfectionsHousehold);
 	auto TBInfectionsCommunity   = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBInfectionsCommunity);
 	auto TBSusceptible           = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBSusceptible);
-	auto TBInfected              = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBInfected);
 	auto TBLatent                = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBLatent);
 	auto TBInfectious            = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBInfectious);
 	auto TBTreatmentBegin        = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBTreatmentBegin);
@@ -133,12 +133,11 @@ bool ExportTrajectory(TBABM& t,
 	success &= hivDiagnosedVCT.Add(        std::make_shared<decltype(HIVDiagnosedVCT)>(HIVDiagnosedVCT), i);
 	success &= hivDiagnosesVCT.Add(        std::make_shared<decltype(HIVDiagnosesVCT)>(HIVDiagnosesVCT), i);
 	success &= tbInfections.Add(           std::make_shared<decltype(TBInfections)>(TBInfections), i);
-	success &= tbConversions.Add(          std::make_shared<decltype(TBConversions)>(TBConversions), i);
+	success &= tbIncidence.Add(            std::make_shared<decltype(TBIncidence)>(TBIncidence), i);
 	success &= tbRecoveries.Add(           std::make_shared<decltype(TBRecoveries)>(TBRecoveries), i);
 	success &= tbInfectionsHousehold.Add(  std::make_shared<decltype(TBInfectionsHousehold)>(TBInfectionsHousehold), i);
 	success &= tbInfectionsCommunity.Add(  std::make_shared<decltype(TBInfectionsCommunity)>(TBInfectionsCommunity), i);
 	success &= tbSusceptible.Add(          std::make_shared<decltype(TBSusceptible)>(TBSusceptible), i);
-	success &= tbInfected.Add(             std::make_shared<decltype(TBInfected)>(TBInfected), i);
 	success &= tbLatent.Add(               std::make_shared<decltype(TBLatent)>(TBLatent), i);
 	success &= tbInfectious.Add(           std::make_shared<decltype(TBInfectious)>(TBInfectious), i);
 	success &= tbTreatmentBegin.Add(       std::make_shared<decltype(TBTreatmentBegin)>(TBTreatmentBegin), i);
@@ -191,14 +190,13 @@ bool WriteData(string outputPrefix)
 		hivDiagnosesVCT.Write(outputPrefix + "hivDiagnosesVCT.csv")      &&                  
 		
 		tbInfections.Write(outputPrefix + "tbInfections.csv")         &&                           
-		tbConversions.Write(outputPrefix + "tbConversions.csv")        &&                        
+		tbIncidence.Write(outputPrefix + "tbIncidence.csv")        &&                        
 		tbRecoveries.Write(outputPrefix + "tbRecoveries.csv")         &&                           
 		
 		tbInfectionsHousehold.Write(outputPrefix + "tbInfectionsHousehold.csv")&&
 		tbInfectionsCommunity.Write(outputPrefix + "tbInfectionsCommunity.csv")&&
 		
 		tbSusceptible.Write(outputPrefix + "tbSusceptible.csv")        &&                        
-		tbInfected.Write(outputPrefix + "tbInfected.csv")           &&                                 
 		tbLatent.Write(outputPrefix + "tbLatent.csv")             &&                                       
 		tbInfectious.Write(outputPrefix + "tbInfectious.csv")         &&                           
 		

@@ -62,12 +62,11 @@ public:
 		HIVDiagnosesVCT,
 
 		TBSusceptible,
-		TBInfected,
 		TBLatent,
 		TBInfectious,
 
 		TBInfections,
-		TBConversions,
+		TBIncidence,
 		TBRecoveries,
 
 		TBInfectionsHousehold,
@@ -83,17 +82,6 @@ public:
 		TBTreatmentDropout,
 
 		ActiveHouseholdContacts,
-		// TBSusceptible,
-		// TBLatentTN, 
-		// TBLatentTC, 
-		// TBLatentTCIPT, 
-		// TBLatentTI, 
-		// TBLatent,
-		
-		// TBInfectiveTC, 
-		// TBInfectiveTN, 
-		// TBInfectiveTI, 
-		// TBInfective,
 
 		Marriages,
 		Divorces,
@@ -133,14 +121,13 @@ public:
 		hivDiagnosesVCT("hivDiagnosesVCT", 0, constants["tMax"], constants["periodLength"]),
 
 		tbInfections( "tbInfections",  0, constants["tMax"], constants["periodLength"]),
-		tbConversions("tbConversions", 0, constants["tMax"], constants["periodLength"]),
+		tbIncidence(  "tbIncidence"  , 0, constants["tMax"], constants["periodLength"]),
 		tbRecoveries( "tbRecoveries",  0, constants["tMax"], constants["periodLength"]),
 
 		tbInfectionsHousehold( "tbInfectionsHousehold",  0, constants["tMax"], constants["periodLength"]),
 		tbInfectionsCommunity( "tbInfectionsCommunity",  0, constants["tMax"], constants["periodLength"]),
 
 		tbSusceptible("tbSusceptible", constants["tMax"], constants["periodLength"]),
-		tbInfected(   "tbInfected",    constants["tMax"], constants["periodLength"]),
 		tbLatent(     "tbLatent",      constants["tMax"], constants["periodLength"]),
 		tbInfectious( "tbInfectious",  constants["tMax"], constants["periodLength"]),
 
@@ -174,9 +161,9 @@ public:
 					 std::make_shared<Params>(params),
 					 std::make_shared<map<string, DataFrameFile>>(fileData),
 					 eq,
-					 {tbInfections, tbConversions, tbRecoveries, \
+					 {tbInfections, tbIncidence, tbRecoveries, \
 					  tbInfectionsHousehold, tbInfectionsCommunity,
-					  tbSusceptible, tbInfected, tbLatent, tbInfectious, \
+					  tbSusceptible, tbLatent, tbInfectious, \
 					  tbTreatmentBegin, tbTreatmentBeginHIV, tbTreatmentEnd, tbTreatmentDropout, \
 					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment, activeHouseholdContacts},
 					 CreateIndividualHandlers([this] (weak_ptr<Individual> i, int t, DeathCause dc) -> void \
@@ -227,14 +214,13 @@ private:
 	IncidencePyramidTimeSeries  hivInfectionsPyramid;
 
 	IncidenceTimeSeries<int>  tbInfections;  // Individuals transitioning from S to L
-	IncidenceTimeSeries<int>  tbConversions; // Individuals transitioning from L to I
+	IncidenceTimeSeries<int>  tbIncidence;   // Individuals transitioning from L to I
 	IncidenceTimeSeries<int>  tbRecoveries;  // Individuals transitioning from I to L
 
 	IncidenceTimeSeries<int>  tbInfectionsHousehold; // Individuals infected by household member
 	IncidenceTimeSeries<int>  tbInfectionsCommunity; // Individuals infected by community
 
 	PrevalenceTimeSeries<int> tbSusceptible; // # Individuals in S
-	PrevalenceTimeSeries<int> tbInfected;    // # Individuals in L or I
 	PrevalenceTimeSeries<int> tbLatent;      // # Individuals in L
 	PrevalenceTimeSeries<int> tbInfectious;  // # Individuals in I
 

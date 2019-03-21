@@ -39,7 +39,7 @@ public:
 	   string name,
 	   Sex sex,
 
-	   double risk_window = 6*30, // unit: [days]
+	   double risk_window = 3*30, // unit: [days]
 	   
 	   TBStatus tb_status = TBStatus::Susceptible) :
 		AgeStatus(initQueryHandlers.Age),
@@ -120,8 +120,6 @@ private:
 
 	// Marks an individual as latently infected. May transition
 	// to infectous TB through reactivation.
-	// 
-	// NOTE: Reinfection not implemented
 	void InfectLatent(Time, Source, StrainType);
 
 	// Marks an individual as infectous and may or may not

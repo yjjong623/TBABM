@@ -27,20 +27,24 @@ enum class RecoveryType {Natural, Treatment};
 typedef struct TBHistoryItem {
 	int t_infection;
 	Source source;
+	StrainType strain;
 
-	TBHistoryItem(int t, Source s) : t_infection(t), source(s) {};
+	TBHistoryItem(int t, 
+				  Source s, 
+				  StrainType strain) : t_infection(t), 
+									   source(s),
+									   strain(strain) {};
 } TBHistoryItem;
 
 typedef struct TBData {
 	IncidenceTimeSeries<int>& tbInfections;  // Individuals transitioning from S to L
-	IncidenceTimeSeries<int>& tbConversions; // Individuals transitioning from L to I
+	IncidenceTimeSeries<int>& tbIncidence;   // Individuals transitioning from L to I
 	IncidenceTimeSeries<int>& tbRecoveries;  // Individuals transitioning from I to L
 
 	IncidenceTimeSeries<int>& tbInfectionsHousehold; // Individuals infected by household member
 	IncidenceTimeSeries<int>& tbInfectionsCommunity; // Individuals infected by community
 
 	PrevalenceTimeSeries<int>&     tbSusceptible; // # Individuals in S
-	PrevalenceTimeSeries<int>&     tbInfected;    // # Individuals in L or I
 	PrevalenceTimeSeries<int>&     tbLatent;      // # Individuals in L
 	PrevalenceTimeSeries<int>&     tbInfectious;  // # Individuals in I
 

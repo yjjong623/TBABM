@@ -1,4 +1,8 @@
 library(tidyverse)
+library(future)
+library(purrr)
+library(furrr)
+
 source("R/utils_csv.R")
 source("R/graphs_general.R")
 source("R/graphs_population.R")
@@ -11,12 +15,13 @@ source("R/multiplot.R")
 GetLatestPrefix <- function(location) paste(location, FindLatestTimestamp(location), "_", sep="")
 GetPrefix <- function(location, timestamp) paste(location, timestamp, "_", sep="")
 
-deathRatePyramid <- function (Loader)
+deathRatePyramid <- function (Loader) {
   left_join(Loader("deathPyramid"), 
-            Loader("populationPyramid"), 
+            Loader("pyramid"), 
             by=c("period", "trajectory", "age group", "category")) %>%
         mutate(value = 1000*value.x/(value.y + 1)) %>%
         AveragedPyramid_impl("Age group", "Deaths/1,000/yr")
+}
 
 CreateGraphCatalog <- function(outputLocation, run="latest") {
   
@@ -33,7 +38,7 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     ds                    = ds,
     
     deathRatePyramid      = function() deathRatePyramid(Loader),
-    populationPyramid     = function() Pyramid(Loader, "populationPyramid", "Count", "Age group"),
+    populationPyramid     = function() Pyramid(Loader, "pyramid", "Count", "Age group"),
     deathPyramid          = function() Pyramid(Loader, "deathPyramid"),
     populationProportion  = function() ProportionPyramid(Loader, "populationPyramid", "Age group", "Proportion"),
     birthRate             = function() GraphRate(Loader, "births", "populationSize", 1000, "Time (years)", "Birth rate (births/1,000/year)") + ggtitle("Birth rate over 50 years"),
@@ -67,15 +72,14 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     hivSurvivalNoART      = function() hivSurvivalNoART(ds),
     
     # All seems to check out, but are the rates realistic?
-    tbInfections          = function() Graph(Loader, "tbInfections", "Time (years)", "Infections/year") + ggtitle("Infections"),
-    tbConversions         = function() Graph(Loader, "tbConversions", "Time (years)", "Conversions/year") + ggtitle("Conversions Latent->Active"),
+    tbInfections          = function() Graph(Loader, "tbInfections", "Time (years)", "Infections/year") + ggtitle("Infections S->L"),
+    tbIncidence           = function() Graph(Loader, "tbIncidence", "Time (years)", "Conversions/year") + ggtitle("Incidence Latent->Active"),
     tbRecoveries          = function() Graph(Loader, "tbRecoveries", "Time (years)", "Recoveries/year") + ggtitle("Recoveries"),
     
     tbTransmission        = function() tbTransmission(Loader),
     
     # At end there are supposedly 8k Susceptible, but probably some of them are dead. Check
     tbSusceptible         = function() Graph(Loader, "tbSusceptible", "Time (years)", ""),
-    tbInfected            = function() Graph(Loader, "tbInfected", "Time (years)", ""),
     tbLatent              = function() Graph(Loader, "tbLatent", "Time (years)", ""), # Good, seems like most people's TB never progresses
     tbInfectious          = function() Graph(Loader, "tbInfectious", "Time (years)", ""), # This is fixed now
     
@@ -112,7 +116,7 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
 outputLocation <- "/Users/marcusrussi/Desktop/Yaesoubi-Cohen-Lab/repos/TBABM/output/"
 cat <- CreateGraphCatalog(outputLocation)
 
-
+cat$deathPyramid()
 
 
 
@@ -156,7 +160,8 @@ grid <- function(Loader, namesMap, startYear) {
         labs(x="Year", y=item$y, title=title)
   }
   
-  map(names(namesMap), lambda)
+  plan(multicore)
+  future_map(names(namesMap), lambda)
 }
 
 nIdv <- "Number of individuals"
@@ -176,12 +181,12 @@ bigMap  <- list(birthRate         = list(data=c("births", "populationSize"), tit
                 tbSusceptible     = list(title="TB-Susceptible Individuals", y=nIdv),
                 tbLatent          = list(title="Latently-infected individuals", y=nIdv), 
                 tbInfectious      = list(title="Actively-infected individuals", y=nIdv),
-                tbConversions     = list(title="TB Conversions, all individuals", y="Infections/year"),
                 tbInfections      = list(title="TB Infections, all individuals", y="Infections/year"),
+                tbIncidence       = list(title="TB Incidence, all individuals", y="Active incidence/year"),
                 tbRecoveries      = list(title="TB Recoveries, all individuals", y="Recoveries/year"),
                 tbTreatmentBegin     = list(title="TB case notifications, all", y="Case notifications/year"),
                 tbTreatmentEnd     = list(title="TB Treatment Completion", y="Completions/year"),
-                tbTreatmentDropout     = list(title="TB Treatment Dropous", y="Dropouts/year"))
+                tbTreatmentDropout     = list(title="TB Treatment Dropout", y="Dropouts/year"))
 
 mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", y="Number of case notifications"),
                  populationSize       = list(title="All individuals", y="Number of individuals"),
@@ -194,6 +199,15 @@ mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notificati
                  tbInfectious         = list(data=c("tbInfectious", "populationSize"), title="Adults", y="Tuberculosis prevalence (%)", factor=100))
 
 #do.call(multiplot, flatten(list(grid(cat$Loader, testMap, 1990), cols=3)))
+
+reviewLatestModelRun <- function () do.call(multiplot, flatten(list(grid(CreateGraphCatalog(outputLocation)$Loader, bigMap, 1990), cols=4)))
+reviewLatestModelRun()
+
+
+
+
+
+
 do.call(multiplot, flatten(list(grid(cat$Loader, bigMap, 1990), cols=4)))
 do.call(multiplot, flatten(list(grid(cat$Loader, mimicMap, 1990), cols=3)))
 

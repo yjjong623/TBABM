@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.3)
-project (TBABM)
+project(TBABM)
 
 find_package(Boost REQUIRED)
 find_package(SimulationLib REQUIRED)

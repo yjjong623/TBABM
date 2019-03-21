@@ -6,7 +6,10 @@ void Household::AddIndividual(shared_p<Individual> idv, int t, HouseholdPosition
 		return;
 
 	// Avoid adding a dead individual to the household
-	assert(!idv->dead);
+	if (idv->dead) {
+		printf("DEAD INDIVIDUAL WAS ALMOST ADDED!!!!!!!\n");;
+		return;
+	}
 
 	// Update role and HID for new household member
 	idv->householdPosition = hp;

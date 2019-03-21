@@ -1,22 +1,31 @@
 #include "../../include/TBABM/TB.h"
 
 void
-TB::Recovery(Time t, RecoveryType)
+TB::Recovery(Time t, RecoveryType r)
 {
-	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts, auto) -> bool {
+	auto lambda = [this, r, lifetm = GetLifetimePtr()] (auto ts, auto) -> bool {
 		if (!AliveStatus())
 			return true;
 
-		// Log(ts, "TB recovery");
+		// Log(ts, string("TB recovery: ") + (r == RecoveryType::Natural ? "natural" : "treatment"));
 
 		data.tbRecoveries.Record((int)ts, +1);
-		data.tbInfectious.Record((int)ts, -1);
-		data.tbLatent.Record((int)ts, +1);
 
 		tb_status = TBStatus::Latent;
 
-		if (RecoveryHandler)
+		// If they recovered and it's not because they achieved treatment
+		// completion, call the RecoveryHandler
+		if (RecoveryHandler && \
+			tb_treatment_status != TBTreatmentStatus::Complete)
 			RecoveryHandler(ts);
+
+		// Set up periodic evaluation for reinfection
+		InfectionRiskEvaluate(ts, risk_window);
+
+		// Set up one-time sample for reactivation
+		InfectLatent(ts, 
+					 Source::Global, 
+					 StrainType::Unspecified);
 
 		return true;
 	};

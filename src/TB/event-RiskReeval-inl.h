@@ -24,6 +24,12 @@ TB::RiskReeval(Time t)
 
 		// /END CONDITIONS THAT MAY CHANGE RISK WINDOW
 
+		// If you have active disease, you shouldn't be running
+		// 'InfectionRiskEvaluate' in the first place
+		if (tb_status != TBStatus::Susceptible && \
+			tb_status != TBStatus::Latent)
+			return true;
+
 		risk_window_id += 1;
 
 		InfectionRiskEvaluate(ts, risk_window_id);

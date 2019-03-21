@@ -27,7 +27,6 @@ TBABM::GetData<PrevalenceTimeSeries<int>>(TBABMData field)
         case TBABMData::HIVDiagnosedVCT: return hivDiagnosedVCT;
 
         case TBABMData::TBSusceptible:   return tbSusceptible;
-        case TBABMData::TBInfected:      return tbInfected;
         case TBABMData::TBLatent:        return tbLatent;
         case TBABMData::TBInfectious:    return tbInfectious;
 
@@ -58,7 +57,7 @@ TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
         case TBABMData::HIVDiagnosesVCT: return hivDiagnosesVCT;
 
         case TBABMData::TBInfections:    return tbInfections;
-        case TBABMData::TBConversions:   return tbConversions;
+        case TBABMData::TBIncidence:     return tbIncidence;
         case TBABMData::TBRecoveries:    return tbRecoveries;
 
         case TBABMData::TBInfectionsHousehold: return tbInfectionsHousehold;
@@ -137,13 +136,13 @@ bool TBABM::Run(void)
     int events_processed {0};
 
     while (!eq.Empty()) {
-        auto e = std::move(eq.Top());
+        auto e = eq.Top();
         if (e->t > constants["tMax"])
             break;
 
+        assert(e);
         e->run();
         eq.Pop();
-        // assert(e.unique());
         events_processed += 1;
     }
 
@@ -189,14 +188,13 @@ bool TBABM::Run(void)
     hivDiagnosesVCT.Close();
 
     tbInfections.Close();
-    tbConversions.Close();
+    tbIncidence.Close();
     tbRecoveries.Close();
 
     tbInfectionsHousehold.Close();
     tbInfectionsCommunity.Close();
 
     tbSusceptible.Close();
-    tbInfected.Close();
     tbLatent.Close();
     tbInfectious.Close();
 

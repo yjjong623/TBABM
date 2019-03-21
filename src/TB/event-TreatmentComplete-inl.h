@@ -14,8 +14,8 @@ TB::TreatmentComplete(Time t)
 
 		tb_treatment_status = TBTreatmentStatus::Complete;
 
-		// Recovery(ts, RecoveryType::Treatment);
-		
+		Recovery(ts, RecoveryType::Treatment);
+
 		return true;
 	};
 

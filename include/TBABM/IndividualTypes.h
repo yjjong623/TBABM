@@ -42,26 +42,25 @@ enum class DeathCause {
 
 
 typedef struct IndividualInitData {
-	IncidenceTimeSeries<int>&  tbInfections;  // Individuals transitioning from S to L
-	IncidenceTimeSeries<int>&  tbConversions; // Individuals transitioning from L to I
-	IncidenceTimeSeries<int>&  tbRecoveries;  // Individuals transitioning from I to L
+	IncidenceTimeSeries<int>& tbInfections;  // Individuals transitioning from S to L
+	IncidenceTimeSeries<int>& tbIncidence;   // Individuals transitioning from L to I
+	IncidenceTimeSeries<int>& tbRecoveries;  // Individuals transitioning from I to L
 
 	IncidenceTimeSeries<int>& tbInfectionsHousehold; // Individuals infected by household member
 	IncidenceTimeSeries<int>& tbInfectionsCommunity; // Individuals infected by community
 
-	PrevalenceTimeSeries<int>& tbSusceptible; // # Individuals in S
-	PrevalenceTimeSeries<int>& tbInfected;    // # Individuals in L or I
-	PrevalenceTimeSeries<int>& tbLatent;      // # Individuals in L
-	PrevalenceTimeSeries<int>& tbInfectious;  // # Individuals in I
+	PrevalenceTimeSeries<int>&     tbSusceptible; // # Individuals in S
+	PrevalenceTimeSeries<int>&     tbLatent;      // # Individuals in L
+	PrevalenceTimeSeries<int>&     tbInfectious;  // # Individuals in I
 
-	IncidenceTimeSeries<int>&  tbTreatmentBegin;   // Individuals initiating treatment
-	IncidenceTimeSeries<int>&  tbTreatmentBeginHIV;// Initiating treatment and HIV+
-	IncidenceTimeSeries<int>&  tbTreatmentEnd;     // Individuals completing treatment
-	IncidenceTimeSeries<int>&  tbTreatmentDropout; // Individuals dropping out
+	IncidenceTimeSeries<int>& tbTreatmentBegin;   // Individuals initiating treatment
+	IncidenceTimeSeries<int>& tbTreatmentBeginHIV;// Initiating treatment and HIV+
+	IncidenceTimeSeries<int>& tbTreatmentEnd;     // Individuals completing treatment
+	IncidenceTimeSeries<int>& tbTreatmentDropout; // Individuals dropping out
 
-	PrevalenceTimeSeries<int>& tbInTreatment;        // Individuals in treatment
-	PrevalenceTimeSeries<int>& tbCompletedTreatment; // Individuals who completed
-	PrevalenceTimeSeries<int>& tbDroppedTreatment;   // Individuals who dropped
+	PrevalenceTimeSeries<int>&     tbInTreatment;        // Individuals in treatment
+	PrevalenceTimeSeries<int>&     tbCompletedTreatment; // Individuals who completed
+	PrevalenceTimeSeries<int>&     tbDroppedTreatment;   // Individuals who dropped
 
 	DiscreteTimeStatistic& activeHouseholdContacts; // For each individual diagnosed with active TB,
 													// the percentage of household contacts who have

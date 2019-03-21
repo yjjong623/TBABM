@@ -3,12 +3,11 @@
 TBData CreateTBData(IndividualInitData data) {
 	return {
         data.tbInfections,
-        data.tbConversions,
+        data.tbIncidence,
         data.tbRecoveries,
         data.tbInfectionsHousehold,
         data.tbInfectionsCommunity,
         data.tbSusceptible,
-        data.tbInfected,
         data.tbLatent,
         data.tbInfectious,
         data.tbTreatmentBegin,

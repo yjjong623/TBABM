@@ -9,7 +9,7 @@ Time to divorce,timeToDivorce,v,Weibull,(alpha-beta),1.3685,12.5257,,,F
 Probability of divorce,probabilityOfDivorce,v,Bernoulli,p,0.035,,,,T
 Leaving household,leavingHousehold,v,Exponential,(rate-shift),0.00000000001,0.0,,,T
 Time to looking,timeToLooking,f,../params/Demographic/time to looking.json,,,,,,
-Time to looking – scale,timeToLookingScale,v,Constant,(value),1.35,,,,F
+Time to looking – scale,timeToLookingScale,v,Constant,(value),0.45,,,,F
 Time in marriage,timeInMarriage,f,../params/Demographic/time in marriage.json,,,,,,
 Time to death,naturalDeath,f,../params/Demographic/time to natural death bestdata.json,,,,,,
 Probability of being pregnant,probabilityOfPregnant,f,../params/Demographic/probability of pregnant.json,,,,,,
@@ -26,16 +26,14 @@ HIV mortality rate - m,HIV_m,v,Constant,(value),0.9,,,,F
 HIV mortality rate - p,HIV_p,v,Constant,(value),0.02,,,,F
 HIV prevalence - 1990,HIV_prevalence_1990,f,../params/HIV/prevalence - 1990.json,,,,,,
 Exogenous birth rate,annualBirthRate,v,Constant,(value),0.02,,,,F
-TB - Risk of infection,TB_risk,v,Exponential,(rate-shift),0.05,0,,,T
-TB - Global infection constant,TB_risk_global,v,Constant,(value),5,,,,T
-TB - Household infection constant,TB_risk_household,v,Constant,(value),5,,,,T
+TB - Initial infection probability,TB_p_init_infect,v,Bernoulli,p,0.2,,,,T
+TB - Global infection constant,TB_risk_global,v,Constant,(value),0.3,,,,T
+TB - Household infection constant,TB_risk_household,v,Constant,(value),1,,,,T
 TB - Prob of immediate progression,TB_rapidprog_risk,v,Bernoulli,p,0.10,,,,T
-TB - Prob of slow progression,TB_prog_risk,v,Bernoulli,p,0.15,,,,T
-TB - Time to progression,TB_prog_time,v,Normal,(mu-sigma),10,2,,,T
-TB - Prob of entering treatment,TB_Tx_init,v,Bernoulli,p,0.5,,,,T
-TB - Prob of natural recovery,TB_p_recov,v,Bernoulli,p,0.5,,,,T
-TB - Time to recovery from conv,TB_t_recov,v,Exponential,(rate-shift),0.15,0,,,T
-TB - Time to death w/o Tx,TB_t_death,v,Exponential,(rate-shift),0.25,0,,,T
-TB - Prob of completing treatment,TB_p_Tx_cmp,v,Bernoulli,p,0.93,,,,T
-TB - Time to complete treatment,TB_t_Tx_cmp,v,Constant,(value),0.50,,,,T
-TB - Time to dropout from Tx init,TB_t_Tx_drop,v,Constant,(value),0.42,,,,T
+TB - Time to progression,TB_prog_time,v,Exponential,(rate-shift),0.0035,0,,,T
+TB - Time to death from conv,TB_t_death,v,Exponential,(rate-shift),.285,0,,,T
+TB - Time to seek Tx from conv,TB_t_seek_tx,v,Exponential,(rate-shift),1,0,,,T
+TB - Time to recovery from conv,TB_t_recov,v,Exponential,(rate-shift),0.2,0,,,T
+TB - Prob of completing treatment,TB_p_Tx_cmp,v,Bernoulli,p,1.00,,,,T
+TB - Time to complete treatment,TB_t_Tx_cmp,v,Exponential,(rate-shift),2,0,,,T
+TB - Time to dropout from Tx init,TB_t_Tx_drop,v,Exponential,(rate-shift),3,0,,,T

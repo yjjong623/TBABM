@@ -21,9 +21,9 @@ TB::GetTBStatus(Time t)
 
 void
 TB::SetHouseholdCallbacks(function<void(Time)>       progression, 
-                             function<void(Time)>       recovery,
-                             function<double(void)>     householdPrevalence,
-                             function<double(TBStatus)> contactHouseholdPrevalence)
+                          function<void(Time)>       recovery,
+                          function<double(void)>     householdPrevalence,
+                          function<double(TBStatus)> contactHouseholdPrevalence)
 {
     assert(progression && 
            recovery && 
@@ -59,12 +59,17 @@ TB::HandleDeath(Time t)
     switch(tb_status) {
         case (TBStatus::Susceptible):
             data.tbSusceptible.Record(t, -1); break;
+
         case (TBStatus::Latent):
-            data.tbLatent.Record(t, -1);
-            data.tbInfected.Record(t, -1); break;
+            data.tbLatent.Record(t, -1); break;
+
         case (TBStatus::Infectious):
-            data.tbInfectious.Record(t, -1); break;
-            data.tbInfected.Record(t, -1); break;
+          // Remember, while people are in treatment, they are 
+          // still considered infectious
+          if (tb_treatment_status != TBTreatmentStatus::Incomplete)
+            data.tbInfectious.Record(t, -1);
+          break;
+
         default: std::cout << "Error: UNSUPPORTED TBStatus!" << std::endl;
     }
 

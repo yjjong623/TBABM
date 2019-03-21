@@ -23,19 +23,24 @@ TB::TreatmentBegin(Time t)
 		data.tbTreatmentBegin.Record((int)ts, +1);
 		data.activeHouseholdContacts.Record(ContactHouseholdTBPrevalence(tb_status));
 
+
+		data.tbInfectious.Record((int)ts, -1);
+		// printf("Incidence for time %d: %d\n", (int)ts, data.tbIncidence((int)ts));
+		// printf("Prevalence for time %d: %d\n", (int)ts, data.tbInfectious((int)ts));
+		
 		// If HIV+, record
 		if (GetHIVStatus() == HIVStatus::Positive)
 			data.tbTreatmentBeginHIV.Record((int)ts, +1);
 
 		tb_treatment_status = TBTreatmentStatus::Incomplete;
 
-		Recovery(ts, RecoveryType::Treatment);
+		if (RecoveryHandler)
+			RecoveryHandler(ts);
 
-		if (params["TB_p_Tx_cmp"].Sample(rng)) {// Will they complete treatment? Assume 93% yes
+		if (params["TB_p_Tx_cmp"].Sample(rng)) // Will they complete treatment? Assume 100% yes
 			TreatmentComplete(ts + 365*params["TB_t_Tx_cmp"].Sample(rng));
-		} else {
-			TreatmentDropout(ts + 365*params["TB_t_Tx_drop"].Sample(rng)); // Assume 0.42 years
-		}
+		else
+			TreatmentDropout(ts + 365*params["TB_t_Tx_drop"].Sample(rng)); // Assume 0.33 years
 
 		return true;
 	};
