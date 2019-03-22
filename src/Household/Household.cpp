@@ -192,7 +192,9 @@ double Household::ActiveTBPrevalence(int t) {
 }
 
 double Household::ContactActiveTBPrevalence(TBStatus s) {
-	assert(nIndividuals >= nInfectiousTBIndivduals);
+	if(nIndividuals < nInfectiousTBIndivduals) {
+		printf("warn\n");
+	}
 	assert(nIndividuals > 0);
 
 	if (nIndividuals == 1)

@@ -68,7 +68,7 @@ TB::InfectionRiskEvaluate_impl(Time t, int risk_window_local, shared_p<TB> l_ptr
 			InfectLatent(t + 365*master_infection_time, infection_source, StrainType::Unspecified);
 
 	} else {
-		InfectionRiskEvaluate(t + risk_window, risk_window_local);
+		InfectionRiskEvaluate(t + risk_window, risk_window_local, std::move(l_ptr));
 	}
 
 	return true;	
@@ -78,7 +78,7 @@ void
 TB::InfectionRiskEvaluate(Time t, int risk_window_local, shared_p<TB> l_ptr)
 {
 	if (!l_ptr)
-		l_ptr = GetLifetimePtr();
+		return;
 
 	auto lambda = [this, risk_window_local, l_ptr] (auto ts, auto) -> bool {
 		return InfectionRiskEvaluate_impl(ts, risk_window_local, l_ptr);
@@ -89,13 +89,17 @@ TB::InfectionRiskEvaluate(Time t, int risk_window_local, shared_p<TB> l_ptr)
 }
 
 void
-TB::InfectionRiskEvaluate_initial(Time t, int risk_window_local)
+TB::InfectionRiskEvaluate_initial(int local_risk_window)
 {
+	assert(this);
 	auto lambda = [this, 
-				   risk_window_local] (auto ts, auto) -> bool {
-		return InfectionRiskEvaluate_impl(ts, risk_window_local);
+				   local_risk_window,
+				   l_ptr = GetLifetimePtr()] (auto ts, auto) -> bool {
+		return InfectionRiskEvaluate_impl(ts, local_risk_window, l_ptr);
 	};
 
-	eq.QuickSchedule(t, lambda);
+	double firstRiskEval = Uniform(0, risk_window)(rng.mt_);
+
+	eq.QuickSchedule(init_time + firstRiskEval, lambda);
 	return;
 }

@@ -15,8 +15,7 @@ TB::Recovery(Time t, RecoveryType r)
 
 		// If they recovered and it's not because they achieved treatment
 		// completion, call the RecoveryHandler
-		if (RecoveryHandler && \
-			tb_treatment_status != TBTreatmentStatus::Complete)
+		if (RecoveryHandler && r == RecoveryType::Natural)
 			RecoveryHandler(ts);
 
 		// Set up periodic evaluation for reinfection

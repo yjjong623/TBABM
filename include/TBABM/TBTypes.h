@@ -18,7 +18,7 @@ enum class TBTreatmentStatus {
 	None, Incomplete, Complete, Dropout
 };
 
-enum class Source {Global, Household};
+enum class Source {Global, Household, Reactivation};
 
 enum class StrainType {Unspecified};
 

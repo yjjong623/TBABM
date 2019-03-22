@@ -65,21 +65,9 @@ public:
 		tb_status(tb_status),
 		tb_treatment_status(TBTreatmentStatus::None),
 		tb_history({}),
-		risk_window_id(0)
+		risk_window_id(0),
+		init_time(initCtx.current_time)
 	{
-		double firstRiskEval = Uniform(0, risk_window)(rng.mt_);
-
-		// Forcing first risk evaluation to occur at initialization to avoid
-		// bug where dead individual tries to do an initial InfectionRiskEvaluation.
-		// This is a consquence of the fact that an aliasing constructor for a
-		// this-pointer cannot be created in the TB constructor – the Individual
-		// object has not finished construction and thus such a pointer is unavailable,
-		// probably. However, more research should be done into object init to figure
-		// out the first point where the 'this' pointer exists. If 'this' DOES
-		// indeed exist by this point, it will be possible to make sure the Individual
-		// object is not deleted before the first call to InfectionRiskEvaluate.
-		InfectionRiskEvaluate_initial(initCtx.current_time + 0/*firstRiskEval*/, 0);
-
 		data.tbSusceptible.Record(initCtx.current_time, +1);
 	}
 
@@ -91,8 +79,8 @@ public:
 							   function<double(TBStatus)> contactHouseholdPrevalence);
 	void ResetHouseholdCallbacks(void);
 
+	void InfectionRiskEvaluate_initial(int local_risk_window = 0);
 	void RiskReeval(Time);
-	void Investigate(void);
 
 	// Called by containing Individual upon death, neccessary
 	// to update TimeSeries data.
@@ -115,7 +103,6 @@ private:
 	// When scheduling an infection, the only StrainType
 	// supported right now is 'Unspecified'.
 	void InfectionRiskEvaluate(Time, int local_risk_window = 0, shared_p<TB> = {});
-	void InfectionRiskEvaluate_initial(Time, int local_risk_window = 0);
 	bool InfectionRiskEvaluate_impl(Time, int local_risk_window = 0, shared_p<TB> = {});
 
 	// Marks an individual as latently infected. May transition
@@ -159,6 +146,8 @@ private:
 	RNG& rng;
 	map<string, DataFrameFile>& fileData;
 	Params& params;
+
+	int init_time;
 
 	TBData data;
 

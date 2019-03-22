@@ -44,15 +44,6 @@ TB::ResetHouseholdCallbacks(void)
     HouseholdTBPrevalence = nullptr;
 }
 
-
-
-void
-TB::Investigate(void)
-{
-    printf("TB::Investigate\n");
-    return;
-}
-
 void
 TB::HandleDeath(Time t)
 {

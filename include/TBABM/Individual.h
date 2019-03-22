@@ -233,5 +233,7 @@ makeIndividual(Ts&&... params)
 	std::shared_ptr<Individual>
 		ptr(new Individual(std::forward<Ts>(params)...), deleter);
 
+	ptr->tb.InfectionRiskEvaluate_initial();
+
 	return ptr;
 }
