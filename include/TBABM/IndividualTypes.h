@@ -2,6 +2,7 @@
 
 #include <IncidenceTimeSeries.h>
 #include <PrevalenceTimeSeries.h>
+#include <PrevalencePyramidTimeSeries.h>
 #include <DiscreteTimeStatistic.h>
 #include <EventQueue.h>
 #include <RNG.h>
@@ -49,18 +50,21 @@ typedef struct IndividualInitData {
 	IncidenceTimeSeries<int>& tbInfectionsHousehold; // Individuals infected by household member
 	IncidenceTimeSeries<int>& tbInfectionsCommunity; // Individuals infected by community
 
-	PrevalenceTimeSeries<int>&     tbSusceptible; // # Individuals in S
-	PrevalenceTimeSeries<int>&     tbLatent;      // # Individuals in L
-	PrevalenceTimeSeries<int>&     tbInfectious;  // # Individuals in I
+	PrevalenceTimeSeries<int>& tbSusceptible; // # Individuals in S
+	PrevalenceTimeSeries<int>& tbLatent;      // # Individuals in L
+	PrevalenceTimeSeries<int>& tbInfectious;  // # Individuals in I
+	PrevalenceTimeSeries<int>& tbExperienced; // # Individuals who are experienced with TB (L or I)
+
+	PrevalencePyramidTimeSeries& tbExperiencedPyr; // Pyramid of the above
 
 	IncidenceTimeSeries<int>& tbTreatmentBegin;   // Individuals initiating treatment
 	IncidenceTimeSeries<int>& tbTreatmentBeginHIV;// Initiating treatment and HIV+
 	IncidenceTimeSeries<int>& tbTreatmentEnd;     // Individuals completing treatment
 	IncidenceTimeSeries<int>& tbTreatmentDropout; // Individuals dropping out
 
-	PrevalenceTimeSeries<int>&     tbInTreatment;        // Individuals in treatment
-	PrevalenceTimeSeries<int>&     tbCompletedTreatment; // Individuals who completed
-	PrevalenceTimeSeries<int>&     tbDroppedTreatment;   // Individuals who dropped
+	PrevalenceTimeSeries<int>& tbInTreatment;        // Individuals in treatment
+	PrevalenceTimeSeries<int>& tbCompletedTreatment; // Individuals who completed
+	PrevalenceTimeSeries<int>& tbDroppedTreatment;   // Individuals who dropped
 
 	DiscreteTimeStatistic& activeHouseholdContacts; // For each individual diagnosed with active TB,
 													// the percentage of household contacts who have

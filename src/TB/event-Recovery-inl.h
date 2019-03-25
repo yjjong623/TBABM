@@ -21,14 +21,14 @@ TB::Recovery(Time t, RecoveryType r)
 		// Set up periodic evaluation for reinfection
 		InfectionRiskEvaluate(ts, risk_window);
 
-		// Set up one-time sample for reactivation
+		// // Set up one-time sample for reactivation
 		InfectLatent(ts, 
 					 Source::Global, 
 					 StrainType::Unspecified);
 
 		return true;
 	};
-
+	
 	eq.QuickSchedule(t, lambda);
 
 	return;

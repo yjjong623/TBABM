@@ -7,10 +7,13 @@
 void
 TB::InfectInfectious(Time t, Source s, StrainType)
 {
-	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts, auto) {
+	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts_, auto) {
+		auto ts = static_cast<int>(ts_);
+
 		if (!AliveStatus())
 			return true;
 
+		// You can't become infectious if you're already infectious
 		if (tb_status == TBStatus::Infectious)
 			return true;
 
@@ -23,15 +26,12 @@ TB::InfectInfectious(Time t, Source s, StrainType)
 		risk_window += 1;
 
 		if (tb_status == TBStatus::Latent)
-			data.tbLatent.Record((int)ts, -1);
+			data.tbLatent.Record(ts, -1);
 		if (tb_status == TBStatus::Susceptible)
-			data.tbSusceptible.Record((int)ts, -1);
+			data.tbSusceptible.Record(ts, -1);
 
-		data.tbInfectious.Record((int)ts, +1);
-		data.tbIncidence.Record((int)ts, +1);
-
-		// printf("Incidence for time %d: %d\n", (int)ts, data.tbIncidence((int)ts));
-		// printf("Prevalence for time %d: %d\n", (int)ts, data.tbInfectious((int)ts));
+		data.tbInfectious.Record(ts, +1);
+		data.tbIncidence.Record(ts, +1);
 
 		// Mark as infectious
 		tb_status = TBStatus::Infectious;

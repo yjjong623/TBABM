@@ -65,6 +65,8 @@ public:
 		TBLatent,
 		TBInfectious,
 
+		TBExperienced,
+
 		TBInfections,
 		TBIncidence,
 		TBRecoveries,
@@ -131,6 +133,9 @@ public:
 		tbLatent(     "tbLatent",      constants["tMax"], constants["periodLength"]),
 		tbInfectious( "tbInfectious",  constants["tMax"], constants["periodLength"]),
 
+		tbExperienced("tbExperienced", constants["tMax"], constants["periodLength"]),
+		tbExperiencedPyr("tbExperiencedPyr", 0, constants["tMax"], constants["periodLength"], 2, {0, 15, 30, 45, 60, 75}),
+
 		tbTreatmentBegin(   "tbTreatmentBegin",   0, constants["tMax"], constants["periodLength"]),
 		tbTreatmentBeginHIV("tbTreatmentBeginHIV",0, constants["tMax"], constants["periodLength"]),
 		tbTreatmentEnd(     "tbTreatmentEnd",     0, constants["tMax"], constants["periodLength"]),
@@ -163,7 +168,7 @@ public:
 					 eq,
 					 {tbInfections, tbIncidence, tbRecoveries, \
 					  tbInfectionsHousehold, tbInfectionsCommunity,
-					  tbSusceptible, tbLatent, tbInfectious, \
+					  tbSusceptible, tbLatent, tbInfectious, tbExperienced, tbExperiencedPyr,\
 					  tbTreatmentBegin, tbTreatmentBeginHIV, tbTreatmentEnd, tbTreatmentDropout, \
 					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment, activeHouseholdContacts},
 					 CreateIndividualHandlers([this] (weak_ptr<Individual> i, int t, DeathCause dc) -> void \
@@ -223,6 +228,10 @@ private:
 	PrevalenceTimeSeries<int> tbSusceptible; // # Individuals in S
 	PrevalenceTimeSeries<int> tbLatent;      // # Individuals in L
 	PrevalenceTimeSeries<int> tbInfectious;  // # Individuals in I
+
+	PrevalenceTimeSeries<int> tbExperienced; // # Individuals who are experienced with TB (L or I)
+	PrevalencePyramidTimeSeries tbExperiencedPyr; // Pyramid of the above
+
 
 	IncidenceTimeSeries<int>  tbTreatmentBegin;   // Individuals initiating treatment
 	IncidenceTimeSeries<int>  tbTreatmentBeginHIV;// Initiating but also HIV+

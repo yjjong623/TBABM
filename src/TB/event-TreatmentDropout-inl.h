@@ -3,14 +3,17 @@
 void
 TB::TreatmentDropout(Time t)
 {
-	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts, auto) -> bool {
+	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts_, auto) -> bool {
+		auto ts = static_cast<int>(ts_);
+
 		if (!AliveStatus())
 			return true;
 
 		// Log(ts, "TB treatment dropout");
 
-		data.tbDroppedTreatment.Record((int)ts, +1); 
-		data.tbTreatmentDropout.Record((int)ts, +1);
+		data.tbInTreatment.Record(ts, -1);
+		data.tbDroppedTreatment.Record(ts, +1); 
+		data.tbTreatmentDropout.Record(ts, +1);
 
 		tb_treatment_status = TBTreatmentStatus::Dropout;
 		

@@ -56,7 +56,8 @@ TB::HandleDeath(Time t)
 
         case (TBStatus::Infectious):
           // Remember, while people are in treatment, they are 
-          // still considered infectious
+          // still considered infectious by the value of 'tb_status',
+          // but are not functionally infectious
           if (tb_treatment_status != TBTreatmentStatus::Incomplete)
             data.tbInfectious.Record(t, -1);
           break;
@@ -66,12 +67,16 @@ TB::HandleDeath(Time t)
 
     switch(tb_treatment_status) {
         case (TBTreatmentStatus::None): break;
+
         case (TBTreatmentStatus::Incomplete):
             data.tbInTreatment.Record(t, -1); break;
+
         case (TBTreatmentStatus::Complete):
             data.tbCompletedTreatment.Record(t, -1); break;
+
         case (TBTreatmentStatus::Dropout):
             data.tbDroppedTreatment.Record(t, -1); break;
+
         default: std::cout << "Error: UNSUPPORTED TBTreatmentStatus!" << std::endl;
     }
 

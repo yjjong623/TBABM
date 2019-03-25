@@ -8,7 +8,9 @@
 void
 TB::TreatmentBegin(Time t)
 {
-	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts, auto) -> bool {
+	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts_, auto) -> bool {
+		auto ts = static_cast<int>(ts_);
+
 		if (!AliveStatus())
 			return true;
 
@@ -19,28 +21,31 @@ TB::TreatmentBegin(Time t)
 
 		// Log(ts, "TB treatment begin");
 
-		data.tbInTreatment.Record((int)ts, +1);
-		data.tbTreatmentBegin.Record((int)ts, +1);
-		data.activeHouseholdContacts.Record(ContactHouseholdTBPrevalence(tb_status));
+		auto prev_household = ContactHouseholdTBPrevalence(tb_status);
 
+		data.tbInTreatment.Record(ts, +1);
+		data.tbTreatmentBegin.Record(ts, +1);
+		if (tb_treatment_status == TBTreatmentStatus::Dropout)
+			data.tbDroppedTreatment.Record(ts, -1);
 
-		data.tbInfectious.Record((int)ts, -1);
-		// printf("Incidence for time %d: %d\n", (int)ts, data.tbIncidence((int)ts));
-		// printf("Prevalence for time %d: %d\n", (int)ts, data.tbInfectious((int)ts));
+		data.activeHouseholdContacts.Record(prev_household);
+
+		data.tbInfectious.Record(ts, -1);
 		
 		// If HIV+, record
 		if (GetHIVStatus() == HIVStatus::Positive)
-			data.tbTreatmentBeginHIV.Record((int)ts, +1);
+			data.tbTreatmentBeginHIV.Record(ts, +1);
 
 		tb_treatment_status = TBTreatmentStatus::Incomplete;
 
 		if (RecoveryHandler)
 			RecoveryHandler(ts);
 
-		if (params["TB_p_Tx_cmp"].Sample(rng)) // Will they complete treatment? Assume 100% yes
+		// Will they complete treatment? Assume 100% yes
+		if (params["TB_p_Tx_cmp"].Sample(rng))
 			TreatmentComplete(ts + 365*params["TB_t_Tx_cmp"].Sample(rng));
 		else
-			TreatmentDropout(ts + 365*params["TB_t_Tx_drop"].Sample(rng)); // Assume 0.33 years
+			TreatmentDropout(ts + 365*params["TB_t_Tx_drop"].Sample(rng));
 
 		return true;
 	};

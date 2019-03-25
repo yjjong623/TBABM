@@ -27,8 +27,8 @@ EventFunc TBABM::Birth(weak_p<Individual> mother_w, weak_p<Individual> father_w)
 			MarriageStatus marriageStatus = MarriageStatus::Single;
 
 			IndividualInitData initData {tbInfections, tbIncidence, tbRecoveries, \
-				tbInfectionsHousehold, tbInfectionsCommunity,
-				tbSusceptible, tbLatent, tbInfectious, \
+				tbInfectionsHousehold, tbInfectionsCommunity, \
+				tbSusceptible, tbLatent, tbInfectious, tbExperienced, tbExperiencedPyr, \
 				tbTreatmentBegin, tbTreatmentBeginHIV, tbTreatmentEnd, tbTreatmentDropout, \
 				tbInTreatment, tbCompletedTreatment, tbDroppedTreatment, activeHouseholdContacts};
 

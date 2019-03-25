@@ -50,6 +50,8 @@ TimeSeriesExport<int> tbSusceptible;
 TimeSeriesExport<int> tbLatent;
 TimeSeriesExport<int> tbInfectious;
 
+TimeSeriesExport<int> tbExperienced;
+
 TimeSeriesExport<int> tbTreatmentBegin;
 TimeSeriesExport<int> tbTreatmentBeginHIV;
 TimeSeriesExport<int> tbTreatmentEnd;
@@ -63,6 +65,7 @@ PyramidTimeSeriesExport pyramid;
 PyramidTimeSeriesExport deathPyramid;
 PyramidTimeSeriesExport hivInfectionsPyramid;
 PyramidTimeSeriesExport hivPositivePyramid;
+PyramidTimeSeriesExport tbExperiencedPyramid;
 
 map<TimeStatType, string> columns {
     {TimeStatType::Sum,  "Total"},
@@ -105,6 +108,7 @@ bool ExportTrajectory(TBABM& t,
 	auto TBSusceptible           = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBSusceptible);
 	auto TBLatent                = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBLatent);
 	auto TBInfectious            = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBInfectious);
+	auto TBExperienced           = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBExperienced);
 	auto TBTreatmentBegin        = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBTreatmentBegin);
 	auto TBTreatmentBeginHIV     = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBTreatmentBeginHIV);
 	auto TBTreatmentEnd          = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBTreatmentEnd);
@@ -116,6 +120,7 @@ bool ExportTrajectory(TBABM& t,
 	auto DeathPyramid            = t.GetData<IncidencePyramidTimeSeries>( TBABMData::DeathPyramid);
 	auto HIVInfectionsPyramid    = t.GetData<IncidencePyramidTimeSeries>( TBABMData::HIVInfectionsPyramid);
 	auto HIVPositivePyramid      = t.GetData<PrevalencePyramidTimeSeries>(TBABMData::HIVPositivePyramid);
+	auto TBExperiencedPyramid    = t.GetData<PrevalencePyramidTimeSeries>(TBABMData::TBExperienced);
 	auto ActiveHouseholdContacts = t.GetData<DiscreteTimeStatistic>(      TBABMData::ActiveHouseholdContacts);
 
 	success &= births.Add(                 std::make_shared<decltype(Births)>(Births), i);
@@ -140,6 +145,7 @@ bool ExportTrajectory(TBABM& t,
 	success &= tbSusceptible.Add(          std::make_shared<decltype(TBSusceptible)>(TBSusceptible), i);
 	success &= tbLatent.Add(               std::make_shared<decltype(TBLatent)>(TBLatent), i);
 	success &= tbInfectious.Add(           std::make_shared<decltype(TBInfectious)>(TBInfectious), i);
+	success &= tbExperienced.Add(		   std::make_shared<decltype(TBExperienced)>(TBExperienced), i);
 	success &= tbTreatmentBegin.Add(       std::make_shared<decltype(TBTreatmentBegin)>(TBTreatmentBegin), i);
 	success &= tbTreatmentBeginHIV.Add(    std::make_shared<decltype(TBTreatmentBeginHIV)>(TBTreatmentBeginHIV), i);
 	success &= tbTreatmentEnd.Add(         std::make_shared<decltype(TBTreatmentEnd)>(TBTreatmentEnd), i);
@@ -151,6 +157,7 @@ bool ExportTrajectory(TBABM& t,
 	success &= deathPyramid.Add(           std::make_shared<decltype(DeathPyramid)>(DeathPyramid), i);
 	success &= hivInfectionsPyramid.Add(   std::make_shared<decltype(HIVInfectionsPyramid)>(HIVInfectionsPyramid), i);
 	success &= hivPositivePyramid.Add(     std::make_shared<decltype(HIVPositivePyramid)>(HIVPositivePyramid), i);
+	success &= tbExperiencedPyramid.Add(   std::make_shared<decltype(TBExperiencedPyramid)>(TBExperiencedPyramid), i);
 	success &= activeHouseholdContacts.Add(std::make_shared<decltype(ActiveHouseholdContacts)>(ActiveHouseholdContacts));
 
 	success &= t.WriteSurveys(populationSurvey, householdSurvey, deathSurvey);
@@ -199,6 +206,8 @@ bool WriteData(string outputPrefix)
 		tbSusceptible.Write(outputPrefix + "tbSusceptible.csv")        &&                        
 		tbLatent.Write(outputPrefix + "tbLatent.csv")             &&                                       
 		tbInfectious.Write(outputPrefix + "tbInfectious.csv")         &&                           
+
+		tbExperienced.Write(outputPrefix + "tbExperienced.csv") &&
 		
 		tbTreatmentBegin.Write(outputPrefix + "tbTreatmentBegin.csv")     &&               
 		tbTreatmentBeginHIV.Write(outputPrefix + "tbTreatmentBeginHIV.csv")  &&      
@@ -206,7 +215,9 @@ bool WriteData(string outputPrefix)
 		tbTreatmentDropout.Write(outputPrefix + "tbTreatmentDropout.csv")   &&         
 		tbInTreatment.Write(outputPrefix + "tbInTreatment.csv")        &&                        
 		tbCompletedTreatment.Write(outputPrefix + "tbCompletedTreatment.csv") &&   
-		tbDroppedTreatment.Write(outputPrefix + "tbDroppedTreatment.csv")   &&         
+		tbDroppedTreatment.Write(outputPrefix + "tbDroppedTreatment.csv")   &&   
+
+		tbExperiencedPyramid.Write(outputPrefix + "tbExperiencedPyramid.csv") &&
 		
 		activeHouseholdContacts.Write(outputPrefix + "activeHouseholdContacts.csv")
 	);

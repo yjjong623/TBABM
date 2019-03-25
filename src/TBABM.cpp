@@ -17,24 +17,26 @@ PrevalenceTimeSeries<int>
 TBABM::GetData<PrevalenceTimeSeries<int>>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::PopulationSize:  return populationSize;
+        case TBABMData::PopulationSize:  return populationSize; break;
  
-        case TBABMData::HIVNegative:     return hivNegative;
-        case TBABMData::HIVPositive:     return hivPositive;
-        case TBABMData::HIVPositiveART:  return hivPositiveART;
+        case TBABMData::HIVNegative:     return hivNegative; break;
+        case TBABMData::HIVPositive:     return hivPositive; break;
+        case TBABMData::HIVPositiveART:  return hivPositiveART; break;
  
-        case TBABMData::HIVDiagnosed:    return hivDiagnosed;
-        case TBABMData::HIVDiagnosedVCT: return hivDiagnosedVCT;
+        case TBABMData::HIVDiagnosed:    return hivDiagnosed; break;
+        case TBABMData::HIVDiagnosedVCT: return hivDiagnosedVCT; break;
 
-        case TBABMData::TBSusceptible:   return tbSusceptible;
-        case TBABMData::TBLatent:        return tbLatent;
-        case TBABMData::TBInfectious:    return tbInfectious;
+        case TBABMData::TBSusceptible:   return tbSusceptible; break;
+        case TBABMData::TBLatent:        return tbLatent; break;
+        case TBABMData::TBInfectious:    return tbInfectious; break;
 
-        case TBABMData::TBInTreatment:   return tbInTreatment;
+        case TBABMData::TBExperienced:   return tbExperienced; break;
+
+        case TBABMData::TBInTreatment:   return tbInTreatment; break;
         case TBABMData::TBCompletedTreatment:
-                                         return tbCompletedTreatment;
+                                         return tbCompletedTreatment; break;
         case TBABMData::TBDroppedTreatment:
-                                         return tbDroppedTreatment;
+                                         return tbDroppedTreatment; break;
  
         default:                         
             throw std::invalid_argument("Asked for a PrevalenceTimeSeries that doesn't exist");
@@ -46,28 +48,28 @@ IncidenceTimeSeries<int>
 TBABM::GetData<IncidenceTimeSeries<int>>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::Marriages:       return marriages;
-        case TBABMData::Births:          return births;
-        case TBABMData::Deaths:          return deaths;
-        case TBABMData::Divorces:        return divorces;
-        case TBABMData::Households:      return householdsCount;
-        case TBABMData::SingleToLooking: return singleToLooking;
+        case TBABMData::Marriages:       return marriages; break;
+        case TBABMData::Births:          return births; break;
+        case TBABMData::Deaths:          return deaths; break;
+        case TBABMData::Divorces:        return divorces; break;
+        case TBABMData::Households:      return householdsCount; break;
+        case TBABMData::SingleToLooking: return singleToLooking; break;
 
-        case TBABMData::HIVInfections:   return hivInfections;
-        case TBABMData::HIVDiagnosesVCT: return hivDiagnosesVCT;
+        case TBABMData::HIVInfections:   return hivInfections; break;
+        case TBABMData::HIVDiagnosesVCT: return hivDiagnosesVCT; break;
 
-        case TBABMData::TBInfections:    return tbInfections;
-        case TBABMData::TBIncidence:     return tbIncidence;
-        case TBABMData::TBRecoveries:    return tbRecoveries;
+        case TBABMData::TBInfections:    return tbInfections; break;
+        case TBABMData::TBIncidence:     return tbIncidence; break;
+        case TBABMData::TBRecoveries:    return tbRecoveries; break;
 
-        case TBABMData::TBInfectionsHousehold: return tbInfectionsHousehold;
-        case TBABMData::TBInfectionsCommunity: return tbInfectionsCommunity;
+        case TBABMData::TBInfectionsHousehold: return tbInfectionsHousehold; break;
+        case TBABMData::TBInfectionsCommunity: return tbInfectionsCommunity; break;
 
-        case TBABMData::TBTreatmentBegin:return tbTreatmentBegin;
-        case TBABMData::TBTreatmentBeginHIV:return tbTreatmentBeginHIV;
-        case TBABMData::TBTreatmentEnd:  return tbTreatmentEnd;
+        case TBABMData::TBTreatmentBegin:return tbTreatmentBegin; break;
+        case TBABMData::TBTreatmentBeginHIV:return tbTreatmentBeginHIV; break;
+        case TBABMData::TBTreatmentEnd:  return tbTreatmentEnd; break;
         case TBABMData::TBTreatmentDropout:
-                                         return tbTreatmentDropout;
+                                         return tbTreatmentDropout; break;
 
         default:
             throw std::invalid_argument("Asked for an IncidenceTimeSeries that doesn't exist");
@@ -79,9 +81,9 @@ IncidencePyramidTimeSeries
 TBABM::GetData<IncidencePyramidTimeSeries>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::Pyramid:              return pyramid;
-        case TBABMData::DeathPyramid:         return deathPyramid;
-        case TBABMData::HIVInfectionsPyramid: return hivInfectionsPyramid;
+        case TBABMData::Pyramid:              return pyramid; break;
+        case TBABMData::DeathPyramid:         return deathPyramid; break;
+        case TBABMData::HIVInfectionsPyramid: return hivInfectionsPyramid; break;
         default:
             throw std::invalid_argument("Asked for a IncidencePyramidTimeSeries that doesn't exist");
     }
@@ -92,7 +94,8 @@ PrevalencePyramidTimeSeries
 TBABM::GetData<PrevalencePyramidTimeSeries>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::HIVPositivePyramid: return hivPositivePyramid;
+        case TBABMData::HIVPositivePyramid: return hivPositivePyramid; break;
+        case TBABMData::TBExperienced:      return tbExperiencedPyr; break;
         default:
             throw std::invalid_argument("Asked for a PrevalencePyramidTimeSeries that doesn't exist");
     }
@@ -103,7 +106,7 @@ DiscreteTimeStatistic
 TBABM::GetData<DiscreteTimeStatistic>(TBABMData field)
 {
     switch(field) {
-        case TBABMData::ActiveHouseholdContacts: return activeHouseholdContacts;
+        case TBABMData::ActiveHouseholdContacts: return activeHouseholdContacts; break;
         default:
             throw std::invalid_argument("Asked for a DiscreteTimeStatistic that doesn't exist");
     }
@@ -137,12 +140,13 @@ bool TBABM::Run(void)
 
     while (!eq.Empty()) {
         auto e = eq.Top();
+        assert(e);
+        
         if (e->t > constants["tMax"])
             break;
 
-        assert(e);
-        e->run();
         eq.Pop();
+        e->run();
         events_processed += 1;
     }
 
@@ -197,6 +201,9 @@ bool TBABM::Run(void)
     tbSusceptible.Close();
     tbLatent.Close();
     tbInfectious.Close();
+
+    tbExperienced.Close();
+    tbExperiencedPyr.Close();
 
     tbTreatmentBegin.Close();
     tbTreatmentBeginHIV.Close();
