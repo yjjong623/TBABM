@@ -93,10 +93,12 @@ void
 TB::InfectionRiskEvaluate_initial(int local_risk_window)
 {
 	auto l_ptr = GetLifetimePtr();
+	if (!l_ptr) {
+		printf("Empty l_ptr in IRE_initial\n");
+		return;
+	}
+
 	double firstRiskEval = Uniform(0, risk_window)(rng.mt_);
-
-	assert(l_ptr);
-
 	auto lambda = [this, local_risk_window, l_ptr] (auto ts, auto) -> bool {
 		return InfectionRiskEvaluate_impl(ts, local_risk_window, l_ptr);
 	};

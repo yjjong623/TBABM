@@ -153,7 +153,8 @@ grid <- function(Loader, namesMap, startYear) {
 
     if ("calibration" %in% names(item))
       calibration <- geom_line(mapping=aes_string("year", item$calibration),
-                               data=calibrationData)
+                               data=calibrationData,
+                               inherit.aes = FALSE)
     else
       calibration <- geom_blank()
       
@@ -197,7 +198,7 @@ nIdv <- "Number of individuals"
 testMap  <- list(tbSusceptible  = list(title="TB-Susceptible Individuals", y=nIdv),
                  tbLatent       = list(title="Latently-infected individuals", y=nIdv), 
                  tbInfectious   = list(title="Actively-infected individuals", y=nIdv),
-                 populationSize = list(title="Population Size", y=nIdv),
+                 populationSize = list(title="Population Size", y=nIdv, calibration="populationAll"),
                  hivPrevalence  = list(data=c("hivPositive", "populationSize"), title="HIV Prevalence, All Individuals", y="Prevalence (%)", factor=100))
 
 bigMap  <- list(birthRate         = list(data=c("births", "populationSize"), title="Birth rate", y="Births/1000/year", factor=1000),
@@ -214,8 +215,8 @@ bigMap  <- list(birthRate         = list(data=c("births", "populationSize"), tit
                 tbIncidence       = list(title="TB Incidence, all individuals", y="Active incidence/year"),
                 tbRecoveries      = list(title="TB Recoveries, all individuals", y="Recoveries/year"),
                 tbTreatmentBegin     = list(title="TB case notifications, all", y="Case notifications/year"),
-                tbTreatmentEnd     = list(title="TB Treatment Completion", y="Completions/year"),
-                tbTreatmentDropout     = list(title="TB Treatment Dropout", y="Dropouts/year"),
+                tbTreatmentEnd       = list(title="TB Treatment Completion", y="Completions/year"),
+                tbTreatmentDropout   = list(title="TB Treatment Dropout", y="Dropouts/year"),
                 tbInfectionsHousehold= list(title="Household infections", y="Infections/year"),
                 tbInfectionsCommunity= list(title="Community infections", y="Infections/year"))
 
@@ -247,7 +248,7 @@ mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notificati
 # }
 
 
-reviewLatestModelRun <- function () do.call(multiplot, flatten(list(grid(CreateGraphCatalog(outputLocation)$Loader, testMap, 1990), cols=5)))
+reviewLatestModelRun <- function () do.call(multiplot, flatten(list(grid(CreateGraphCatalog(outputLocation)$Loader, testMap, 1990), cols=2)))
 reviewLatestModelRun()
 
 
