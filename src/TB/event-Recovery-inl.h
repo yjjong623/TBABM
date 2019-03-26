@@ -3,8 +3,8 @@
 void
 TB::Recovery(Time t, RecoveryType r)
 {
-	auto lambda = [this, r, lifetm = GetLifetimePtr()] (auto ts, auto) -> bool {
-		assert(lifetm);
+	auto lambda = [this, r, l_ptr = GetLifetimePtr()] (auto ts, auto) -> bool {
+		assert(l_ptr);
 
 		if (!AliveStatus())
 			return true;
@@ -21,7 +21,7 @@ TB::Recovery(Time t, RecoveryType r)
 			RecoveryHandler(ts);
 
 		// Set up periodic evaluation for reinfection
-		InfectionRiskEvaluate(ts, risk_window);
+		InfectionRiskEvaluate(ts, risk_window, std::move(l_ptr));
 
 		// // Set up one-time sample for reactivation
 		InfectLatent(ts, 

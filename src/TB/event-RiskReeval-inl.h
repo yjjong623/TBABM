@@ -6,8 +6,8 @@
 void
 TB::RiskReeval(Time t)
 {
-	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts, auto) -> bool {
-		assert(lifetm);
+	auto lambda = [this, l_ptr = GetLifetimePtr()] (auto ts, auto) -> bool {
+		assert(l_ptr);
 
 		if (!AliveStatus())
 			return true;
@@ -34,7 +34,7 @@ TB::RiskReeval(Time t)
 
 		risk_window_id += 1;
 
-		InfectionRiskEvaluate(ts, risk_window_id);
+		InfectionRiskEvaluate(ts, risk_window_id, std::move(l_ptr));
 
 		return true;
 	};

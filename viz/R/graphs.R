@@ -116,6 +116,8 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
 outputLocation <- "/Users/marcusrussi/Desktop/Yaesoubi-Cohen-Lab/repos/TBABM/output/"
 cat <- CreateGraphCatalog(outputLocation)
 
+cat$hivCD4Decline()
+
 cat$deathPyramid()
 
 
@@ -149,6 +151,13 @@ grid <- function(Loader, namesMap, startYear) {
     else
       data <- JoinAndDivideTimeSeries(Loader(item$data[1]), Loader(item$data[2]), "value", factor)
 
+    if ("calibration" %in% names(item))
+      calibration <- geom_line(mapping=aes_string("year", item$calibration),
+                               data=calibrationData)
+    else
+      calibration <- geom_blank()
+      
+    
     # Produce ggplot2 object which will eventually be passed to 'multiplot'
     mutate(data, title=title, year=period+startYear) %>%
       ggplot(aes(year, value, group=trajectory)) +
@@ -156,13 +165,33 @@ grid <- function(Loader, namesMap, startYear) {
         geom_vline(xintercept=2002, linetype="dashed", color="grey") +
         geom_vline(xintercept=2008, linetype="dashed", color="grey") +
         theme_classic() +
+        ylim(0, NA) +
         theme(plot.title=element_text(face="bold", size=10)) +
-        labs(x="Year", y=item$y, title=title)
+        labs(x="Year", y=item$y, title=title) +
+        calibration
   }
   
   plan(multicore)
   future_map(names(namesMap), lambda)
 }
+
+calibrationData <- tibble(
+  year = seq(2002, 2008),
+  populationChildren = c(10427, 10531, 10637, 10743, 10850, 10959, 11068),
+  populationAdults =   c(25903, 26162, 26424, 26688, 26955, 27224, 27497),
+  populationAll = populationChildren + populationAdults,
+  notifiedTBChildren = c(82, 60, 66, 69, 73, 77, 69),
+  notifiedTBNaiveAdults = c(82, 60, 66, 69, 73, 77, 69),
+  notifiedTBExperiencedAdults = c(172, 234, 200, 224, 216, 233, 210),
+  notifiedTBAdults = notifiedTBNaiveAdults + notifiedTBExperiencedAdults,
+  notifiedTBAll = notifiedTBAdults + notifiedTBChildren,
+  prevalenceExperiencedAdults = c(0.097, NA, NA, NA, NA, NA, NA),
+  prevalenceHIV = c(0.052, NA, NA, NA, NA, NA, NA),
+  prevalenceInfectiousNaiveAdults = c(0.051, NA, NA, NA, NA, NA, NA),
+  prevalenceInfectiousExperiencedAdults = c(0.0299, NA, NA, NA, NA, NA, NA),
+  prevalenceInfectiousAdults = prevalenceInfectiousNaiveAdults +
+                               prevalenceInfectiousExperiencedAdults
+)
 
 nIdv <- "Number of individuals"
 testMap  <- list(tbSusceptible  = list(title="TB-Susceptible Individuals", y=nIdv),
@@ -179,14 +208,16 @@ bigMap  <- list(birthRate         = list(data=c("births", "populationSize"), tit
                 hivPrevalence     = list(data=c("hivPositive", "populationSize"), title="HIV Prevalence, All Individuals", y="Prevalence (%)", factor=100),
                 hivARTPrevalence  = list(data=c("hivPositiveART", "populationSize"), title="HIV ART Prevalence, All Individuals", y="Prevalence (%)", factor=100),
                 tbSusceptible     = list(title="TB-Susceptible Individuals", y=nIdv),
-                tbLatent          = list(title="Latently-infected individuals", y=nIdv), 
-                tbInfectious      = list(title="Actively-infected individuals", y=nIdv),
+                tbLatent          = list(data=c("tbLatent", "populationSize"), title="Latently-infected individuals", y="Prevalence (%)", factor=100), 
+                tbInfectious      = list(data=c("tbInfectious", "populationSize"), title="Actively-infected individuals", y="Prevalence (%)", factor=100),
                 tbInfections      = list(title="TB Infections, all individuals", y="Infections/year"),
                 tbIncidence       = list(title="TB Incidence, all individuals", y="Active incidence/year"),
                 tbRecoveries      = list(title="TB Recoveries, all individuals", y="Recoveries/year"),
                 tbTreatmentBegin     = list(title="TB case notifications, all", y="Case notifications/year"),
                 tbTreatmentEnd     = list(title="TB Treatment Completion", y="Completions/year"),
-                tbTreatmentDropout     = list(title="TB Treatment Dropout", y="Dropouts/year"))
+                tbTreatmentDropout     = list(title="TB Treatment Dropout", y="Dropouts/year"),
+                tbInfectionsHousehold= list(title="Household infections", y="Infections/year"),
+                tbInfectionsCommunity= list(title="Community infections", y="Infections/year"))
 
 mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", y="Number of case notifications"),
                  populationSize       = list(title="All individuals", y="Number of individuals"),
@@ -198,16 +229,29 @@ mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notificati
                  hivPrevalence        = list(data=c("hivPositive", "populationSize"), title="HIV prevalence, all individuals", y="Prevalence (%)", factor=100),
                  tbInfectious         = list(data=c("tbInfectious", "populationSize"), title="Adults", y="Tuberculosis prevalence (%)", factor=100))
 
-#do.call(multiplot, flatten(list(grid(cat$Loader, testMap, 1990), cols=3)))
 
-reviewLatestModelRun <- function () do.call(multiplot, flatten(list(grid(CreateGraphCatalog(outputLocation)$Loader, bigMap, 1990), cols=4)))
+# Current format: {
+#   timeSeriesName: {
+#     title: STRING (optional), 
+#     y: STRING (non-optional),
+#     calibration: STRING (must name column in calibrationData)
+#   }
+# }
+#
+# OR {
+#   title: STRING,
+#   data: two-element vector,
+#   y: STRING,
+#   factor: INT,
+#   calibration: STRING (must name column in calibrationData)
+# }
+
+
+reviewLatestModelRun <- function () do.call(multiplot, flatten(list(grid(CreateGraphCatalog(outputLocation)$Loader, testMap, 1990), cols=5)))
 reviewLatestModelRun()
 
 
-
-
-
-
+do.call(multiplot, flatten(list(grid(cat$Loader, testMap, 1990), cols=4)))
 do.call(multiplot, flatten(list(grid(cat$Loader, bigMap, 1990), cols=4)))
 do.call(multiplot, flatten(list(grid(cat$Loader, mimicMap, 1990), cols=3)))
 

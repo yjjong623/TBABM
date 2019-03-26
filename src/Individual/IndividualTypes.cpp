@@ -13,7 +13,7 @@ CreateIndividualHandlers(function<void(weak_p<Individual>, int, DeathCause)> Dea
 IndividualSimContext
 CreateIndividualSimContext(int current_time, 
 						   EQ& event_queue, 
-						   RNG &rng,
+						   RNG& rng,
 						   map<string, DataFrameFile>& fileData,
 						   Params& params)
 {

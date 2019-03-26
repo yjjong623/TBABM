@@ -79,8 +79,7 @@ TB::InfectionRiskEvaluate_impl(Time t, int risk_window_local, shared_p<TB> l_ptr
 void
 TB::InfectionRiskEvaluate(Time t, int risk_window_local, shared_p<TB> l_ptr)
 {
-	if (!l_ptr)
-		return;
+	assert(l_ptr);
 
 	auto lambda = [this, risk_window_local, l_ptr] (auto ts, auto) -> bool {
 		return InfectionRiskEvaluate_impl(ts, risk_window_local, l_ptr);
@@ -93,14 +92,14 @@ TB::InfectionRiskEvaluate(Time t, int risk_window_local, shared_p<TB> l_ptr)
 void
 TB::InfectionRiskEvaluate_initial(int local_risk_window)
 {
-	assert(this);
-	auto lambda = [this, 
-				   local_risk_window,
-				   l_ptr = GetLifetimePtr()] (auto ts, auto) -> bool {
+	auto l_ptr = GetLifetimePtr();
+	double firstRiskEval = Uniform(0, risk_window)(rng.mt_);
+
+	assert(l_ptr);
+
+	auto lambda = [this, local_risk_window, l_ptr] (auto ts, auto) -> bool {
 		return InfectionRiskEvaluate_impl(ts, local_risk_window, l_ptr);
 	};
-
-	double firstRiskEval = Uniform(0, risk_window)(rng.mt_);
 
 	eq.QuickSchedule(init_time + firstRiskEval, lambda);
 	return;

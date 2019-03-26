@@ -47,7 +47,7 @@ EventFunc TBABM::Birth(weak_p<Individual> mother_w, weak_p<Individual> father_w)
 				CreateIndividualHandlers(deathHandler, GlobalTBHandler),
 				name_gen.getName(rng),
 				mother->householdID, t, sex,
-				weak_p<Individual>(), mother, father,
+				weak_p<Individual>(), mother_w, father_w,
 				vector<weak_p<Individual>>{}, householdPosition, marriageStatus);
 
 			// printf("[%d] Baby born: %ld::%lu\n", (int)t, mother->householdID, std::hash<Pointer<Individual>>()(baby));
