@@ -37,8 +37,8 @@ public:
 	shared_p<Household> GetHousehold(int current_time, int hid, RNG &rng);
 
 	HouseholdGen(const char *file,
-                 shared_p<Params>(params),
-				 shared_p<map<string, DataFrameFile>>(fileData),
+                 Params& (params),
+				 map<string, DataFrameFile>& (fileData),
                  EQ& event_queue,
                  IndividualInitData initData,
                  IndividualHandlers handles) : 
@@ -114,8 +114,8 @@ public:
 private:
 	std::vector<MicroFamily> families;
 
-	std::shared_ptr<Params>(params);
-	std::shared_ptr<map<string, DataFrameFile>>(fileData);
+	Params& params;
+	map<string, DataFrameFile>& fileData;
 
     EQ& event_queue;
     IndividualInitData initData;

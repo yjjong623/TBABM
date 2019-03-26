@@ -9,6 +9,8 @@ void
 TB::TreatmentBegin(Time t)
 {
 	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts_, auto) -> bool {
+		assert(lifetm);
+
 		auto ts = static_cast<int>(ts_);
 
 		if (!AliveStatus())

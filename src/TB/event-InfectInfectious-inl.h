@@ -10,6 +10,8 @@ TB::InfectInfectious(Time t, Source s, StrainType)
 	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts_, auto) {
 		auto ts = static_cast<int>(ts_);
 
+		assert(lifetm);
+
 		if (!AliveStatus())
 			return true;
 

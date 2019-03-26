@@ -4,6 +4,8 @@ void
 TB::Recovery(Time t, RecoveryType r)
 {
 	auto lambda = [this, r, lifetm = GetLifetimePtr()] (auto ts, auto) -> bool {
+		assert(lifetm);
+
 		if (!AliveStatus())
 			return true;
 

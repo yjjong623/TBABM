@@ -134,7 +134,7 @@ public:
 		tbInfectious( "tbInfectious",  constants["tMax"], constants["periodLength"]),
 
 		tbExperienced("tbExperienced", constants["tMax"], constants["periodLength"]),
-		tbExperiencedPyr("tbExperiencedPyr", 0, constants["tMax"], constants["periodLength"], 2, {0, 15, 30, 45, 60, 75}),
+		tbExperiencedPyr("tbExperiencedPyr", 0, constants["tMax"], constants["periodLength"], 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
 
 		tbTreatmentBegin(   "tbTreatmentBegin",   0, constants["tMax"], constants["periodLength"]),
 		tbTreatmentBeginHIV("tbTreatmentBeginHIV",0, constants["tMax"], constants["periodLength"]),
@@ -163,8 +163,8 @@ public:
 		seed(_seed),
 		rng(_seed),
 		householdGen(householdsFile, 
-					 std::make_shared<Params>(params),
-					 std::make_shared<map<string, DataFrameFile>>(fileData),
+					 params,
+					 fileData,
 					 eq,
 					 {tbInfections, tbIncidence, tbRecoveries, \
 					  tbInfectionsHousehold, tbInfectionsCommunity,

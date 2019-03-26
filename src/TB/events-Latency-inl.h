@@ -10,6 +10,8 @@ TB::InfectLatent(Time t, Source source, StrainType strain)
 				   strain, 
 				   lifetm = GetLifetimePtr()] (auto ts_, auto) {
 
+		assert(lifetm);
+
 		auto ts = static_cast<int>(ts_);
 
 		if (!AliveStatus())

@@ -353,7 +353,7 @@ int main(int argc, char **argv)
 					return false;
 				}
 
-				// Acquire a mutex lock
+				// Acquire a mutex lock for the data-exporting critical section
 				mtx.lock();
 
 				// Pass the TBABM object to a function that will export its data

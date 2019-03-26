@@ -23,8 +23,8 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 	auto initSimContext = CreateIndividualSimContext(current_time, 
 		event_queue, 
 		rng,
-		*fileData,
-		*params
+		fileData,
+		params
 	);
 
 	auto head = makeIndividual(
@@ -37,7 +37,7 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 		_head.sex, 
 		_head.role, 
 		MarriageStatus::Single
-	); //, params, fileData);
+	);
 	
 	// Add this object to the household as the head
 	household->AddIndividual(head, current_time, HouseholdPosition::Head);

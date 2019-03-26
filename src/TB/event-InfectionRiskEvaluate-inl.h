@@ -20,6 +20,8 @@
 bool
 TB::InfectionRiskEvaluate_impl(Time t, int risk_window_local, shared_p<TB> l_ptr)
 {
+	assert(l_ptr);
+
 	// Short-circuit if a new risk_window_id is in place, e.g. if 
 	// a RiskReeval event has occurred
 	if (!AliveStatus() || risk_window_local != risk_window_id)

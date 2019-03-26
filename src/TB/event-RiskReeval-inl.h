@@ -7,6 +7,8 @@ void
 TB::RiskReeval(Time t)
 {
 	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts, auto) -> bool {
+		assert(lifetm);
+
 		if (!AliveStatus())
 			return true;
 
