@@ -7,16 +7,7 @@ CTestTestFile.cmake
 cmake_install.cmake
 install_manifest.txt
 .DS_store
-Test
-SIRsim
 *.dSym
-/.vs
-/Debug
-/Win32/Debug/ZERO_CHECK/ZERO_CHECK.log
-/Win32/Debug/ZERO_CHECK
-/Win32/Debug/INSTALL/INSTALL.log
-/Win32/Debug/INSTALL
-/Win32/Debug
 output/
 **/*.xlsx
 .Rproj.user

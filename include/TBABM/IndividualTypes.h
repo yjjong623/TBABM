@@ -71,6 +71,12 @@ typedef struct IndividualInitData {
 													// active TB.
 } IndividualInitData;
 
+template <typename... Ts>
+IndividualInitData CreateIndividualInitData(Ts&&... args)
+{
+	return { std::forward<Ts>(args...) };
+}
+
 typedef struct IndividualHandlers {
 	function<void(weak_p<Individual>, int, DeathCause)> Death;
 	function<double(int)> GlobalTBPrevalence;
