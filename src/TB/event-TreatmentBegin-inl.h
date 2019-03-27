@@ -9,7 +9,9 @@ void
 TB::TreatmentBegin(Time t)
 {
 	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts_, auto) -> bool {
+		
 		assert(lifetm);
+		assert(tb_treatment_status != TBTreatmentStatus::Incomplete);
 
 		auto ts = static_cast<int>(ts_);
 
@@ -27,8 +29,11 @@ TB::TreatmentBegin(Time t)
 
 		data.tbInTreatment.Record(ts, +1);
 		data.tbTreatmentBegin.Record(ts, +1);
+
 		if (tb_treatment_status == TBTreatmentStatus::Dropout)
 			data.tbDroppedTreatment.Record(ts, -1);
+		else if (tb_treatment_status == TBTreatmentStatus::Complete)
+			data.tbCompletedTreatment.Record(ts, -1);
 
 		data.activeHouseholdContacts.Record(prev_household);
 
