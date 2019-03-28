@@ -26,18 +26,14 @@ EventFunc TBABM::Birth(weak_p<Individual> mother_w, weak_p<Individual> father_w)
 			HouseholdPosition householdPosition = HouseholdPosition::Offspring;
 			MarriageStatus marriageStatus = MarriageStatus::Single;
 
-			IndividualInitData initData {tbInfections, tbIncidence, tbRecoveries, \
-				tbInfectionsHousehold, tbInfectionsCommunity, \
-				tbSusceptible, tbLatent, tbInfectious, tbExperienced, tbExperiencedPyr, \
-				tbTreatmentBegin, tbTreatmentBeginHIV, tbTreatmentEnd, tbTreatmentDropout, \
-				tbInTreatment, tbCompletedTreatment, tbDroppedTreatment, activeHouseholdContacts};
+			auto initData = data.GenIndividualInitData();
 
 			auto deathHandler = [this] (weak_p<Individual> idv, int t, DeathCause cause) -> void { 
 				return Schedule(t, Death(idv, cause));
 			};
 
 			auto GlobalTBHandler = [this] (int t) -> double {
-				return (double)tbInfectious(t)/(double)populationSize(t);
+				return (double)data.tbInfectious(t)/(double)data.populationSize(t);
 			};
 
 			// Construct baby
@@ -63,8 +59,8 @@ EventFunc TBABM::Birth(weak_p<Individual> mother_w, weak_p<Individual> father_w)
 			
 			Schedule(t, ChangeAgeGroup(baby));
 
-			populationSize.Record(t, +1);
-			births.Record(t, +1);
+			data.populationSize.Record(t, +1);
+			data.births.Record(t, +1);
 
 			// Schedule the next birth
 			auto yearsToNextBirth = fileData["timeToSubsequentBirths"].getValue(0,0,(t-mother->birthDate)/365,rng);

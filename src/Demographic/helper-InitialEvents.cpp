@@ -28,13 +28,6 @@ void TBABM::InitialEvents(weak_p<Individual> idv_w, double t, double dt)
 	double timeToLookingScale = params["timeToLookingScale"].Sample(rng);
 	double timeToLooking = timeToLookingScale * fileData["timeToLooking"].getValue(0, gender, age, rng);
 
-	// bool HIVPositive = fileData["HIV_seropositive_risk"].getValue(0, gender, age, rng);
-
-	// if (HIVPositive) {
-	// 	// When were they infected?
-	// 	// Are they on ART?
-	// }
-
 	if (timeToDeath < dt)
 		Schedule(t + 365*timeToDeath, Death(idv, DeathCause::Natural));
 

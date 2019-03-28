@@ -82,83 +82,46 @@ bool ExportTrajectory(TBABM& t,
 					  ofstream& householdSurvey, 
 					  ofstream& deathSurvey)
 {
-	using TBABMData = TBABM::TBABMData;
-
 	bool success {true};
 
-	auto Births                  = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::Births);
-	auto Deaths                  = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::Deaths);
-	auto PopulationSize          = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::PopulationSize);
-	auto Marriages               = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::Marriages);
-	auto Divorces                = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::Divorces);
-	auto Households              = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::Households);
-	auto SingleToLooking         = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::SingleToLooking);
-	auto HIVNegative             = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::HIVNegative);
-	auto HIVPositive             = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::HIVPositive);
-	auto HIVPositiveART          = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::HIVPositiveART);
-	auto HIVInfections           = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::HIVInfections);
-	auto HIVDiagnosed            = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::HIVDiagnosed);
-	auto HIVDiagnosedVCT         = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::HIVDiagnosedVCT);
-	auto HIVDiagnosesVCT         = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::HIVDiagnosesVCT);
-	auto TBInfections            = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBInfections);
-	auto TBIncidence             = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBIncidence);
-	auto TBRecoveries            = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBRecoveries);
-	auto TBInfectionsHousehold   = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBInfectionsHousehold);
-	auto TBInfectionsCommunity   = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBInfectionsCommunity);
-	auto TBSusceptible           = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBSusceptible);
-	auto TBLatent                = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBLatent);
-	auto TBInfectious            = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBInfectious);
-	auto TBExperienced           = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBExperienced);
-	auto TBTreatmentBegin        = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBTreatmentBegin);
-	auto TBTreatmentBeginHIV     = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBTreatmentBeginHIV);
-	auto TBTreatmentEnd          = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBTreatmentEnd);
-	auto TBTreatmentDropout      = t.GetData<IncidenceTimeSeries<int>>(   TBABMData::TBTreatmentDropout);
-	auto TBInTreatment           = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBInTreatment);
-	auto TBCompletedTreatment    = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBCompletedTreatment);
-	auto TBDroppedTreatment      = t.GetData<PrevalenceTimeSeries<int>>(  TBABMData::TBDroppedTreatment);
-	auto Pyramid                 = t.GetData<IncidencePyramidTimeSeries>( TBABMData::Pyramid);
-	auto DeathPyramid            = t.GetData<IncidencePyramidTimeSeries>( TBABMData::DeathPyramid);
-	auto HIVInfectionsPyramid    = t.GetData<IncidencePyramidTimeSeries>( TBABMData::HIVInfectionsPyramid);
-	auto HIVPositivePyramid      = t.GetData<PrevalencePyramidTimeSeries>(TBABMData::HIVPositivePyramid);
-	auto TBExperiencedPyramid    = t.GetData<PrevalencePyramidTimeSeries>(TBABMData::TBExperienced);
-	auto ActiveHouseholdContacts = t.GetData<DiscreteTimeStatistic>(      TBABMData::ActiveHouseholdContacts);
+	auto data = t.GetData();
 
-	success &= births.Add(                 std::make_shared<decltype(Births)>(Births), i);
-	success &= deaths.Add(                 std::make_shared<decltype(Deaths)>(Deaths), i);
-	success &= populationSize.Add(         std::make_shared<decltype(PopulationSize)>(PopulationSize), i);
-	success &= marriages.Add(              std::make_shared<decltype(Marriages)>(Marriages), i);
-	success &= divorces.Add(               std::make_shared<decltype(Divorces)>(Divorces), i);
-	success &= households.Add(             std::make_shared<decltype(Households)>(Households), i);
-	success &= singleToLooking.Add(        std::make_shared<decltype(SingleToLooking)>(SingleToLooking), i);
-	success &= hivNegative.Add(            std::make_shared<decltype(HIVNegative)>(HIVNegative), i);
-	success &= hivPositive.Add(            std::make_shared<decltype(HIVPositive)>(HIVPositive), i);
-	success &= hivPositiveART.Add(         std::make_shared<decltype(HIVPositiveART)>(HIVPositiveART), i);
-	success &= hivInfections.Add(          std::make_shared<decltype(HIVInfections)>(HIVInfections), i);
-	success &= hivDiagnosed.Add(           std::make_shared<decltype(HIVDiagnosed)>(HIVDiagnosed), i);
-	success &= hivDiagnosedVCT.Add(        std::make_shared<decltype(HIVDiagnosedVCT)>(HIVDiagnosedVCT), i);
-	success &= hivDiagnosesVCT.Add(        std::make_shared<decltype(HIVDiagnosesVCT)>(HIVDiagnosesVCT), i);
-	success &= tbInfections.Add(           std::make_shared<decltype(TBInfections)>(TBInfections), i);
-	success &= tbIncidence.Add(            std::make_shared<decltype(TBIncidence)>(TBIncidence), i);
-	success &= tbRecoveries.Add(           std::make_shared<decltype(TBRecoveries)>(TBRecoveries), i);
-	success &= tbInfectionsHousehold.Add(  std::make_shared<decltype(TBInfectionsHousehold)>(TBInfectionsHousehold), i);
-	success &= tbInfectionsCommunity.Add(  std::make_shared<decltype(TBInfectionsCommunity)>(TBInfectionsCommunity), i);
-	success &= tbSusceptible.Add(          std::make_shared<decltype(TBSusceptible)>(TBSusceptible), i);
-	success &= tbLatent.Add(               std::make_shared<decltype(TBLatent)>(TBLatent), i);
-	success &= tbInfectious.Add(           std::make_shared<decltype(TBInfectious)>(TBInfectious), i);
-	success &= tbExperienced.Add(		   std::make_shared<decltype(TBExperienced)>(TBExperienced), i);
-	success &= tbTreatmentBegin.Add(       std::make_shared<decltype(TBTreatmentBegin)>(TBTreatmentBegin), i);
-	success &= tbTreatmentBeginHIV.Add(    std::make_shared<decltype(TBTreatmentBeginHIV)>(TBTreatmentBeginHIV), i);
-	success &= tbTreatmentEnd.Add(         std::make_shared<decltype(TBTreatmentEnd)>(TBTreatmentEnd), i);
-	success &= tbTreatmentDropout.Add(     std::make_shared<decltype(TBTreatmentDropout)>(TBTreatmentDropout), i);
-	success &= tbInTreatment.Add(          std::make_shared<decltype(TBInTreatment)>(TBInTreatment), i);
-	success &= tbCompletedTreatment.Add(   std::make_shared<decltype(TBCompletedTreatment)>(TBCompletedTreatment), i);
-	success &= tbDroppedTreatment.Add(     std::make_shared<decltype(TBDroppedTreatment)>(TBDroppedTreatment), i);
-	success &= pyramid.Add(                std::make_shared<decltype(Pyramid)>(Pyramid), i);
-	success &= deathPyramid.Add(           std::make_shared<decltype(DeathPyramid)>(DeathPyramid), i);
-	success &= hivInfectionsPyramid.Add(   std::make_shared<decltype(HIVInfectionsPyramid)>(HIVInfectionsPyramid), i);
-	success &= hivPositivePyramid.Add(     std::make_shared<decltype(HIVPositivePyramid)>(HIVPositivePyramid), i);
-	success &= tbExperiencedPyramid.Add(   std::make_shared<decltype(TBExperiencedPyramid)>(TBExperiencedPyramid), i);
-	success &= activeHouseholdContacts.Add(std::make_shared<decltype(ActiveHouseholdContacts)>(ActiveHouseholdContacts));
+	success &= births.Add(                 std::move(std::make_shared<decltype(data.births)>(data.births)), i);
+	success &= deaths.Add(                 std::move(std::make_shared<decltype(data.deaths)>(data.deaths)), i);
+	success &= populationSize.Add(         std::move(std::make_shared<decltype(data.populationSize)>(data.populationSize)), i);
+	success &= marriages.Add(              std::move(std::make_shared<decltype(data.marriages)>(data.marriages)), i);
+	success &= divorces.Add(               std::move(std::make_shared<decltype(data.divorces)>(data.divorces)), i);
+	success &= households.Add(             std::move(std::make_shared<decltype(data.householdsCount)>(data.householdsCount)), i);
+	success &= singleToLooking.Add(        std::move(std::make_shared<decltype(data.singleToLooking)>(data.singleToLooking)), i);
+	success &= hivNegative.Add(            std::move(std::make_shared<decltype(data.hivNegative)>(data.hivNegative)), i);
+	success &= hivPositive.Add(            std::move(std::make_shared<decltype(data.hivPositive)>(data.hivPositive)), i);
+	success &= hivPositiveART.Add(         std::move(std::make_shared<decltype(data.hivPositiveART)>(data.hivPositiveART)), i);
+	success &= hivInfections.Add(          std::move(std::make_shared<decltype(data.hivInfections)>(data.hivInfections)), i);
+	success &= hivDiagnosed.Add(           std::move(std::make_shared<decltype(data.hivDiagnosed)>(data.hivDiagnosed)), i);
+	success &= hivDiagnosedVCT.Add(        std::move(std::make_shared<decltype(data.hivDiagnosedVCT)>(data.hivDiagnosedVCT)), i);
+	success &= hivDiagnosesVCT.Add(        std::move(std::make_shared<decltype(data.hivDiagnosesVCT)>(data.hivDiagnosesVCT)), i);
+	success &= tbInfections.Add(           std::move(std::make_shared<decltype(data.tbInfections)>(data.tbInfections)), i);
+	success &= tbIncidence.Add(            std::move(std::make_shared<decltype(data.tbIncidence)>(data.tbIncidence)), i);
+	success &= tbRecoveries.Add(           std::move(std::make_shared<decltype(data.tbRecoveries)>(data.tbRecoveries)), i);
+	success &= tbInfectionsHousehold.Add(  std::move(std::make_shared<decltype(data.tbInfectionsHousehold)>(data.tbInfectionsHousehold)), i);
+	success &= tbInfectionsCommunity.Add(  std::move(std::make_shared<decltype(data.tbInfectionsCommunity)>(data.tbInfectionsCommunity)), i);
+	success &= tbSusceptible.Add(          std::move(std::make_shared<decltype(data.tbSusceptible)>(data.tbSusceptible)), i);
+	success &= tbLatent.Add(               std::move(std::make_shared<decltype(data.tbLatent)>(data.tbLatent)), i);
+	success &= tbInfectious.Add(           std::move(std::make_shared<decltype(data.tbInfectious)>(data.tbInfectious)), i);
+	success &= tbExperienced.Add(		   std::move(std::make_shared<decltype(data.tbExperienced)>(data.tbExperienced)), i);
+	success &= tbTreatmentBegin.Add(       std::move(std::make_shared<decltype(data.tbTreatmentBegin)>(data.tbTreatmentBegin)), i);
+	success &= tbTreatmentBeginHIV.Add(    std::move(std::make_shared<decltype(data.tbTreatmentBeginHIV)>(data.tbTreatmentBeginHIV)), i);
+	success &= tbTreatmentEnd.Add(         std::move(std::make_shared<decltype(data.tbTreatmentEnd)>(data.tbTreatmentEnd)), i);
+	success &= tbTreatmentDropout.Add(     std::move(std::make_shared<decltype(data.tbTreatmentDropout)>(data.tbTreatmentDropout)), i);
+	success &= tbInTreatment.Add(          std::move(std::make_shared<decltype(data.tbInTreatment)>(data.tbInTreatment)), i);
+	success &= tbCompletedTreatment.Add(   std::move(std::make_shared<decltype(data.tbCompletedTreatment)>(data.tbCompletedTreatment)), i);
+	success &= tbDroppedTreatment.Add(     std::move(std::make_shared<decltype(data.tbDroppedTreatment)>(data.tbDroppedTreatment)), i);
+	success &= pyramid.Add(                std::move(std::make_shared<decltype(data.pyramid)>(data.pyramid)), i);
+	success &= deathPyramid.Add(           std::move(std::make_shared<decltype(data.deathPyramid)>(data.deathPyramid)), i);
+	success &= hivInfectionsPyramid.Add(   std::move(std::make_shared<decltype(data.hivInfectionsPyramid)>(data.hivInfectionsPyramid)), i);
+	success &= hivPositivePyramid.Add(     std::move(std::make_shared<decltype(data.hivPositivePyramid)>(data.hivPositivePyramid)), i);
+	success &= tbExperiencedPyramid.Add(   std::move(std::make_shared<decltype(data.tbExperiencedPyr)>(data.tbExperiencedPyr)), i);
+	success &= activeHouseholdContacts.Add(std::move(std::make_shared<decltype(data.activeHouseholdContacts)>(data.activeHouseholdContacts)));
 
 	success &= t.WriteSurveys(populationSurvey, householdSurvey, deathSurvey);
 
@@ -341,11 +304,15 @@ int main(int argc, char **argv)
 
 	for (int i = 0; i < nTrajectories; i++) {
 		results.emplace_back(
-			pool.enqueue([i, params, constants, householdsFile, seeds, &mtx, &populationSurvey, &householdSurvey, &deathSurvey] {
+			pool.enqueue([i, &params, constants, householdsFile, seeds, &mtx, &populationSurvey, &householdSurvey, &deathSurvey] {
 				printf("#%4d RUNNING\n", i);
 
 				// Initialize a trajectory
-				auto traj = TBABM{params, constants, householdsFile, seeds[i]};
+				auto seed = seeds[i];
+				auto traj = TBABM(params, 
+								  constants, 
+								  householdsFile, 
+								  seeds[i]);
 
 				// Run the trajectory and check its' status
 				if (!traj.Run()) {
@@ -357,7 +324,7 @@ int main(int argc, char **argv)
 				mtx.lock();
 
 				// Pass the TBABM object to a function that will export its data
-				if (!ExportTrajectory(traj, i, populationSurvey, householdSurvey, deathSurvey)) {
+				if (!ExportTrajectory(traj, seed, populationSurvey, householdSurvey, deathSurvey)) {
 					printf("Trajectory #%4d: ExportTrajectrory(1) failed\n", i);
 					mtx.unlock();
 					return false;

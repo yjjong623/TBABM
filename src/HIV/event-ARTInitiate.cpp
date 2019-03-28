@@ -29,7 +29,7 @@ EventFunc TBABM::ARTInitiate(weak_p<Individual> idv_w)
 			idv->ART_init_CD4 = CD4;
 			idv->onART = true;
 
-			hivPositiveART.Record(t, +1);
+			data.hivPositiveART.Record(t, +1);
 
 			return true;
 		};

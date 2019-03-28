@@ -40,10 +40,10 @@ public:
                  Params& (params),
 				 map<string, DataFrameFile>& (fileData),
                  EQ& event_queue,
-                 IndividualInitData initData,
+                 std::function<IndividualInitData()> GetInitData,
                  IndividualHandlers handles) : 
 									file(file), params(params), fileData(fileData), 
-									event_queue(event_queue), initData(initData),
+									event_queue(event_queue), GetInitData(GetInitData),
 									initHandles(handles) {
 			FILE *ifile = fopen(file, "r");
 			int c;
@@ -118,7 +118,7 @@ private:
 	map<string, DataFrameFile>& fileData;
 
     EQ& event_queue;
-    IndividualInitData initData;
+    std::function<IndividualInitData()> GetInitData;
     IndividualHandlers initHandles;
     Names name_gen;
 

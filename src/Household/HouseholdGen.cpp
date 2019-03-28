@@ -27,6 +27,8 @@ HouseholdGen::GetHousehold(const int current_time, const int hid, RNG& rng)
 		params
 	);
 
+	auto initData = GetInitData();
+
 	auto head = makeIndividual(
 		initSimContext,
 		initData,

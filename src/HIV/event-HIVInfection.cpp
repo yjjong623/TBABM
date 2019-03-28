@@ -53,11 +53,11 @@ EventFunc TBABM::HIVInfection(weak_p<Individual> idv_w)
 			int sex {idv->sex == Sex::Male ? 0 : 1};
 			int age {idv->age(t)};
 
-			hivPositive.Record(t, +1);
-			hivNegative.Record(t, -1);
-			hivInfections.Record(t, +1);
-			hivPositivePyramid.UpdateByAge(t, sex, age, +1);
-			hivInfectionsPyramid.UpdateByAge(t, sex, age, +1);
+			data.hivPositive.Record(t, +1);
+			data.hivNegative.Record(t, -1);
+			data.hivInfections.Record(t, +1);
+			data.hivPositivePyramid.UpdateByAge(t, sex, age, +1);
+			data.hivInfectionsPyramid.UpdateByAge(t, sex, age, +1);
 
 			return true;
 		};

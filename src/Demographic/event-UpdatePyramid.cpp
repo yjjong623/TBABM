@@ -28,7 +28,7 @@ EventFunc TBABM::UpdatePyramid(void)
 				int age = idv->age(t);
 				int sex = idv->sex == Sex::Male ? 0 : 1;
 
-				pyramid.UpdateByAge(t-1, sex, age, +1);
+				data.pyramid.UpdateByAge(t-1, sex, age, +1);
 			}
 
 			Schedule(t + 365, UpdatePyramid());

@@ -10,7 +10,7 @@ EventFunc TBABM::Survey(void)
 	using MS  = MarriageStatus;
 	
 	EventFunc ef = 
-		[&] (double t, SchedulerT scheduler) {
+		[this] (double t, SchedulerT scheduler) {
 			string buf;
 			string s = ",";
 

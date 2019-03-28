@@ -79,16 +79,16 @@ EventFunc TBABM::Death(weak_p<Individual> idv_w, DeathCause deathCause)
 			idv->tb.HandleDeath(t);
 
 			// Update various metrics
-			populationSize.Record(t, -1);
-			deaths.Record(t, +1);
-			deathPyramid.UpdateByAge(t, sex, age, +1);
+			data.populationSize.Record(t, -1);
+			data.deaths.Record(t, +1);
+			data.deathPyramid.UpdateByAge(t, sex, age, +1);
 
 			if (idv->hivStatus == HIVStatus::Positive)
-				hivPositive.Record(t, -1);
+				data.hivPositive.Record(t, -1);
 
 			if (idv->hivStatus == HIVStatus::Positive &&
 				idv->onART)
-				hivPositiveART.Record(t, -1);
+				data.hivPositiveART.Record(t, -1);
 
 			return true;
 		};

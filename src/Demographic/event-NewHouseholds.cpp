@@ -39,7 +39,7 @@ EventFunc TBABM::NewHouseholds(int num)
 				}
 			}
 
-			populationSize.Record(t, popChange);
+			data.populationSize.Record(t, popChange);
 
 			return true;
 		};

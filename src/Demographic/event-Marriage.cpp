@@ -102,7 +102,7 @@ EventFunc TBABM::Marriage(weak_p<Individual> m_weak, weak_p<Individual> f_weak)
 
 			Schedule(t + daysToFirstBirth - 9*30, Pregnancy(m, f));
 
-			marriages.Record(t, +1);
+			data.marriages.Record(t, +1);
 
 			return true;
 		};

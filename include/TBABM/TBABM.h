@@ -21,6 +21,8 @@
 #include <DataFrame.h>
 #include <JSONImport.h>
 
+#include "MasterData.h"
+
 #include "Individual.h"
 #include "IndividualTypes.h"
 #include "Names.h"
@@ -49,152 +51,48 @@ public:
 	using EventFunc = EQ::EventFunc;
 	using SchedulerT = EQ::SchedulerT;
 
-	enum class TBABMData {
-		HIVNegative, 
-		HIVPositiveART, 
-		HIVPositive,
-		HIVPositivePyramid,
-
-		HIVInfections,
-		HIVInfectionsPyramid,
-		HIVDiagnosed,
-		HIVDiagnosedVCT,
-		HIVDiagnosesVCT,
-
-		TBSusceptible,
-		TBLatent,
-		TBInfectious,
-
-		TBExperienced,
-
-		TBInfections,
-		TBIncidence,
-		TBRecoveries,
-
-		TBInfectionsHousehold,
-		TBInfectionsCommunity,
-
-		TBInTreatment,
-		TBCompletedTreatment,
-		TBDroppedTreatment,
-
-		TBTreatmentBegin,
-		TBTreatmentBeginHIV,
-		TBTreatmentEnd,
-		TBTreatmentDropout,
-
-		ActiveHouseholdContacts,
-
-		Marriages,
-		Divorces,
-		Births,
-		Deaths,
-		PopulationSize,
-		Pyramid,
-		DeathPyramid,
-		Households,
-		SingleToLooking
-	};
-
-	TBABM(Params _params, 
-		  std::map<string, long double> constants,
+	TBABM(Params params_, 
+		  std::map<string, long double> constants_,
 		  const char *householdsFile, 
-		  long _seed) : 
+		  const long _seed) : 
 
-		params(_params),
-		constants(constants),
+		params(params_),
+		constants(constants_),
 
-		births(         "births",          0, constants["tMax"], constants["periodLength"]),
-		deaths(         "deaths",          0, constants["tMax"], constants["periodLength"]),
-		marriages(      "marriages",       0, constants["tMax"], constants["periodLength"]),
-		divorces(       "divorces",        0, constants["tMax"], constants["periodLength"]),
-		populationSize( "populationSize",     constants["tMax"], constants["periodLength"]),
-		singleToLooking("singleToLooking", 0, constants["tMax"], constants["periodLength"]),
+		data(constants_["tMax"],
+			 constants_["periodLength"],
+			 {15, 25, 35, 45, 55, 65}),
 
-		hivNegative(   "hivNegative",    constants["tMax"], constants["periodLength"]),
-		hivPositive(   "hivPositive",    constants["tMax"], constants["periodLength"]),
-		hivPositiveART("hivPositiveART", constants["tMax"], constants["periodLength"]),
-		hivPositivePyramid("hivPositive pyramid", 0, constants["tMax"], 365, 2, {15, 25, 35, 45, 55, 66}),
-
-		hivInfectionsPyramid("hivInfections pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
-		hivInfections(  "hivInfections", 0,   constants["tMax"], constants["periodLength"]),
-		hivDiagnosed(   "hivDiagnosed",       constants["tMax"], constants["periodLength"]),
-		hivDiagnosedVCT("hivDiagnosedVCT",    constants["tMax"], constants["periodLength"]),
-		hivDiagnosesVCT("hivDiagnosesVCT", 0, constants["tMax"], constants["periodLength"]),
-
-		tbInfections( "tbInfections",  0, constants["tMax"], constants["periodLength"]),
-		tbIncidence(  "tbIncidence"  , 0, constants["tMax"], constants["periodLength"]),
-		tbRecoveries( "tbRecoveries",  0, constants["tMax"], constants["periodLength"]),
-
-		tbInfectionsHousehold( "tbInfectionsHousehold",  0, constants["tMax"], constants["periodLength"]),
-		tbInfectionsCommunity( "tbInfectionsCommunity",  0, constants["tMax"], constants["periodLength"]),
-
-		tbSusceptible("tbSusceptible", constants["tMax"], constants["periodLength"]),
-		tbLatent(     "tbLatent",      constants["tMax"], constants["periodLength"]),
-		tbInfectious( "tbInfectious",  constants["tMax"], constants["periodLength"]),
-
-		tbExperienced("tbExperienced", constants["tMax"], constants["periodLength"]),
-		tbExperiencedPyr("tbExperiencedPyr", 0, constants["tMax"], constants["periodLength"], 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
-
-		tbTreatmentBegin(   "tbTreatmentBegin",   0, constants["tMax"], constants["periodLength"]),
-		tbTreatmentBeginHIV("tbTreatmentBeginHIV",0, constants["tMax"], constants["periodLength"]),
-		tbTreatmentEnd(     "tbTreatmentEnd",     0, constants["tMax"], constants["periodLength"]),
-		tbTreatmentDropout( "tbTreatmentDropout", 0, constants["tMax"], constants["periodLength"]),
-
-		tbInTreatment(       "tbInTreatment",        constants["tMax"], constants["periodLength"]),
-		tbCompletedTreatment("tbCompletedTreatment", constants["tMax"], constants["periodLength"]),
-		tbDroppedTreatment(  "tbDroppedTreatment",   constants["tMax"], constants["periodLength"]),
-
-		activeHouseholdContacts("activeHouseholdContacts"),
-
-		pyramid("Population pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
-		deathPyramid("Death pyramid", 0, constants["tMax"], 365, 2, {10, 20, 30, 40, 50, 60, 70, 80, 90}),
-		householdsCount("households", 0, constants["tMax"], 365),
-
-		population({}),
-		households({}),
-
-		maleSeeking({}),
-		femaleSeeking({}),
-
-		seekingART({}),
-
-		nHouseholds(0),
 		seed(_seed),
 		rng(_seed),
+
 		householdGen(householdsFile, 
 					 params,
 					 fileData,
 					 eq,
-					 {tbInfections, tbIncidence, tbRecoveries, \
-					  tbInfectionsHousehold, tbInfectionsCommunity,
-					  tbSusceptible, tbLatent, tbInfectious, tbExperienced, tbExperiencedPyr,\
-					  tbTreatmentBegin, tbTreatmentBeginHIV, tbTreatmentEnd, tbTreatmentDropout, \
-					  tbInTreatment, tbCompletedTreatment, tbDroppedTreatment, activeHouseholdContacts},
-					 CreateIndividualHandlers([this] (weak_ptr<Individual> i, int t, DeathCause dc) -> void \
-					 						  { return Schedule(t, Death(i, dc)); },
-					 						  [this] (int t) -> double { return (double)tbInfectious(t)/(double)populationSize(t); }
-											  )) {
-			for (auto it = params.begin(); it != params.end(); it++) {
+					 [this] (void) { return data.GenIndividualInitData(); },
+					 CreateIndividualHandlers([this] (weak_ptr<Individual> i, int t, DeathCause dc) -> void { return Schedule(t, Death(i, dc)); },
+					 						  [this] (int t) -> double { return (double)data.tbInfectious(t)/(double)data.populationSize(t); }))
+		{
+			// Associate DataFrameFile's with parameters which map to a file, rather
+			// than directly to a distribution
+			for (auto it = params.begin(); it != params.end(); it++)
 				if (it->second.getType() == SimulationLib::Type::file_type) {
 					auto j = JSONImport::fileToJSON(it->second.getFileName());
 					fileData[it->first] = DataFrameFile{j};
 				}
-			}
 
-			printf("Seed is %ld\n", seed);
+			printf("Seed: %ld\n", seed);
 		};
 
 	bool Run(void);
 
-	template <typename T>
-	T
-	GetData(TBABMData field);
+	MasterData
+	GetData(void);
 
 	bool WriteSurveys(ofstream& ps, 
 					  ofstream& hs, 
 					  ofstream& ds);
-
 
 private:
 
@@ -316,7 +214,7 @@ private:
 
 	HouseholdGen householdGen;
 
-	long nHouseholds;
+	long nHouseholds = 0;
 
 	RNG rng;
 	long seed;

@@ -62,7 +62,7 @@ EventFunc TBABM::Divorce(weak_p<Individual> m_weak, weak_p<Individual> f_weak)
 				Schedule(t, CreateHousehold(booted, weak_p<Individual>(), {}, {}));
 			}
 
-			divorces.Record(t, +1);
+			data.divorces.Record(t, +1);
 			return true;
 		};
 

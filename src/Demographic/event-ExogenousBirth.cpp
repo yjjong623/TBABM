@@ -61,7 +61,7 @@ EventFunc TBABM::ExogenousBirth(void)
 		[this, sampleSpouse](double t, SchedulerT scheduler) {
 
 			// Grab the current population size
-			int n = populationSize(t);
+			int n = data.populationSize(t);
 
 			// Grab annual birth rate of the population
 			double annualBirthRate = params["annualBirthRate"].Sample(rng);

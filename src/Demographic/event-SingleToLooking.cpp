@@ -30,7 +30,7 @@ EventFunc TBABM::SingleToLooking(weak_p<Individual> idv_w)
 
 			idv->marriageStatus = MarriageStatus::Looking;
 
-			singleToLooking.Record(t, +1);
+			data.singleToLooking.Record(t, +1);
 			return true;
 		};
 

@@ -122,5 +122,5 @@ void TBABM::CreatePopulation(int t, long size)
 			Schedule(t + 365, HIVInfectionCheck(person));
 	}
 
-	populationSize.Record(t, popChange);
+	data.populationSize.Record(t, popChange);
 }

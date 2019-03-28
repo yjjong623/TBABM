@@ -1,4 +1,11 @@
 #pragma once
+
+#include <IncidenceTimeSeries.h>
+#include <PrevalenceTimeSeries.h>
+#include <IncidencePyramidTimeSeries.h>
+#include <PrevalencePyramidTimeSeries.h>
+#include <DiscreteTimeStatistic.h>
+
 #include "IndividualTypes.h"
 
 class MasterData {
@@ -54,8 +61,11 @@ public:
 													// the percentage of household contacts who have
 													// active TB.
 
-	MasterData(int tMax, int pLength, std::vector<int> ageBreaks);
+	MasterData(int tMax, int pLength, std::vector<double> ageBreaks);
 
 	IndividualInitData
-	GenIndividualInitData(void) const;
+	GenIndividualInitData(void);
+
+	void
+	Close(void);
 };

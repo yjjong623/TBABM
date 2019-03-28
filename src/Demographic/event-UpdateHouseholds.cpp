@@ -23,7 +23,7 @@ EventFunc TBABM::UpdateHouseholds(void)
 				if (!it->second)
 					continue;
 
-				householdsCount.Record(t, +1);
+				data.householdsCount.Record(t, +1);
 			}
 			Schedule(t + 365, UpdateHouseholds());
 			return true;

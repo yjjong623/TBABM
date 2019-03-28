@@ -55,8 +55,13 @@ set(tb_path "${TBABM_SOURCE_DIR}/TB")
 set(tb ${tb_path}/TB.cpp
 	   ${tb_path}/TBTypes.cpp)
 
+set(tbabm_path "${TBABM_SOURCE_DIR}")
+set(tbabm ${tbabm_path}/TBABM.cpp
+		  ${tbabm_path}/test.cpp
+		  ${tbabm_path}/MasterData.cpp)
+
 # Set source files
-set(src test.cpp TBABM.cpp ${demographic} ${hiv} ${tb} ${individual} ${household})
+set(src ${tbabm} ${demographic} ${hiv} ${tb} ${individual} ${household})
 
 include_directories(${Boost_INCLUDE_DIRS})
 

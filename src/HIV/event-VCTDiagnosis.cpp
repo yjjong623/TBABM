@@ -54,9 +54,9 @@ EventFunc TBABM::VCTDiagnosis(weak_p<Individual> idv_w)
 			if (timeToDiagnosis < ageGroupWidth && idv->hivStatus == HIVStatus::Positive) {
 
 				idv->hivDiagnosed = true;
-				hivDiagnosed.Record(t, +1);
-				hivDiagnosedVCT.Record(t, +1);
-				hivDiagnosesVCT.Record(t, +1);
+				data.hivDiagnosed.Record(t, +1);
+				data.hivDiagnosedVCT.Record(t, +1);
+				data.hivDiagnosesVCT.Record(t, +1);
 
 				if (ARTEligible(t, idv) && initiateART) {
 					// printf("\tART eligible\n");

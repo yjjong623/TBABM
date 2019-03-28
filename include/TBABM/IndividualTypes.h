@@ -74,7 +74,7 @@ typedef struct IndividualInitData {
 template <typename... Ts>
 IndividualInitData CreateIndividualInitData(Ts&&... args)
 {
-	return { std::forward<Ts>(args...) };
+	return { std::forward<Ts>(args)... };
 }
 
 typedef struct IndividualHandlers {
