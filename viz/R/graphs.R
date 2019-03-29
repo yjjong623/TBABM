@@ -128,6 +128,12 @@ cat$tbOverview()
 cat$tbEvents()
 cat$tbTransmission()
 
+addTimeSeries <- function(a, b) {
+  joined <- full_join(a, b, by=c("trajectory", "period"))
+  
+  joined %>% mutate(value = value.x + value.y)
+}
+
 grid <- function(Loader, namesMap, startYear) {
   lambda <- function(name) {
     # 'item' is either a string describing the title, or a list
@@ -148,6 +154,7 @@ grid <- function(Loader, namesMap, startYear) {
     # named by the second element in the character vector
     if (!("data" %in% names(item)))
       data <- Loader(name)
+    # else if (is.vector(item$data[1]))
     else
       data <- JoinAndDivideTimeSeries(Loader(item$data[1]), Loader(item$data[2]), "value", factor)
 
@@ -220,15 +227,41 @@ bigMap  <- list(birthRate         = list(data=c("births", "populationSize"), tit
                 tbInfectionsHousehold= list(title="Household infections", y="Infections/year"),
                 tbInfectionsCommunity= list(title="Community infections", y="Infections/year"))
 
-mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", y="Number of case notifications"),
-                 populationSize       = list(title="All individuals", y="Number of individuals"),
-                 txIndividuals        = list(data=c("tbCompletedTreatment", "populationSize"), title="Treatment-experienced individuals", y="Proportion of individuals (%)", factor=100),
-                 tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", y="Number of case notifications"),
-                 populationSize       = list(title="All individuals", y="Number of individuals"),
-                 tbInfectious         = list(data=c("tbInfectious", "populationSize"), title="Adults", y="Tuberculosis prevalence (%)", factor=100),
-                 tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", y="Number of case notifications"),
-                 hivPrevalence        = list(data=c("hivPositive", "populationSize"), title="HIV prevalence, all individuals", y="Prevalence (%)", factor=100),
-                 tbInfectious         = list(data=c("tbInfectious", "populationSize"), title="Adults", y="Tuberculosis prevalence (%)", factor=100))
+mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", 
+                                             y="Number of case notifications", 
+                                             calibration="notifiedTBAll"),
+                 populationSize       = list(title="All individuals", 
+                                             y="Number of individuals", 
+                                             calibration="populationAll"),
+                 txIndividuals        = list(data=c("tbCompletedTreatment", "populationSize"), 
+                                             title="Treatment-experienced individuals", 
+                                             y="Proportion of individuals (%)", 
+                                             factor=100,
+                                             calibration="prevalenceExperiencedAdults"), # currently WRONG!
+                 tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", 
+                                             y="Number of case notifications",
+                                             calibration="notifiedTBAll"),
+                 populationSize       = list(title="All individuals", 
+                                             y="Number of individuals",
+                                             calibration="populationAll"),
+                 tbInfectious         = list(data=c("tbInfectious", "populationSize"), 
+                                             title="Adults", 
+                                             y="Tuberculosis prevalence (%)", 
+                                             factor=100,
+                                             calibration="prevalenceInfectiousAdults"),
+                 tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", 
+                                             y="Number of case notifications",
+                                             calibration="notifiedTBAll"),
+                 hivPrevalence        = list(data=c("hivPositive", "populationSize"), 
+                                             title="HIV prevalence, all individuals", 
+                                             y="Prevalence (%)", 
+                                             factor=100,
+                                             calibration="prevalenceHIV"),
+                 tbInfectious         = list(data=c("tbInfectious", "populationSize"), 
+                                             title="Adults", 
+                                             y="Tuberculosis prevalence (%)", 
+                                             factor=100,
+                                             calibration="prevalenceInfectiousAdults"))
 
 
 # Current format: {
@@ -248,8 +281,9 @@ mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notificati
 # }
 
 
-reviewLatestModelRun <- function () do.call(multiplot, flatten(list(grid(CreateGraphCatalog(outputLocation)$Loader, testMap, 1990), cols=2)))
-reviewLatestModelRun()
+reviewLatestModelRun <- function (map) do.call(multiplot, flatten(list(grid(CreateGraphCatalog(outputLocation)$Loader, map, 1990), cols=5)))
+reviewLatestModelRun(testMap)
+reviewLatestModelRun(bigMap)
 
 
 do.call(multiplot, flatten(list(grid(cat$Loader, testMap, 1990), cols=4)))

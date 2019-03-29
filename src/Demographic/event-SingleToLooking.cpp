@@ -20,15 +20,16 @@ EventFunc TBABM::SingleToLooking(weak_p<Individual> idv_w)
 			if (!idv)
 				return true;
 
-			if (idv->dead || idv->marriageStatus == MarriageStatus::Married)
+			if (idv->dead || \
+				idv->marriageStatus == MarriageStatus::Married)
 				return true;
+
+			idv->marriageStatus = MarriageStatus::Looking;
 
 			if (idv->sex == Sex::Male)
 				maleSeeking.push_back(idv_w);
 			else
 				femaleSeeking.push_back(idv_w);
-
-			idv->marriageStatus = MarriageStatus::Looking;
 
 			data.singleToLooking.Record(t, +1);
 			return true;
