@@ -62,6 +62,21 @@ bool TBABM::Run(void)
 
     printf("Events processed: %d\n", events_processed);
 
+    // for (auto idv : population)
+        // printf("Use count A: %ld\n", idv.use_count());
+
+    for (size_t i = 0; i < households.size(); i++)
+        households[i].reset();
+
+    // for (auto idv : population)
+        // printf("Use count B: %ld\n", idv.use_count());
+
+    for (size_t i = 0; i < population.size(); i++)
+        population[i].reset();
+
+    // for (auto idv : population)
+        // printf("Use count C: %ld\n", idv.use_count());
+
     data.Close();
 
     return true;
@@ -140,8 +155,8 @@ void TBABM::ChangeHousehold(weak_p<Individual> idv_w, int t, int newHID, Househo
     newHousehold->AddIndividual(idv, t, newRole);
 
     // Clear household if there's nobody left in it
-    // if (oldHousehold->size() == 0)
-        // households[oldHID].reset();
+    if (oldHousehold->size() == 0)
+        households[oldHID].reset();
 
     return;
 }

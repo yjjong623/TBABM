@@ -129,10 +129,6 @@ public:
 	}
 
 	void LivedWith(weak_p<Individual> idv_w) {
-		auto idv = idv_w.lock();
-		if (!idv ||idv->dead)
-			return;
-
 		livedWithBefore.push_back(idv_w);
 	}
 

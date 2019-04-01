@@ -200,7 +200,7 @@ int main(int argc, char **argv)
 	// Initialize a few default values for parameters that mostly can be 
 	// passed through the command line
 	const char *householdsFile {"household_structure.csv"};
-	int nTrajectories {5};
+	int nTrajectories {1};
 	long timestamp {std::time(NULL)};
 
 	string folder {""};

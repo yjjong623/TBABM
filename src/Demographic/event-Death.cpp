@@ -65,7 +65,7 @@ EventFunc TBABM::Death(weak_p<Individual> idv_w, DeathCause deathCause)
 			// longer have any members in it. In this case, remove the
 			// household
 			if (household->size() == 0)
-				household.reset();
+				households[idv->householdID].reset();
 
 			// With 'idv' cut out of others records, and their household,
 			// it is now safe to erase them from the population

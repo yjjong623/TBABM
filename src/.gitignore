@@ -2,3 +2,4 @@ TBABMTest
 TBABMParamTest
 output.txt
 **/*.xlsx
+sftp-config.json

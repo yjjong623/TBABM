@@ -81,11 +81,13 @@ EventFunc TBABM::ChangeAgeGroup(weak_p<Individual> idv_w)
 			// Joining a household
 			//////////////////////////////////////////////////////
 			auto household = households[idv->householdID];
+			assert(household);
+			
 			bool changed {false};
 			if (age >= 65 && household->size() == 1) {
 				for (size_t i = 0; i < idv->livedWithBefore.size(); i++) {
 					auto person = idv->livedWithBefore[i].lock();
-					if (person || person->dead)
+					if (!person || person->dead)
 						continue;
 
 					int hid = person->householdID;
