@@ -116,17 +116,17 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
 outputLocation <- "/Users/marcusrussi/Desktop/Yaesoubi-Cohen-Lab/repos/TBABM/output/"
 cat <- CreateGraphCatalog(outputLocation)
 
-cat$hivCD4Decline()
-
-cat$deathPyramid()
-
-
-
-cat$tbTreatmentBegin()
-cat$tbTreatmentBeginHIV()
-cat$tbOverview()
-cat$tbEvents()
-cat$tbTransmission()
+# cat$hivCD4Decline()
+# 
+# cat$deathPyramid()
+# 
+# 
+# 
+# cat$tbTreatmentBegin()
+# cat$tbTreatmentBeginHIV()
+# cat$tbOverview()
+# cat$tbEvents()
+# cat$tbTransmission()
 
 addTimeSeries <- function(a, b) {
   joined <- full_join(a, b, by=c("trajectory", "period"))
@@ -281,9 +281,9 @@ mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notificati
 # }
 
 
-reviewLatestModelRun <- function (map) do.call(multiplot, flatten(list(grid(CreateGraphCatalog(outputLocation)$Loader, map, 1990), cols=5)))
-reviewLatestModelRun(testMap)
-reviewLatestModelRun(bigMap)
+reviewLatestModelRun <- function (map, cols=3) {do.call(multiplot, flatten(list(grid(CreateGraphCatalog(outputLocation)$Loader, map, 1990), cols)))}
+reviewLatestModelRun(testMap, 3)
+reviewLatestModelRun(bigMap, 5)
 
 
 do.call(multiplot, flatten(list(grid(cat$Loader, testMap, 1990), cols=4)))
