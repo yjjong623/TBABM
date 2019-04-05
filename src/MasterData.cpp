@@ -5,8 +5,11 @@ MasterData::MasterData(int tMax, int pLength, std::vector<double> ageBreaks) :
 	deaths(         "deaths",          0, tMax, pLength),
 	marriages(      "marriages",       0, tMax, pLength),
 	divorces(       "divorces",        0, tMax, pLength),
-	populationSize( "populationSize",     tMax, pLength),
 	singleToLooking("singleToLooking", 0, tMax, pLength),
+
+	populationSize( "populationSize",     tMax, pLength),
+	populationChildren("populationChildren", tMax, pLength),
+	populationAdults(  "populationAdults", tMax, pLength),
 
 	hivNegative(   "hivNegative",    tMax, pLength),
 	hivPositive(   "hivPositive",    tMax, pLength),
@@ -34,13 +37,21 @@ MasterData::MasterData(int tMax, int pLength, std::vector<double> ageBreaks) :
 	tbExperiencedPyr("tbExperiencedPyr", 0, tMax, pLength, 2, ageBreaks),
 
 	tbTreatmentBegin(   "tbTreatmentBegin",   0, tMax, pLength),
-	tbTreatmentBeginHIV("tbTreatmentBeginHIV",0, tMax, pLength),
+		tbTreatmentBeginHIV("tbTreatmentBeginHIV",0, tMax, pLength),
+		tbTreatmentBeginChildren("tbTreatmentBeginChildren",0, tMax, pLength),
+		tbTreatmentBeginAdultsNaive("tbTreatmentBeginAdultsNaive",0, tMax, pLength),
+		tbTreatmentBeginAdultsExperienced("tbTreatmentBeginAdultsExperienced",0, tMax, pLength),
 	tbTreatmentEnd(     "tbTreatmentEnd",     0, tMax, pLength),
 	tbTreatmentDropout( "tbTreatmentDropout", 0, tMax, pLength),
 
 	tbInTreatment(       "tbInTreatment",        tMax, pLength),
 	tbCompletedTreatment("tbCompletedTreatment", tMax, pLength),
 	tbDroppedTreatment(  "tbDroppedTreatment",   tMax, pLength),
+
+	tbTxExperiencedAdults("tbTxExperiencedAdults", tMax, pLength),
+	tbTxExperiencedInfectiousAdults("tbTxExperiencedInfectiousAdults", tMax, pLength),
+	tbTxNaiveAdults("tbTxNaiveAdults", tMax, pLength),
+	tbTxNaiveInfectiousAdults("tbTxNaiveInfectiousAdults", tMax, pLength),
 
 	activeHouseholdContacts("activeHouseholdContacts"),
 
@@ -67,11 +78,18 @@ MasterData::GenIndividualInitData(void)
 		tbExperiencedPyr,
 		tbTreatmentBegin,
 		tbTreatmentBeginHIV,
+		tbTreatmentBeginChildren,
+		tbTreatmentBeginAdultsNaive,
+		tbTreatmentBeginAdultsExperienced,
 		tbTreatmentEnd,
 		tbTreatmentDropout,
 		tbInTreatment,
 		tbCompletedTreatment,
 		tbDroppedTreatment,
+		tbTxExperiencedAdults,
+		tbTxExperiencedInfectiousAdults,
+		tbTxNaiveAdults,
+		tbTxNaiveInfectiousAdults,
 		activeHouseholdContacts
 	);
 }
@@ -83,8 +101,12 @@ MasterData::Close(void)
 	deaths.Close();
 	marriages.Close();
 	divorces.Close();
-	populationSize.Close();
 	singleToLooking.Close();
+
+	populationSize.Close();
+	populationChildren.Close();
+	populationAdults.Close();
+
 	pyramid.Close();
 	deathPyramid.Close();
 	householdsCount.Close();
@@ -111,9 +133,18 @@ MasterData::Close(void)
 	tbExperiencedPyr.Close();
 
 	tbTreatmentBegin.Close();
-	tbTreatmentBeginHIV.Close();
+		tbTreatmentBeginHIV.Close();
+		tbTreatmentBeginChildren.Close();
+		tbTreatmentBeginAdultsNaive.Close();
+		tbTreatmentBeginAdultsExperienced.Close();
 	tbTreatmentEnd.Close();
 	tbTreatmentDropout.Close();
+
+	tbTxExperiencedAdults.Close();
+	tbTxExperiencedInfectiousAdults.Close();
+	tbTxNaiveAdults.Close();
+	tbTxNaiveInfectiousAdults.Close();
+
 	tbInTreatment.Close();
 	tbCompletedTreatment.Close();
 	tbDroppedTreatment.Close();

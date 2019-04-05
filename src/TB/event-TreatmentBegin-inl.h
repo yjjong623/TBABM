@@ -30,6 +30,31 @@ TB::TreatmentBegin(Time t)
 		data.tbInTreatment.Record(ts, +1);
 		data.tbTreatmentBegin.Record(ts, +1);
 
+		// Subgroups of treatmentBegin for children, treatment-naive adults,
+		// treatment-experienced adults
+		if (AgeStatus(ts) < 15)
+			data.tbTreatmentBeginChildren.Record(ts, +1);
+		else if (tb_treatment_status == TBTreatmentStatus::None)
+			data.tbTreatmentBeginAdultsNaive.Record(ts, +1);
+		else
+			data.tbTreatmentBeginAdultsExperienced.Record(ts, +1);
+		
+		if (tb_treatment_status == TBTreatmentStatus::None && \
+			AgeStatus(ts) >= 15) {
+			data.tbTxExperiencedAdults.Record(ts, +1);
+			data.tbTxNaiveAdults.Record(ts, -1);
+		}
+
+		if (tb_treatment_status == TBTreatmentStatus::None && \
+			AgeStatus(ts) >= 15) {
+			data.tbTxNaiveInfectiousAdults.Record(ts, -1);
+			data.tbTxExperiencedInfectiousAdults.Record(ts, +1);
+		}
+
+		// Subgroup for HIV+ people
+		if (GetHIVStatus() == HIVStatus::Positive)
+			data.tbTreatmentBeginHIV.Record(ts, +1);
+
 		if (tb_treatment_status == TBTreatmentStatus::Dropout)
 			data.tbDroppedTreatment.Record(ts, -1);
 		else if (tb_treatment_status == TBTreatmentStatus::Complete)
@@ -38,10 +63,6 @@ TB::TreatmentBegin(Time t)
 		data.activeHouseholdContacts.Record(prev_household);
 
 		data.tbInfectious.Record(ts, -1);
-		
-		// If HIV+, record
-		if (GetHIVStatus() == HIVStatus::Positive)
-			data.tbTreatmentBeginHIV.Record(ts, +1);
 
 		tb_treatment_status = TBTreatmentStatus::Incomplete;
 

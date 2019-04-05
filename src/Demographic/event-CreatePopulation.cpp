@@ -122,5 +122,15 @@ void TBABM::CreatePopulation(int t, long size)
 			Schedule(t + 365, HIVInfectionCheck(person));
 	}
 
+	for (auto it = population.begin(); it != population.end(); it++) {
+		auto person = *it;
+		int age = person->age(t);
+
+		if (age < 15)
+			data.populationChildren.Record(t, +1);
+		else
+			data.populationAdults.Record(t, +1);
+	}
+
 	data.populationSize.Record(t, popChange);
 }

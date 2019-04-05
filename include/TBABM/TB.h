@@ -79,7 +79,8 @@ public:
 							   function<double(TBStatus)> contactHouseholdPrevalence);
 	void ResetHouseholdCallbacks(void);
 
-	void InfectionRiskEvaluate_initial(int local_risk_window = 0);
+	void InitialEvents(void);
+	
 	void RiskReeval(Time);
 
 	// Called by containing Individual upon death, neccessary
@@ -103,6 +104,7 @@ private:
 	// When scheduling an infection, the only StrainType
 	// supported right now is 'Unspecified'.
 	void InfectionRiskEvaluate(Time, int local_risk_window = 0, shared_p<TB> = {});
+	void InfectionRiskEvaluate_initial(int local_risk_window = 0);
 	bool InfectionRiskEvaluate_impl(Time, int local_risk_window = 0, shared_p<TB> = {});
 
 	// Marks an individual as latently infected. May transition
@@ -130,6 +132,8 @@ private:
 	// Marks the individual as recovered, and sets
 	// status tb_status to Latent
 	void Recovery(Time, RecoveryType);
+
+	void EnterAdulthood(void);
 
 	double risk_window; // unit: [days]
 	int risk_window_id;

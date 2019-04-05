@@ -24,11 +24,14 @@ using std::future;
 
 TimeSeriesExport<int> births;
 TimeSeriesExport<int> deaths;
-TimeSeriesExport<int> populationSize;
 TimeSeriesExport<int> marriages;
 TimeSeriesExport<int> divorces;
 TimeSeriesExport<int> households;
 TimeSeriesExport<int> singleToLooking;
+
+TimeSeriesExport<int> populationSize;
+TimeSeriesExport<int> populationChildren;
+TimeSeriesExport<int> populationAdults;
 
 TimeSeriesExport<int> hivNegative;
 TimeSeriesExport<int> hivPositive;
@@ -53,9 +56,17 @@ TimeSeriesExport<int> tbInfectious;
 TimeSeriesExport<int> tbExperienced;
 
 TimeSeriesExport<int> tbTreatmentBegin;
-TimeSeriesExport<int> tbTreatmentBeginHIV;
+	TimeSeriesExport<int> tbTreatmentBeginHIV;
+	TimeSeriesExport<int> tbTreatmentBeginChildren;
+	TimeSeriesExport<int> tbTreatmentBeginAdultsNaive;
+	TimeSeriesExport<int> tbTreatmentBeginAdultsExperienced;
 TimeSeriesExport<int> tbTreatmentEnd;
 TimeSeriesExport<int> tbTreatmentDropout;
+
+TimeSeriesExport<int> tbTxExperiencedAdults;
+TimeSeriesExport<int> tbTxExperiencedInfectiousAdults;
+TimeSeriesExport<int> tbTxNaiveAdults;
+TimeSeriesExport<int> tbTxNaiveInfectiousAdults;
 
 TimeSeriesExport<int> tbInTreatment;
 TimeSeriesExport<int> tbCompletedTreatment;
@@ -88,11 +99,15 @@ bool ExportTrajectory(TBABM& t,
 
 	success &= births.Add(                 std::move(std::make_shared<decltype(data.births)>(data.births)), i);
 	success &= deaths.Add(                 std::move(std::make_shared<decltype(data.deaths)>(data.deaths)), i);
-	success &= populationSize.Add(         std::move(std::make_shared<decltype(data.populationSize)>(data.populationSize)), i);
 	success &= marriages.Add(              std::move(std::make_shared<decltype(data.marriages)>(data.marriages)), i);
 	success &= divorces.Add(               std::move(std::make_shared<decltype(data.divorces)>(data.divorces)), i);
 	success &= households.Add(             std::move(std::make_shared<decltype(data.householdsCount)>(data.householdsCount)), i);
 	success &= singleToLooking.Add(        std::move(std::make_shared<decltype(data.singleToLooking)>(data.singleToLooking)), i);
+
+	success &= populationSize.Add(         std::move(std::make_shared<decltype(data.populationSize)>(data.populationSize)), i);
+	success &= populationChildren.Add(     std::move(std::make_shared<decltype(data.populationChildren)>(data.populationChildren)), i);
+	success &= populationAdults.Add(       std::move(std::make_shared<decltype(data.populationAdults)>(data.populationAdults)), i);
+
 	success &= hivNegative.Add(            std::move(std::make_shared<decltype(data.hivNegative)>(data.hivNegative)), i);
 	success &= hivPositive.Add(            std::move(std::make_shared<decltype(data.hivPositive)>(data.hivPositive)), i);
 	success &= hivPositiveART.Add(         std::move(std::make_shared<decltype(data.hivPositiveART)>(data.hivPositiveART)), i);
@@ -110,7 +125,10 @@ bool ExportTrajectory(TBABM& t,
 	success &= tbInfectious.Add(           std::move(std::make_shared<decltype(data.tbInfectious)>(data.tbInfectious)), i);
 	success &= tbExperienced.Add(		   std::move(std::make_shared<decltype(data.tbExperienced)>(data.tbExperienced)), i);
 	success &= tbTreatmentBegin.Add(       std::move(std::make_shared<decltype(data.tbTreatmentBegin)>(data.tbTreatmentBegin)), i);
-	success &= tbTreatmentBeginHIV.Add(    std::move(std::make_shared<decltype(data.tbTreatmentBeginHIV)>(data.tbTreatmentBeginHIV)), i);
+		success &= tbTreatmentBeginHIV.Add(    std::move(std::make_shared<decltype(data.tbTreatmentBeginHIV)>(data.tbTreatmentBeginHIV)), i);
+		success &= tbTreatmentBeginChildren.Add(    std::move(std::make_shared<decltype(data.tbTreatmentBeginChildren)>(data.tbTreatmentBeginChildren)), i);
+		success &= tbTreatmentBeginAdultsNaive.Add(    std::move(std::make_shared<decltype(data.tbTreatmentBeginAdultsNaive)>(data.tbTreatmentBeginAdultsNaive)), i);
+		success &= tbTreatmentBeginAdultsExperienced.Add(    std::move(std::make_shared<decltype(data.tbTreatmentBeginAdultsExperienced)>(data.tbTreatmentBeginAdultsExperienced)), i);
 	success &= tbTreatmentEnd.Add(         std::move(std::make_shared<decltype(data.tbTreatmentEnd)>(data.tbTreatmentEnd)), i);
 	success &= tbTreatmentDropout.Add(     std::move(std::make_shared<decltype(data.tbTreatmentDropout)>(data.tbTreatmentDropout)), i);
 	success &= tbInTreatment.Add(          std::move(std::make_shared<decltype(data.tbInTreatment)>(data.tbInTreatment)), i);
@@ -121,6 +139,13 @@ bool ExportTrajectory(TBABM& t,
 	success &= hivInfectionsPyramid.Add(   std::move(std::make_shared<decltype(data.hivInfectionsPyramid)>(data.hivInfectionsPyramid)), i);
 	success &= hivPositivePyramid.Add(     std::move(std::make_shared<decltype(data.hivPositivePyramid)>(data.hivPositivePyramid)), i);
 	success &= tbExperiencedPyramid.Add(   std::move(std::make_shared<decltype(data.tbExperiencedPyr)>(data.tbExperiencedPyr)), i);
+
+	success &= tbTxExperiencedAdults.Add(               std::move(std::make_shared<decltype(data.tbTxExperiencedAdults)>(data.tbTxExperiencedAdults)), i);
+	success &= tbTxExperiencedInfectiousAdults.Add(     std::move(std::make_shared<decltype(data.tbTxExperiencedInfectiousAdults)>(data.tbTxExperiencedInfectiousAdults)), i);
+	success &= tbTxNaiveAdults.Add(                     std::move(std::make_shared<decltype(data.tbTxNaiveAdults)>(data.tbTxNaiveAdults)), i);
+	success &= tbTxNaiveInfectiousAdults.Add(           std::move(std::make_shared<decltype(data.tbTxNaiveInfectiousAdults)>(data.tbTxNaiveInfectiousAdults)), i);
+
+
 	success &= activeHouseholdContacts.Add(std::move(std::make_shared<decltype(data.activeHouseholdContacts)>(data.activeHouseholdContacts)));
 
 	success &= t.WriteSurveys(populationSurvey, householdSurvey, deathSurvey);
@@ -141,10 +166,14 @@ bool WriteData(string outputPrefix)
 	return (
 		births.Write(outputPrefix + "births.csv")               &&                                             
 		deaths.Write(outputPrefix + "deaths.csv")               &&                                             
-		populationSize.Write(outputPrefix + "populationSize.csv")       &&                     
 		marriages.Write(outputPrefix + "marriages.csv")            &&                                    
 		divorces.Write(outputPrefix + "divorces.csv")             &&                                       
 		singleToLooking.Write(outputPrefix + "singleToLooking.csv")      &&                  
+
+		populationSize.Write(outputPrefix + "populationSize.csv")       &&                     
+		populationChildren.Write(outputPrefix + "populationChildren.csv")       &&                     
+		populationAdults.Write(outputPrefix + "populationAdults.csv")       &&                     
+
 		pyramid.Write(outputPrefix + "pyramid.csv")              &&                                          
 		deathPyramid.Write(outputPrefix + "deathPyramid.csv")         &&                           
 		households.Write(outputPrefix + "households.csv")           &&                                 
@@ -173,7 +202,11 @@ bool WriteData(string outputPrefix)
 		tbExperienced.Write(outputPrefix + "tbExperienced.csv") &&
 		
 		tbTreatmentBegin.Write(outputPrefix + "tbTreatmentBegin.csv")     &&               
-		tbTreatmentBeginHIV.Write(outputPrefix + "tbTreatmentBeginHIV.csv")  &&      
+		tbTreatmentBeginHIV.Write(outputPrefix + "tbTreatmentBeginHIV.csv")  &&
+	    tbTreatmentBeginChildren.Write(outputPrefix + "tbTreatmentBeginChildren.csv")  &&
+	    tbTreatmentBeginAdultsNaive.Write(outputPrefix + "tbTreatmentBeginAdultsNaive.csv")  &&
+	    tbTreatmentBeginAdultsExperienced.Write(outputPrefix + "tbTreatmentBeginAdultsExperienced.csv")  &&       
+	    
 		tbTreatmentEnd.Write(outputPrefix + "tbTreatmentEnd.csv")       &&                     
 		tbTreatmentDropout.Write(outputPrefix + "tbTreatmentDropout.csv")   &&         
 		tbInTreatment.Write(outputPrefix + "tbInTreatment.csv")        &&                        
@@ -181,6 +214,11 @@ bool WriteData(string outputPrefix)
 		tbDroppedTreatment.Write(outputPrefix + "tbDroppedTreatment.csv")   &&   
 
 		tbExperiencedPyramid.Write(outputPrefix + "tbExperiencedPyramid.csv") &&
+
+		tbTxExperiencedAdults.Write(outputPrefix + "tbTxExperiencedAdults.csv") &&
+		tbTxExperiencedInfectiousAdults.Write(outputPrefix + "tbTxExperiencedInfectiousAdults.csv") &&
+		tbTxNaiveAdults.Write(outputPrefix + "tbTxNaiveAdults.csv") &&
+		tbTxNaiveInfectiousAdults.Write(outputPrefix + "tbTxNaiveInfectiousAdults.csv") &&
 		
 		activeHouseholdContacts.Write(outputPrefix + "activeHouseholdContacts.csv")
 	);

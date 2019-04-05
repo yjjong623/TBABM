@@ -58,13 +58,21 @@ typedef struct IndividualInitData {
 	PrevalencePyramidTimeSeries& tbExperiencedPyr; // Pyramid of the above
 
 	IncidenceTimeSeries<int>& tbTreatmentBegin;   // Individuals initiating treatment
-	IncidenceTimeSeries<int>& tbTreatmentBeginHIV;// Initiating treatment and HIV+
+		IncidenceTimeSeries<int>& tbTreatmentBeginHIV;// Initiating treatment and HIV+
+		IncidenceTimeSeries<int>& tbTreatmentBeginChildren;
+		IncidenceTimeSeries<int>& tbTreatmentBeginAdultsNaive;
+		IncidenceTimeSeries<int>& tbTreatmentBeginAdultsExperienced;
 	IncidenceTimeSeries<int>& tbTreatmentEnd;     // Individuals completing treatment
 	IncidenceTimeSeries<int>& tbTreatmentDropout; // Individuals dropping out
 
 	PrevalenceTimeSeries<int>& tbInTreatment;        // Individuals in treatment
 	PrevalenceTimeSeries<int>& tbCompletedTreatment; // Individuals who completed
 	PrevalenceTimeSeries<int>& tbDroppedTreatment;   // Individuals who dropped
+
+	PrevalenceTimeSeries<int>& tbTxExperiencedAdults;
+	PrevalenceTimeSeries<int>& tbTxExperiencedInfectiousAdults;
+	PrevalenceTimeSeries<int>& tbTxNaiveAdults;
+	PrevalenceTimeSeries<int>& tbTxNaiveInfectiousAdults;
 
 	DiscreteTimeStatistic& activeHouseholdContacts; // For each individual diagnosed with active TB,
 													// the percentage of household contacts who have

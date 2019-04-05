@@ -60,6 +60,7 @@ EventFunc TBABM::Birth(weak_p<Individual> mother_w, weak_p<Individual> father_w)
 			Schedule(t, ChangeAgeGroup(baby));
 
 			data.populationSize.Record(t, +1);
+			data.populationChildren.Record(t, +1);
 			data.births.Record(t, +1);
 
 			// Schedule the next birth

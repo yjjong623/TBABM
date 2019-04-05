@@ -12,13 +12,24 @@ TBData CreateTBData(IndividualInitData data) {
         data.tbInfectious,
         data.tbExperienced,
         data.tbExperiencedPyr,
+
         data.tbTreatmentBegin,
         data.tbTreatmentBeginHIV,
+        data.tbTreatmentBeginChildren,
+        data.tbTreatmentBeginAdultsNaive,
+        data.tbTreatmentBeginAdultsExperienced,
+
         data.tbTreatmentEnd,
         data.tbTreatmentDropout,
         data.tbInTreatment,
         data.tbCompletedTreatment,
         data.tbDroppedTreatment,
+
+        data.tbTxExperiencedAdults,
+        data.tbTxExperiencedInfectiousAdults,
+        data.tbTxNaiveAdults,
+        data.tbTxNaiveInfectiousAdults,
+
         data.activeHouseholdContacts
     };
 }

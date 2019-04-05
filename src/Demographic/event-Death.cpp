@@ -83,6 +83,11 @@ EventFunc TBABM::Death(weak_p<Individual> idv_w, DeathCause deathCause)
 			data.deaths.Record(t, +1);
 			data.deathPyramid.UpdateByAge(t, sex, age, +1);
 
+			if (age < 15)
+				data.populationChildren.Record(t, -1);
+			else
+				data.populationAdults.Record(t, -1);
+
 			if (idv->hivStatus == HIVStatus::Positive)
 				data.hivPositive.Record(t, -1);
 

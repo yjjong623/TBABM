@@ -47,38 +47,108 @@ TB::ResetHouseholdCallbacks(void)
 void
 TB::HandleDeath(Time t)
 {
+    bool adult = AgeStatus(t) >= 15;
+
     switch(tb_status) {
         case (TBStatus::Susceptible):
             data.tbSusceptible.Record(t, -1); break;
 
         case (TBStatus::Latent):
-            data.tbLatent.Record(t, -1); break;
+            data.tbLatent.Record(t, -1); 
+            data.tbExperienced.Record(t, -1); break;
 
         case (TBStatus::Infectious):
-          // Remember, while people are in treatment, they are 
-          // still considered infectious by the value of 'tb_status',
-          // but are not functionally infectious
-          if (tb_treatment_status != TBTreatmentStatus::Incomplete)
-            data.tbInfectious.Record(t, -1);
-          break;
+            // Remember, while people are in treatment, they are 
+            // still considered infectious by the value of 'tb_status',
+            // but are not functionally infectious
+            if (tb_treatment_status != TBTreatmentStatus::Incomplete)
+                data.tbInfectious.Record(t, -1);
+
+            data.tbExperienced.Record(t, -1); break;
+
+            break;
 
         default: std::cout << "Error: UNSUPPORTED TBStatus!" << std::endl;
     }
 
     switch(tb_treatment_status) {
-        case (TBTreatmentStatus::None): break;
+        case (TBTreatmentStatus::None):
+            data.tbTxNaiveAdults.Record(t, adult ? -1 : 0); break;
 
         case (TBTreatmentStatus::Incomplete):
-            data.tbInTreatment.Record(t, -1); break;
+            data.tbInTreatment.Record(t, -1);
+            data.tbTxExperiencedAdults.Record(t, adult ? -1 : 0); break;
 
         case (TBTreatmentStatus::Complete):
-            data.tbCompletedTreatment.Record(t, -1); break;
+            data.tbCompletedTreatment.Record(t, -1);
+            data.tbTxExperiencedAdults.Record(t, adult ? -1 : 0); break;
 
         case (TBTreatmentStatus::Dropout):
-            data.tbDroppedTreatment.Record(t, -1); break;
+            data.tbDroppedTreatment.Record(t, -1);
+            data.tbTxExperiencedAdults.Record(t, adult ? -1 : 0); break;
 
         default: std::cout << "Error: UNSUPPORTED TBTreatmentStatus!" << std::endl;
     }
+
+    if (tb_status           == TBStatus::Infectious && \
+        tb_treatment_status == TBTreatmentStatus::None && \
+        adult)
+        data.tbTxNaiveInfectiousAdults.Record(t, -1);
+
+    if (tb_status           == TBStatus::Infectious && \
+        tb_treatment_status != TBTreatmentStatus::None && \
+        adult)
+        data.tbTxExperiencedInfectiousAdults.Record(t, -1);
+
+    return;
+}
+
+void
+TB::InitialEvents(void)
+{
+    InfectionRiskEvaluate_initial();
+    EnterAdulthood();
+
+    if (AgeStatus(init_time) >= 15 && \
+        tb_treatment_status == TBTreatmentStatus::None)
+        data.tbTxNaiveAdults.Record(init_time, +1);
+
+    return;
+}
+
+void TB::EnterAdulthood(void)
+{
+    int age_in_years = AgeStatus(init_time);
+
+    if (AgeStatus(init_time) >= 15)
+        return;
+
+    int t_enters_adulthood = init_time + 365*(15-age_in_years);
+
+    auto lambda = [this, 
+                   t_enters_adulthood, 
+                   lifetm = GetLifetimePtr()] (auto ts_, auto) -> bool {
+
+        assert(lifetm);
+        auto ts = static_cast<int>(ts_);
+        
+        if (tb_treatment_status != TBTreatmentStatus::None)
+            data.tbTxExperiencedAdults.Record(ts, +1);
+        else
+            data.tbTxNaiveAdults.Record(ts, +1);
+
+        if (tb_status           == TBStatus::Infectious && \
+            tb_treatment_status != TBTreatmentStatus::None)
+            data.tbTxExperiencedInfectiousAdults.Record(ts, +1);
+
+        if (tb_status           == TBStatus::Infectious && \
+            tb_treatment_status == TBTreatmentStatus::None)
+            data.tbTxNaiveInfectiousAdults.Record(ts, +1);
+
+        return true;
+    };
+
+    eq.QuickSchedule(t_enters_adulthood, lambda);
 
     return;
 }
