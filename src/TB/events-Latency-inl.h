@@ -18,6 +18,8 @@ TB::InfectLatent(Time t, Source source, StrainType strain)
 			return true;
 
 		// Log(ts, "TB infection: Latent");
+		if (tb_status == TBStatus::Infectious)
+			return true;
 
 		// If they have no history of latent TB infection
 		// NOTE: May change if TB history items become more robust!

@@ -42,13 +42,9 @@ TB::TreatmentBegin(Time t)
 		if (tb_treatment_status == TBTreatmentStatus::None && \
 			AgeStatus(ts) >= 15) {
 			data.tbTxExperiencedAdults.Record(ts, +1);
-			data.tbTxNaiveAdults.Record(ts, -1);
-		}
-
-		if (tb_treatment_status == TBTreatmentStatus::None && \
-			AgeStatus(ts) >= 15) {
-			data.tbTxNaiveInfectiousAdults.Record(ts, -1);
 			data.tbTxExperiencedInfectiousAdults.Record(ts, +1);
+			data.tbTxNaiveAdults.Record(ts, -1);
+			data.tbTxNaiveInfectiousAdults.Record(ts, -1);
 		}
 
 		// Subgroup for HIV+ people

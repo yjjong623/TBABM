@@ -158,12 +158,17 @@ grid <- function(Loader, namesMap, startYear) {
     else
       data <- JoinAndDivideTimeSeries(Loader(item$data[1]), Loader(item$data[2]), "value", factor)
 
-    if ("calibration" %in% names(item))
-      calibration <- geom_line(mapping=aes_string("year", item$calibration),
+    if ("calibration" %in% names(item)) {
+      calibration_line <- geom_line(mapping=aes_string("year", item$calibration),
                                data=calibrationData,
                                inherit.aes = FALSE)
-    else
-      calibration <- geom_blank()
+      calibration_points <- geom_point(mapping=aes_string("year", item$calibration),
+                                       data=calibrationData,
+                                       inherit.aes=FALSE)
+    } else {
+      calibration_line <- geom_blank()
+      calibration_points <- geom_blank()
+    }
       
     
     # Produce ggplot2 object which will eventually be passed to 'multiplot'
@@ -176,7 +181,8 @@ grid <- function(Loader, namesMap, startYear) {
         ylim(0, NA) +
         theme(plot.title=element_text(face="bold", size=10)) +
         labs(x="Year", y=item$y, title=title) +
-        calibration
+        calibration_line +
+        calibration_points
   }
   
   plan(multicore)
@@ -189,14 +195,14 @@ calibrationData <- tibble(
   populationAdults =   c(25903, 26162, 26424, 26688, 26955, 27224, 27497),
   populationAll = populationChildren + populationAdults,
   notifiedTBChildren = c(82, 60, 66, 69, 73, 77, 69),
-  notifiedTBNaiveAdults = c(82, 60, 66, 69, 73, 77, 69),
-  notifiedTBExperiencedAdults = c(172, 234, 200, 224, 216, 233, 210),
+  notifiedTBExperiencedAdults = c(82, 60, 66, 69, 73, 77, 69),
+  notifiedTBNaiveAdults = c(172, 234, 200, 224, 216, 233, 210),
   notifiedTBAdults = notifiedTBNaiveAdults + notifiedTBExperiencedAdults,
   notifiedTBAll = notifiedTBAdults + notifiedTBChildren,
-  prevalenceExperiencedAdults = c(0.097, NA, NA, NA, NA, NA, NA),
-  prevalenceHIV = c(0.052, NA, NA, NA, NA, NA, NA),
-  prevalenceInfectiousNaiveAdults = c(0.051, NA, NA, NA, NA, NA, NA),
-  prevalenceInfectiousExperiencedAdults = c(0.0299, NA, NA, NA, NA, NA, NA),
+  prevalenceExperiencedAdults = 100*c(0.097, NA, NA, NA, NA, NA, NA),
+  prevalenceHIV = 100*c(0.052, NA, NA, NA, NA, NA, NA),
+  prevalenceInfectiousNaiveAdults = 100*c(0.051, NA, NA, NA, NA, NA, NA),
+  prevalenceInfectiousExperiencedAdults = 100*c(0.0299, NA, NA, NA, NA, NA, NA),
   prevalenceInfectiousAdults = prevalenceInfectiousNaiveAdults +
                                prevalenceInfectiousExperiencedAdults
 )
@@ -227,41 +233,41 @@ bigMap  <- list(birthRate         = list(data=c("births", "populationSize"), tit
                 tbInfectionsHousehold= list(title="Household infections", y="Infections/year"),
                 tbInfectionsCommunity= list(title="Community infections", y="Infections/year"))
 
-mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", 
-                                             y="Number of case notifications", 
-                                             calibration="notifiedTBAll"),
-                 populationSize       = list(title="All individuals", 
-                                             y="Number of individuals", 
-                                             calibration="populationAll"),
-                 txIndividuals        = list(data=c("tbCompletedTreatment", "populationSize"), 
-                                             title="Treatment-experienced individuals", 
-                                             y="Proportion of individuals (%)", 
-                                             factor=100,
-                                             calibration="prevalenceExperiencedAdults"), # currently WRONG!
-                 tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", 
-                                             y="Number of case notifications",
-                                             calibration="notifiedTBAll"),
-                 populationSize       = list(title="All individuals", 
-                                             y="Number of individuals",
-                                             calibration="populationAll"),
-                 tbInfectious         = list(data=c("tbInfectious", "populationSize"), 
-                                             title="Adults", 
-                                             y="Tuberculosis prevalence (%)", 
-                                             factor=100,
-                                             calibration="prevalenceInfectiousAdults"),
-                 tbTreatmentBegin     = list(title="Tuberculosis case notifications, all", 
-                                             y="Number of case notifications",
-                                             calibration="notifiedTBAll"),
-                 hivPrevalence        = list(data=c("hivPositive", "populationSize"), 
-                                             title="HIV prevalence, all individuals", 
-                                             y="Prevalence (%)", 
-                                             factor=100,
-                                             calibration="prevalenceHIV"),
-                 tbInfectious         = list(data=c("tbInfectious", "populationSize"), 
-                                             title="Adults", 
-                                             y="Tuberculosis prevalence (%)", 
-                                             factor=100,
-                                             calibration="prevalenceInfectiousAdults"))
+mimicMap <- list(tbTreatmentBeginChildren          = list(title="Tuberculosis case notifications, children", 
+                                                          y="Number of case notifications", 
+                                                          calibration="notifiedTBChildren"),
+                 populationChildren                = list(title="Children", 
+                                                          y="Number of individuals", 
+                                                          calibration="populationChildren"),
+                 txIndividuals                     = list(data=c("tbTxExperiencedAdults", "populationSize"), 
+                                                          title="Treatment-experienced adults", 
+                                                          y="Proportion of individuals (%)", 
+                                                          factor=100,
+                                                          calibration="prevalenceExperiencedAdults"),
+                 tbTreatmentBeginAdultsNaive       = list(title="Tuberculosis case notifications, treatment-naive adults", 
+                                                          y="Number of case notifications",
+                                                          calibration="notifiedTBNaiveAdults"),
+                 populationAdults                  = list(title="Adults", 
+                                                          y="Number of individuals",
+                                                          calibration="populationAdults"),
+                 tbInfectiousNaive                 = list(data=c("tbTxNaiveInfectiousAdults", "tbTxNaiveAdults"), 
+                                                          title="Treatment-naive adults", 
+                                                          y="Tuberculosis prevalence (%)", 
+                                                          factor=100,
+                                                          calibration="prevalenceInfectiousNaiveAdults"),
+                 tbTreatmentBeginAdultsExperienced = list(title="Tuberculosis case notifications, treatment-experienced adults", 
+                                                          y="Number of case notifications",
+                                                          calibration="notifiedTBExperiencedAdults"),
+                 hivPrevalence                     = list(data=c("hivPositive", "populationSize"), 
+                                                          title="HIV prevalence, all individuals", 
+                                                          y="Prevalence (%)", 
+                                                          factor=100,
+                                                          calibration="prevalenceHIV"), # INCORRECT right now, includes everyhtig when it should include just adults
+                 tbInfectiousExperienced           = list(data=c("tbTxExperiencedInfectiousAdults", "tbTxExperiencedAdults"), 
+                                                          title="Treatment-experienced adults", 
+                                                          y="Tuberculosis prevalence (%)", 
+                                                          factor=100,
+                                                          calibration="prevalenceInfectiousExperiencedAdults"))
 
 
 # Current format: {
@@ -281,10 +287,10 @@ mimicMap <- list(tbTreatmentBegin     = list(title="Tuberculosis case notificati
 # }
 
 
-reviewLatestModelRun <- function (map, cols=3) {do.call(multiplot, flatten(list(grid(CreateGraphCatalog(outputLocation)$Loader, map, 1990), cols)))}
+reviewLatestModelRun <- function (map, cols) {do.call(multiplot, flatten(list(grid(CreateGraphCatalog(outputLocation)$Loader, map, 1990), cols=cols)))}
 reviewLatestModelRun(testMap, 3)
 reviewLatestModelRun(bigMap, 5)
-
+reviewLatestModelRun(mimicMap, 3)
 
 do.call(multiplot, flatten(list(grid(cat$Loader, testMap, 1990), cols=4)))
 do.call(multiplot, flatten(list(grid(cat$Loader, bigMap, 1990), cols=4)))
