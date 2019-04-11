@@ -1,26 +1,10 @@
 #!/bin/bash
-csvjson "sampleParams.csv" > "sampleParams.json"
-csvjson "sampleParams_1.csv" > "sampleParams_1.json"
-csvjson "sampleParams_2.csv" > "sampleParams_2.json"
-csvjson "sampleParams_3.csv" > "sampleParams_3.json"
-csvjson "sampleParams_4.csv" > "sampleParams_4.json"
 
-csvjson "Demographic/probability of pregnant.csv"        > "Demographic/probability of pregnant.json"
-csvjson "Demographic/time in marriage.csv"               > "Demographic/time in marriage.json"
-csvjson "Demographic/time to first birth.csv"            > "Demographic/time to first birth.json"
-csvjson "Demographic/time to looking.csv"                > "Demographic/time to looking.json"
-csvjson "Demographic/time to natural death.csv"          > "Demographic/time to natural death.json"
-csvjson "Demographic/time to natural death newdata.csv"  > "Demographic/time to natural death newdata.json"
-csvjson "Demographic/time to natural death fixed.csv"    > "Demographic/time to natural death fixed.json"
-csvjson "Demographic/time to natural death bestdata.csv" > "Demographic/time to natural death bestdata.json"
-csvjson "Demographic/time to subsequent births.csv"      > "Demographic/time to subsequent births.json"
+# One day this will be the new version
+# find . -name '*.csv' -type f -print0 \
+	# | parallel -0 sh -c 'csvjson {.}.csv > {.}.json'
 
-csvjson "HIV/ART - TB.csv"                  > "HIV/ART - TB.json"
-csvjson "HIV/ART - noTB.csv"                > "HIV/ART - noTB.json"
-csvjson "HIV/VCT a_t_i.csv"                 > "HIV/VCT a_t_i.json"
-csvjson "HIV/VCT sig_i.csv"                 > "HIV/VCT sig_i.json"
-csvjson "HIV/infection risk - nospouse.csv" > "HIV/infection risk - nospouse.json"
-csvjson "HIV/infection risk - spouse.csv"   > "HIV/infection risk - spouse.json"
-csvjson "HIV/prevalence - 1990.csv"			> "HIV/prevalence - 1990.json"
-
-echo "If no errors above, successfully updated JSON files"
+# Old version:
+find . -name \*.csv -type f -print0 \
+	| sed "s/.csv//g" \
+	| time xargs -0 -L 1 -I \% -P 4 -t sh -c 'csvjson "%.csv" > "%.json"'
