@@ -1,0 +1,3 @@
+name,lower,upper,step
+TB_risk_global,0,2,2
+TB_risk_household,10,11,0.5
