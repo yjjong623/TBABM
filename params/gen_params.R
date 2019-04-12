@@ -1,4 +1,5 @@
-library(tidyr)
+library(tidyverse, quietly = TRUE, verbose = FALSE)
+library(tools)
 
 GenRunSheets <- function(proto_fname, rangefile_fname) {
   
@@ -65,6 +66,33 @@ WriteRunSheets <- function(runsheets, prefix="RunSheet_") {
   
   map2(runsheets, seq(num_sheets), WriteRunSheet)
 }
+
+# print(commandArgs(trailingOnly = TRUE))
+main <- function() {
+  args <- commandArgs(trailingOnly=TRUE)
+  n_args <- length(args)
+  n_rangefiles <- n_args - 1
+  
+  if (n_args < 2) {
+    print("Error! Must specify one 'prototype' and at least one 'rangefile'")
+    return();
+  }
+  
+  proto_fname <- args[1]
+  rangefiles_fnames <- args[-1]
+  
+  GenPrefix <- function(rangefile_fname) paste0(tools::file_path_sans_ext(range), "_")
+  
+  runsheet_sets <- map(args, ~GenRunSheets(proto_fname, .))
+  runsheet_prefixes <- map(rangefiles_fnames, GenPrefix)
+  print(runsheet_prefixes)
+  # runsheets_written <- map2(runsheet_sets, runsheet_prefixes,
+                            # ~WriteRunSheets(.x, prefix=.y))
+}
+
+main()
+
+# for(i in c(-1:3, 9)) print(switch(i, 1,2,3,4))
 
 # test_sheets <- GenRunSheets("prototype.csv", "rangefile_example.csv")
 # InspectNewRunSheets(test_sheets, "rangefile_example.csv")
