@@ -58,8 +58,6 @@ TB::TreatmentBegin(Time t)
 
 		data.activeHouseholdContacts.Record(prev_household);
 
-		data.tbInfectious.Record(ts, -1);
-
 		tb_treatment_status = TBTreatmentStatus::Incomplete;
 
 		if (RecoveryHandler)

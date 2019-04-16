@@ -13,12 +13,16 @@ TB::Recovery(Time t, RecoveryType r)
 
 		data.tbRecoveries.Record((int)ts, +1);
 
+
 		if (AgeStatus(ts) >= 15) {
 			if (tb_treatment_status == TBTreatmentStatus::None)
 				data.tbTxNaiveInfectiousAdults.Record((int)ts, -1);
 			else
 				data.tbTxExperiencedInfectiousAdults.Record((int)ts, -1);
 		}
+
+		data.tbInfectious.Record((int)ts, -1);
+		data.tbLatent.Record((int)ts, +1);
 
 		tb_status = TBStatus::Latent;
 
