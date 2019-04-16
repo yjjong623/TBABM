@@ -2,7 +2,9 @@ suppressPackageStartupMessages(library(tidyverse, quietly=TRUE,
                    verbose=FALSE,
                    warn.conflicts=FALSE))
 library(tools)
+library(jsonlite)
 
+# Spec for the RunSheet
 datasheet_spec <- cols(
   description = col_character(),
   `short-name` = col_character(),
@@ -16,6 +18,7 @@ datasheet_spec <- cols(
   `included-in-calibration` = col_logical()
 )
 
+# Spec for the rangefile
 rangefile_spec <- cols(
   name = col_character(),
   lower = col_double(),
@@ -38,12 +41,12 @@ GenRunSheets <- function(proto_fname, rangefile_fname) {
   # now, are what 'parameter-1' should be set to.
   crossed <- pmap(substitutions, function(name, lower, upper, step) seq(lower, upper, step)) %>%
     setNames(substitutions$name) %>% cross()
-
-  # print(crossed)
   
   # Given a list of substitutions, outputs a new parameter sheet, as a tibble, which
   # includes these substitutions
   # 'substitutions" is a keyed list, containing 'short-name':'parameter-1' pairs.
+  # 
+  # Right now, substitution can only be done on 'parameter-1', though this may change
   GenRunSheet <- function(substitutions, new_runsheet) {
     for (name in names(substitutions)) {
       row <- which(new_runsheet$`short-name` == name)
@@ -58,12 +61,18 @@ GenRunSheets <- function(proto_fname, rangefile_fname) {
   crossed %>% map(~GenRunSheet(., proto))
 }
 
+# For each generated RunSheet, create a list of the parameters in that RunSheet
+# that were in the set of parameters that the rangefile designated as variable
 InspectNewRunSheets <- function(NewRunSheets, rangefile_fname) {
   substitutions <- read_csv(rangefile_fname, col_types=datasheet_spec) %>% as_tibble()
   
   map(NewRunSheets, ~.[which(.$`short-name` %in% substitutions$name), c('short-name', 'parameter-1')])
 }
 
+# Given a list of new RunSheets, and the filename of the rangefile
+# that generated them, create a line graph of all of the parameters that
+# are being varied, where X is the name of the parameter being varied, and
+# Y is its value in each of the RunSheetss
 PlotNewRunSheets <- function(new_runsheets, rangefile_fname) {
   all_sheets <- InspectNewRunSheets(new_runsheets, rangefile_fname) %>%
     bind_rows(.id="group")
@@ -77,19 +86,31 @@ PlotNewRunSheets <- function(new_runsheets, rangefile_fname) {
 }
 
 WriteRunSheets <- function(runsheets, prefix="RunSheet_") {
+  
+  # Determine the number of digits needed to represent the ID of the
+  # last RunSheet
   num_sheets <- length(runsheets)
   num_digits <- floor(log10(num_sheets)) + 1
   
   WriteRunSheet <- function(runsheet, sheet_id) {
+    
+    # Format the RunSheet ID: add an appropriate amount of leading 0's
     number <- formatC(sheet_id, width=num_digits, format="d", flag="0")
-    path <- paste0(prefix, number, ".csv")
-    write_csv(runsheet, path, na="")
+    
+    # Generate paths to write .csv and .json file to
+    path_csv <- paste0(prefix, number, ".csv")
+    path_json <- paste0(prefix, number, ".json")
+    
+    # Write the .csv and .json files to disk. It's important to make sure NA is
+    # represented as the empty string, so that an empty cell is represented as
+    # ",,".
+    write_csv(runsheet, path_csv, na="")
+    write_json(runsheet, path_json, na='null')
   }
   
   map2(runsheets, seq(num_sheets), WriteRunSheet)
 }
 
-# print(commandArgs(trailingOnly = TRUE))
 main <- function(args) {
   n_args <- length(args)
   n_rangefiles <- n_args - 1
@@ -107,12 +128,12 @@ main <- function(args) {
   
   runsheet_sets <- map(rangefiles_fnames, ~GenRunSheets(proto_fname, .))
   runsheet_prefixes <- map(rangefiles_fnames, GenPrefix)
-  # print(runsheet_prefixes)
   runsheets_written <- map2(runsheet_sets, runsheet_prefixes,
                             ~WriteRunSheets(.x, prefix=.y))
 }
 
 main(commandArgs(trailingOnly=TRUE))
+
 
 
 # for(i in c(-1:3, 9)) print(switch(i, 1,2,3,4))
