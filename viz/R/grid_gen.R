@@ -8,7 +8,7 @@ GraphAndSaveRun <- function(folder_name) {
   filename <- paste0(folder_name, slash, 'TBgrid.png')
   
   # Set up a place to render the graph to
-  png(filename=filename, width=1000, height=800, units="px")
+  png(filename=filename, width=1200, height=800, units="px")
   
   # Render the grid
   cat$tbGrid()

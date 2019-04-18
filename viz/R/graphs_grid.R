@@ -5,11 +5,15 @@ addTimeSeries <- function(a, b) {
 }
 
 grid <- function(Loaders, runNames, namesMap, startYear) {
+
+  colorMapping <- list(tb="blue", hiv="red", demographic="green")
+  
   lambda <- function(name) {
     # 'item' is either a string describing the title, or a list
     # with a 'data' key and a 'name' key
     item <- namesMap[[name]]
     title <- ifelse(is.list(item), item$title, item)
+    color <- colorMapping[[item$tag]]
     
     # Determine factor to multiply each value by, useful for 
     # rate-based and per-X-capita data
@@ -47,7 +51,7 @@ grid <- function(Loaders, runNames, namesMap, startYear) {
     # Produce ggplot2 object which will eventually be passed to 'multiplot'
     mutate(data, title=title, year=period+startYear) %>%
       ggplot(aes(year, value, group=trajectory, color=runName)) +
-      geom_line() +
+      geom_line(color=color) +
       geom_vline(xintercept=2002, linetype="dashed", color="grey") +
       geom_vline(xintercept=2008, linetype="dashed", color="grey") +
       theme_classic() +
@@ -80,6 +84,7 @@ calibrationData <- tibble(
 )
 
 nIdv <- "Number of individuals"
+
 testMap  <- list(tbSusceptible  = list(title="TB-Susceptible Individuals", y=nIdv),
                  tbLatent       = list(title="Latently-infected individuals", y=nIdv), 
                  tbInfectious   = list(title="Actively-infected individuals", y=nIdv),
@@ -144,50 +149,50 @@ mimicMap <- list(tbTreatmentBeginChildren          = list(title="Tuberculosis ca
 mimicMapPlus <- list(tbTreatmentBeginChildren          = list(title="Tuberculosis case notifications, children", 
                                                               y="Number of case notifications", 
                                                               calibration="notifiedTBChildren",
-                                                              min=0, max=300),
+                                                              min=0, max=300, tag="tb"),
                      populationChildren                = list(title="Children", 
                                                               y="Number of individuals", 
                                                               calibration="populationChildren",
-                                                              min=9200, max=15000),
+                                                              min=9200, max=15000, tag="demographic"),
                      txIndividuals                     = list(data=c("tbTxExperiencedAdults", "populationSize"), 
                                                               title="Treatment-experienced adults", 
                                                               y="Proportion of individuals (%)", 
                                                               factor=100,
                                                               calibration="prevalenceExperiencedAdults",
-                                                              min=0, max=25),
+                                                              min=0, max=25, tag="tb"),
                      tbTreatmentBeginAdultsNaive       = list(title="Tuberculosis case notifications, treatment-naive adults", 
                                                               y="Number of case notifications",
                                                               calibration="notifiedTBNaiveAdults",
-                                                              min=0, max=600),
+                                                              min=0, max=600, tag="tb"),
                      populationAdults                  = list(title="Adults", 
                                                               y="Number of individuals",
                                                               calibration="populationAdults",
-                                                              min=22500, max=35000),
+                                                              min=22500, max=35000, tag="demographic"),
                      tbInfectiousNaive                 = list(data=c("tbTxNaiveInfectiousAdults", "tbTxNaiveAdults"), 
                                                               title="Treatment-naive adults", 
                                                               y="Tuberculosis prevalence (%)", 
                                                               factor=100,
                                                               calibration="prevalenceInfectiousNaiveAdults",
-                                                              min=0, max=2.0),
+                                                              min=0, max=2.0, tag="tb"),
                      tbTreatmentBeginAdultsExperienced = list(title="Tuberculosis case notifications, treatment-experienced adults", 
                                                               y="Number of case notifications",
                                                               calibration="notifiedTBExperiencedAdults",
-                                                              min=0, max=400),
+                                                              min=0, max=400, tag="tb"),
                      hivPrevalence                     = list(data=c("hivPositive", "populationSize"), 
                                                               title="HIV prevalence, all individuals", 
                                                               y="Prevalence (%)", 
                                                               factor=100,
                                                               calibration="prevalenceHIV", # INCORRECT right now, includes everyhtig when it should include just adults
-                                                              min=0, max=15), 
+                                                              min=0, max=15, tag="hiv"), 
                      tbInfectiousExperienced           = list(data=c("tbTxExperiencedInfectiousAdults", "tbTxExperiencedAdults"), 
                                                               title="Treatment-experienced adults", 
                                                               y="Tuberculosis prevalence (%)", 
                                                               factor=100,
                                                               calibration="prevalenceInfectiousExperiencedAdults",
-                                                              min=0, max=10),
-                     tbLatent                          = list(data=c("tbLatent", "populationSize"), title="Latently-infected individuals", y="Prevalence (%)", factor=100, min=0, max=100), 
-                     tbInfectionsHousehold             = list(title="Household infections", y="Infections/year", min=0, max=2500),
-                     tbInfectionsCommunity             = list(title="Community infections", y="Infections/year", min=0, max=2500))
+                                                              min=0, max=10, tag="tb"),
+                     tbLatent                          = list(data=c("tbLatent", "populationSize"), title="Latently-infected individuals", y="Prevalence (%)", factor=100, min=0, max=100, tag="tb"), 
+                     tbInfectionsHousehold             = list(title="Household infections", y="Infections/year", min=0, max=2500, tag="tb"),
+                     tbInfectionsCommunity             = list(title="Community infections", y="Infections/year", min=0, max=2500, tag="tb"))
 
 
 # Current format: {
