@@ -95,6 +95,12 @@ EventFunc TBABM::Death(weak_p<Individual> idv_w, DeathCause deathCause)
 				idv->onART)
 				data.hivPositiveART.Record(t, -1);
 
+			if (idv->hivStatus == HIVStatus::Positive &&
+				idv->hivDiagnosed) {
+				data.hivDiagnosed.Record(t, -1);
+				data.hivDiagnosedVCT.Record(t, -1);
+			}
+
 			return true;
 		};
 
