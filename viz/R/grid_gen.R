@@ -7,7 +7,7 @@ GraphAndSaveRun <- function(folder_name) {
   
   grids <- c("demographicGrid", "hivGrid", "tbGrid")
   
-  display_4k     <- list(name="lg", ppi=157, width=19, height=14, maxCols=6)
+  display_4k     <- list(name="lg", ppi=157, width=19, height=12.5, maxCols=6)
   display_laptop <- list(name="sm", ppi=135, width=9.5, height=8, maxCols=3)
   display_retina <- list(name="sm_2x", ppi=220, width=9.5, height=8, maxCols=4)
   

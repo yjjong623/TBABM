@@ -6,7 +6,7 @@ addTimeSeries <- function(a, b) {
 
 grid <- function(Loaders, runNames, namesMap, startYear) {
 
-  colorMapping <- list(tb="blue", hiv="red", demographic="green")
+  colorMapping <- list(tb="turquoise1", hiv="firebrick1", demographic="grey69")
   
   transparentBg <- theme(
     panel.background = element_rect(fill = "transparent") # bg of the panel
@@ -53,7 +53,7 @@ grid <- function(Loaders, runNames, namesMap, startYear) {
     }
     
     if ("guess" %in% names(item)) {
-      guess_line <- geom_hline(yintercept = item$guess)
+      guess_line <- geom_hline(yintercept = item$guess, color="grey")
     } else {
       guess_line <- geom_blank()
     }
@@ -122,7 +122,7 @@ bigMap  <- list(birthRate         = list(data=c("births", "populationSize"), tit
                 tbInfectionsHousehold= list(title="Household infections", y="Infections/year"),
                 tbInfectionsCommunity= list(title="Community infections", y="Infections/year"))
 
-mimicMapPlus <- list(tbTreatmentBeginChildren          = list(title="Tuberculosis case notifications, children", 
+mimicMapPlus <- list(tbTreatmentBeginChildren          = list(title="Tx notifications, children", 
                                                               y="Number of case notifications", 
                                                               calibration="notifiedTBChildren",
                                                               min=0, max=300, tag="tb"),
@@ -131,12 +131,12 @@ mimicMapPlus <- list(tbTreatmentBeginChildren          = list(title="Tuberculosi
                                                               calibration="populationChildren",
                                                               min=9200, max=15000, tag="demographic"),
                      txIndividuals                     = list(data=c("tbTxExperiencedAdults", "populationSize"), 
-                                                              title="Treatment-experienced adults", 
+                                                              title="Tx-experienced adults", 
                                                               y="Proportion of individuals (%)", 
                                                               factor=100,
                                                               calibration="prevalenceExperiencedAdults",
                                                               min=0, max=25, tag="tb"),
-                     tbTreatmentBeginAdultsNaive       = list(title="Tuberculosis case notifications, treatment-naive adults", 
+                     tbTreatmentBeginAdultsNaive       = list(title="Notifications, Tx-naive adults", 
                                                               y="Number of case notifications",
                                                               calibration="notifiedTBNaiveAdults",
                                                               min=0, max=600, tag="tb"),
@@ -145,28 +145,28 @@ mimicMapPlus <- list(tbTreatmentBeginChildren          = list(title="Tuberculosi
                                                               calibration="populationAdults",
                                                               min=22500, max=35000, tag="demographic"),
                      tbInfectiousNaive                 = list(data=c("tbTxNaiveInfectiousAdults", "tbTxNaiveAdults"), 
-                                                              title="Treatment-naive adults", 
+                                                              title="Tx-naive adults", 
                                                               y="Tuberculosis prevalence (%)", 
                                                               factor=100,
                                                               calibration="prevalenceInfectiousNaiveAdults",
                                                               min=0, max=2.0, tag="tb"),
-                     tbTreatmentBeginAdultsExperienced = list(title="Tuberculosis case notifications, treatment-experienced adults", 
+                     tbTreatmentBeginAdultsExperienced = list(title="Notifications, Tx-experienced adults", 
                                                               y="Number of case notifications",
                                                               calibration="notifiedTBExperiencedAdults",
                                                               min=0, max=400, tag="tb"),
                      hivPrevalence                     = list(data=c("hivPositive", "populationSize"), 
-                                                              title="HIV prevalence, all individuals", 
+                                                              title="HIV prevalence, all", 
                                                               y="Prevalence (%)", 
                                                               factor=100,
                                                               calibration="prevalenceHIV", # INCORRECT right now, includes everyhtig when it should include just adults
                                                               min=0, max=15, tag="hiv"), 
                      tbInfectiousExperienced           = list(data=c("tbTxExperiencedInfectiousAdults", "tbTxExperiencedAdults"), 
-                                                              title="Treatment-experienced adults", 
+                                                              title="Tx-experienced adults", 
                                                               y="Tuberculosis prevalence (%)", 
                                                               factor=100,
                                                               calibration="prevalenceInfectiousExperiencedAdults",
                                                               min=0, max=10, tag="tb"),
-                     tbLatent                          = list(data=c("tbLatent", "populationSize"), title="Latently-infected individuals", y="Prevalence (%)", factor=100, min=0, max=100, tag="tb"), 
+                     tbLatent                          = list(data=c("tbLatent", "populationSize"), title="Latently-infected prevalence", y="Prevalence (%)", factor=100, min=0, max=100, tag="tb"), 
                      tbInfectionsHousehold             = list(title="Household infections", y="Infections/year", min=0, max=2500, tag="tb"),
                      tbInfectionsCommunity             = list(title="Community infections", y="Infections/year", min=0, max=2500, tag="tb"))
 
@@ -175,28 +175,28 @@ demographicMap <- list(birthRate=     list(title="Birth rate",
                                            data=c("births", "populationSize"),
                                            factor=1000,
                                            min=0, max=30,
-                                           guess=20,
+                                           guess=19.61,
                                            tag="demographic"),
                        deathRate=     list(title="Death rate",
                                            y="Deaths/1000/year",
                                            data=c("deaths", "populationSize"),
                                            factor=1000,
                                            min=0, max=30,
-                                           guess=20,
+                                           guess=16.99,
                                            tag="demographic"),
                        marriageRate=  list(title="Marriage rate",
                                            y="Marriages/1000/year",
                                            data=c("marriages", "populationSize"),
                                            factor=1000,
                                            min=0, max=30,
-                                           guess=15,
+                                           guess=3,
                                            tag="demographic"),
                        divorceRate=   list(title="Divorce rate",
                                            y="Divorces/1000/year",
                                            data=c("divorces", "populationSize"),
                                            factor=1000,
                                            min=0, max=30,
-                                           guess=2,
+                                           guess=0.4,
                                            tag="demographic"),
                        populationSize=list(title="Population size",
                                            y="Number of individuals",
