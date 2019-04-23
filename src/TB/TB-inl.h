@@ -130,6 +130,10 @@ void TB::EnterAdulthood(void)
                    lifetm = GetLifetimePtr()] (auto ts_, auto) -> bool {
 
         assert(lifetm);
+
+        if (!AliveStatus())
+            return true;
+
         auto ts = static_cast<int>(ts_);
         
         if (tb_treatment_status != TBTreatmentStatus::None)

@@ -37,6 +37,7 @@ TB::InfectionRiskEvaluate_impl(Time t, int risk_window_local, shared_p<TB> l_ptr
 		return true;
 
 	bool init_infection {false};
+	bool init_active    {false};
 
 	long double risk_global     {GlobalTBPrevalence(t) * params["TB_risk_global"].Sample(rng)};
 	long double risk_household  {ContactHouseholdTBPrevalence(tb_status) * params["TB_risk_household"].Sample(rng)};
@@ -46,9 +47,14 @@ TB::InfectionRiskEvaluate_impl(Time t, int risk_window_local, shared_p<TB> l_ptr
 	long double tti_global     {Exponential(risk_global    > 0 ? risk_global    : SMALLNUM)(rng.mt_)};
 	long double tti_household  {Exponential(risk_household > 0 ? risk_household : SMALLNUM)(rng.mt_)};
 
-	// First risk window of the simulation, we infect a bunch of people
+	// First risk window of the simulation, we infect a bunch of people. Some of them get infected
+	// with latent TB, and some of them go straight to active disease. "TB_p_init_active" is the
+	// probability that someone who is gets infected initially (vis-as-vis "TB_p_init_infect") will
+	// go straight to active disease.
 	if (t < risk_window && params["TB_p_init_infect"].Sample(rng))
 		init_infection = true;
+	if (t < risk_window && params["TB_p_init_active"].Sample(rng) && init_infection)
+		init_active = true;
 
 	// If they do get infected, this is what the infection source is. Note: During 'seeding'
 	// (0 < t < risk_window) all infection is from the community/global
@@ -64,7 +70,7 @@ TB::InfectionRiskEvaluate_impl(Time t, int risk_window_local, shared_p<TB> l_ptr
 		// Will they become latently infected, or progress rapidly?
 		// Individuals who are latently infected CANNOT become latently infected
 		// again; from this sampling they are only vulnerable to rapid progression
-		if (params["TB_rapidprog_risk"].Sample(rng))
+		if (params["TB_rapidprog_risk"].Sample(rng) || init_active)
 			InfectInfectious(t + 365*master_infection_time, infection_source, StrainType::Unspecified);
 		else if (tb_status == TBStatus::Susceptible)
 			InfectLatent(t + 365*master_infection_time, infection_source, StrainType::Unspecified);
@@ -100,7 +106,7 @@ TB::InfectionRiskEvaluate_initial(int local_risk_window)
 
 	double firstRiskEval = Uniform(0, risk_window)(rng.mt_);
 	auto lambda = [this, local_risk_window, l_ptr] (auto ts, auto) -> bool {
-		return InfectionRiskEvaluate_impl(ts, local_risk_window, l_ptr);
+		return InfectionRiskEvaluate_impl(ts, local_risk_window, std::move(l_ptr));
 	};
 
 	eq.QuickSchedule(init_time + firstRiskEval, lambda);
