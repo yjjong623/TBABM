@@ -149,3 +149,4 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
   # geom_hline(yintercept = 16.99) + DEATHRATE
   # geom_hline(yintercept = 3) + MARRIAGERATE
   # geom_hline(yintercept = 0.4) + DIVORCERATE
+  
