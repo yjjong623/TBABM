@@ -10,8 +10,8 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=marcus.russi@yale.edu
 
-rangefile_title=${1?"Usage: parallel_render_graphs.sbatch RANGEFILE_TITLE RANGEFIEL_NRUNS"}
-n_runs=${2?"Usage: parallel_render_graphs.sbatch RANGEFILE_TITLE RANGEFIEL_NRUNS"}
+rangefile_title=${1?"Usage: parallel_render_graphs.sbatch RANGEFILE_TITLE RANGEFILE_NRUNS"}
+n_runs=${2?"Usage: parallel_render_graphs.sbatch RANGEFILE_TITLE RANGEFILE_NRUNS"}
 n_jobs=${SLURM_NTASKS-2}
 n_threads=${SLURM_CPUS_PER_TASK-1}
 
@@ -43,6 +43,11 @@ compressed_images_fname=$rangefile_title"_images.tar.gz"
 mkdir -p $image_dir
 
 seq -w $n_runs | $parallel $srun ./render_graphs.sh $output_dir/$results_dir_pfx{}/
-seq -w $n_runs | parallel cp $output_dir/$results_dir_pfx{}/TBgrid.png $image_dir/TBgrid_{}.png
+
+parallel cp $output_dir/$results_dir_pfx{1}/{2}_{3}.png $image_dir/{2}_{3}_{1}.png \
+	::: $(seq -w $n_runs) \
+	::: demographicGrid hivGrid tbGrid \
+	::: lg sm sm_2x
+
 tar -zcvf $compressed_images_fname $image_dir
 rm -rf $image_dir

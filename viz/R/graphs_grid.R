@@ -8,6 +8,15 @@ grid <- function(Loaders, runNames, namesMap, startYear) {
 
   colorMapping <- list(tb="blue", hiv="red", demographic="green")
   
+  transparentBg <- theme(
+    panel.background = element_rect(fill = "transparent") # bg of the panel
+    , plot.background = element_rect(fill = "transparent", color = NA) # bg of the plot
+    , panel.grid.major = element_blank() # get rid of major grid
+    , panel.grid.minor = element_blank() # get rid of minor grid
+    , legend.background = element_rect(fill = "transparent") # get rid of legend bg
+    , legend.box.background = element_rect(fill = "transparent") # get rid of legend panel bg
+  )
+  
   lambda <- function(name) {
     # 'item' is either a string describing the title, or a list
     # with a 'data' key and a 'name' key
@@ -61,13 +70,15 @@ grid <- function(Loaders, runNames, namesMap, startYear) {
       geom_vline(xintercept=2002, linetype="dashed", color="grey") +
       geom_vline(xintercept=2008, linetype="dashed", color="grey") +
       theme_classic() +
+      theme(plot.title=element_text(face="bold", size=10)) +
+      transparentBg +
       coord_cartesian(ylim=c(ymin, ymax)) +
       guides(color=render_legend) +
-      theme(plot.title=element_text(face="bold", size=10)) +
       labs(x="Year", y=item$y, title=title) +
       calibration_line +
       guess_line +
       calibration_points
+      # theme_void()
   }
   
   map(names(namesMap), lambda)
@@ -242,13 +253,15 @@ hivMap <- list(hivPositivePrevalence=list(title="HIV Positive",
 
 reviewLatestModelRun <- function (map, cols) {do.call(multiplot, flatten(list(grid(CreateGraphCatalog(outputLocation)$Loader, map, 1990), cols=cols)))}
 
-generate_grid <- function(Loader, map, cols) { 
+generate_grid <- function(Loader, map, cols, rows=ceiling(length(map)/cols)) { 
   to_render <- grid(list(Loader), list("Run"), map, 1990)
   
-  do.call(multiplot, flatten(list(to_render, cols=cols)))
+  do.call(multiplot, flatten(list(to_render, cols=cols, rows=rows)))
 }
 
-TBGrid <- function(Loader) generate_grid(Loader, mimicMapPlus, cols=4)
+DemographicGrid <- function(Loader, cols=4, rows=3) generate_grid(Loader, demographicMap, cols=cols, rows=rows)
+HIVGrid <-         function(Loader, cols=4, rows=3) generate_grid(Loader, hivMap, cols=cols, rows=rows)
+TBGrid <-          function(Loader, cols=4, rows=3) generate_grid(Loader, mimicMapPlus, cols=cols, rows=rows)
 
 # reviewLatestModelRun(testMap, 3)
 # reviewLatestModelRun(bigMap, 5)

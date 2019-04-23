@@ -107,7 +107,9 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     livingAlone           = function() livingAlone(ps()),
     maritalStatus         = function() maritalStatus(ps()),
     
-    tbGrid                = function() TBGrid(Loader)
+    demographicGrid       = function(cols=4, rows=3) DemographicGrid(Loader, cols=cols, rows=rows),
+    hivGrid               = function(cols=4, rows=3) HIVGrid(Loader, cols=cols, rows=rows),
+    tbGrid                = function(cols=4, rows=3) TBGrid(Loader, cols=cols, rows=rows)
   )
 }
 
