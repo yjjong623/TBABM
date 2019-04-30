@@ -1,9 +1,9 @@
 #!/bin/sh
 
-#SBATCH --time=00:10:00
+#SBATCH --time=00:40:00
 #SBATCH --partition=general
-#SBATCH --job-name=rf_progression
-#SBATCH --output=rf_progression_output.txt
+#SBATCH --job-name=rf_initialization_wider
+#SBATCH --output=rf_initialization_wider_output.txt
 #SBATCH --ntasks=40
 #SBATCH --cpus-per-task=4
 #SBATCH --mem-per-cpu=750M
@@ -53,5 +53,5 @@ mkdir -p $rangefile_title\_output
 #   size of threadpool
 #   population size
 #   name of parameter sheet
-$parallel $srun ./tbabm.sh $n_threads {} $rangefile_title '>' $rangefile_title\_output/{}.txt \
+$parallel $srun ./tbabm.sh $n_threads {} $rangefile_title '&>>' $rangefile_title\_output/{}.txt \
     ::: $(seq -w $n_runs)

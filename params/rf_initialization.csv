@@ -1,0 +1,3 @@
+name,lower,upper,step
+TB_p_init_infect,0.0,0.6,0.025
+TB_p_init_active,0.00,0.40,0.025

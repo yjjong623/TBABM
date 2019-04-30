@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 project(TBABM)
 
 # Include SimulationLib
@@ -8,11 +8,10 @@ find_package(Boost REQUIRED)
 find_package(Threads)
 
 # Require C++14 compilation
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS ON)
-set(CLANG_DEFAULT_CXX_STDLIB "libc++")
-set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_CXX_STANDARD 14)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set(CMAKE_CXX_EXTENSIONS ON)
+# set(CLANG_DEFAULT_CXX_STDLIB "libc++")
 
 # Set Demographic files
 set(demographic_path "${TBABM_SOURCE_DIR}/Demographic")
@@ -66,4 +65,5 @@ set(src ${tbabm} ${demographic} ${hiv} ${tb} ${individual} ${household})
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(TBABM ${src})
+target_compile_features(TBABM PUBLIC cxx_std_14)
 target_link_libraries(TBABM PUBLIC SimulationLib StatisticalDistributionsLib ${CMAKE_THREAD_LIBS_INIT})

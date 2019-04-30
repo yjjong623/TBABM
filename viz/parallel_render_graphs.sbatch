@@ -18,6 +18,7 @@ n_threads=${SLURM_CPUS_PER_TASK-1}
 # Load the default version of GNU parallel.
 module load foss/2018b
 module load parallel
+module load R
 
 # This specifies the options used to run srun. The "-N1 -n1" options are
 # used to allocates a single core to each task.
