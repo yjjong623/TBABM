@@ -76,19 +76,19 @@ TB::HandleDeath(Time t)
             data.tbTxNaiveAdults.Record(t, adult ? -1 : 0); break;
 
         case (TBTreatmentStatus::Incomplete):
-            data.tbInTreatment.Record(t, -1);
-            data.tbTxExperiencedAdults.Record(t, adult ? -1 : 0); break;
+            data.tbInTreatment.Record(t, -1); break;
 
         case (TBTreatmentStatus::Complete):
-            data.tbCompletedTreatment.Record(t, -1);
-            data.tbTxExperiencedAdults.Record(t, adult ? -1 : 0); break;
+            data.tbCompletedTreatment.Record(t, -1); break;
 
         case (TBTreatmentStatus::Dropout):
-            data.tbDroppedTreatment.Record(t, -1);
-            data.tbTxExperiencedAdults.Record(t, adult ? -1 : 0); break;
+            data.tbDroppedTreatment.Record(t, -1); break;
 
         default: std::cout << "Error: UNSUPPORTED TBTreatmentStatus!" << std::endl;
     }
+
+    if (treatment_experienced && adult)
+        data.tbTxExperiencedAdults.Record(t, -1);
 
     if (tb_status           == TBStatus::Infectious && \
         tb_treatment_status == TBTreatmentStatus::None && \
@@ -119,11 +119,12 @@ TB::InitialEvents(void)
 void TB::EnterAdulthood(void)
 {
     int age_in_years = AgeStatus(init_time);
+    int age_of_adulthood = 15;
 
     if (AgeStatus(init_time) >= 15)
         return;
 
-    int t_enters_adulthood = init_time + 365*(15-age_in_years);
+    int t_enters_adulthood = init_time + 365*(age_of_adulthood-age_in_years);
 
     auto lambda = [this, 
                    t_enters_adulthood, 
@@ -136,7 +137,7 @@ void TB::EnterAdulthood(void)
 
         auto ts = static_cast<int>(ts_);
         
-        if (tb_treatment_status != TBTreatmentStatus::None)
+        if (treatment_experienced)
             data.tbTxExperiencedAdults.Record(ts, +1);
         else
             data.tbTxNaiveAdults.Record(ts, +1);

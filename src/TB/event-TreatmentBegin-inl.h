@@ -69,6 +69,36 @@ TB::TreatmentBegin(Time t)
 		else
 			TreatmentDropout(ts + 365*params["TB_t_Tx_drop"].Sample(rng));
 
+		// Schedule the moment where they will be marked as "treatment-experienced."
+		// Right now, this is 1 month after treatment start
+		TreatmentMarkExperienced(ts + 1*30);
+
+		return true;
+	};
+
+	eq.QuickSchedule(t, lambda);
+
+	return;
+}
+
+void
+TB::TreatmentMarkExperienced(Time t)
+{
+	auto lambda = [this, lifetm = GetLifetimePtr()] (auto ts_, auto) -> bool {
+
+		assert(lifetm);
+
+		if (!AliveStatus())
+			return true;
+
+		if (tb_treatment_status != TBTreatmentStatus::Incomplete)
+			return true;
+
+		if (!treatment_experienced && AgeStatus(ts_) >= 15)
+			data.tbTxExperiencedAdults.Record((int)ts_, +1);
+
+		treatment_experienced = true;
+
 		return true;
 	};
 

@@ -122,6 +122,8 @@ private:
 	// out. Schedules either event.
 	void TreatmentBegin(Time);
 
+	void TreatmentMarkExperienced(Time);
+
 	// Sets tb_treatment_status to Incomplete
 	void TreatmentDropout(Time);
 
@@ -141,6 +143,7 @@ private:
 	TBStatus tb_status;
 	TBTreatmentStatus tb_treatment_status;
 	std::vector<TBHistoryItem> tb_history;
+	bool treatment_experienced = false;
 
 	// All of these are from the constructor
 	string name;
