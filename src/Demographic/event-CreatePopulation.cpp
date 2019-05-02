@@ -14,7 +14,6 @@ using SchedulerT = EventQueue<double,bool>::SchedulerT;
 // Algorithm S2: Create a population at simulation time 0
 void TBABM::CreatePopulation(int t, long size)
 {
-	printf("[%d] CreatePopulation\n", (int)t);
 	int popChange = 0;
 
 	while (popChange < size) {

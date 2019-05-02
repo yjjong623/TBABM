@@ -5,13 +5,7 @@ project(TBABM)
 find_package(SimulationLib REQUIRED)
 find_package(StatisticalDistributionsLib REQUIRED)
 find_package(Boost REQUIRED)
-find_package(Threads)
-
-# Require C++14 compilation
-# set(CMAKE_CXX_STANDARD 14)
-# set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# set(CMAKE_CXX_EXTENSIONS ON)
-# set(CLANG_DEFAULT_CXX_STDLIB "libc++")
+find_package(Threads REQUIRED)
 
 # Set Demographic files
 set(demographic_path "${TBABM_SOURCE_DIR}/Demographic")
@@ -63,6 +57,11 @@ set(tbabm ${tbabm_path}/TBABM.cpp
 set(src ${tbabm} ${demographic} ${hiv} ${tb} ${individual} ${household})
 
 include_directories(${Boost_INCLUDE_DIRS})
+
+configure_file("parallel.sbatch" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/parallel.sbatch" COPYONLY)
+configure_file("household_structure.csv" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/household_structure.csv" COPYONLY)
+set(ADDITIONAL_MAKE_CLEAN_FILES ${ADDITIONAL_MAKE_CLEAN_FILES} "parallel.sbatch")
+
 
 add_executable(TBABM ${src})
 target_compile_features(TBABM PUBLIC cxx_std_14)

@@ -58,9 +58,7 @@ MasterData::MasterData(int tMax, int pLength, std::vector<double> ageBreaks) :
 	pyramid("Population pyramid", 0, tMax, pLength, 2, ageBreaks),
 	deathPyramid("Death pyramid", 0, tMax, pLength, 2, ageBreaks),
 	householdsCount("households", 0, tMax, pLength)
-{
-	printf("All data initialized\n");
-}
+{}
 
 IndividualInitData
 MasterData::GenIndividualInitData(void)

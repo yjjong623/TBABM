@@ -54,7 +54,7 @@ public:
 	TBABM(Params params_, 
 		  std::map<string, long double> constants_,
 		  const char *householdsFile, 
-		  const long _seed) : 
+		  const std::uint_fast64_t _seed) : 
 
 		params(params_),
 		constants(constants_),
@@ -82,7 +82,7 @@ public:
 					fileData[it->first] = DataFrameFile{j};
 				}
 
-			printf("Seed: %ld\n", seed);
+			printf("Seed: %llu\n", seed);
 		};
 
 	bool Run(void);
@@ -90,9 +90,9 @@ public:
 	MasterData
 	GetData(void);
 
-	bool WriteSurveys(ofstream& ps, 
-					  ofstream& hs, 
-					  ofstream& ds);
+	bool WriteSurveys(shared_p<ofstream> ps, 
+					  shared_p<ofstream> hs, 
+					  shared_p<ofstream> ds);
 
 private:
 
@@ -217,7 +217,7 @@ private:
 	long nHouseholds = 0;
 
 	RNG rng;
-	long seed;
+	std::uint_fast64_t seed;
 
 	string populationSurvey;
 	string householdSurvey;

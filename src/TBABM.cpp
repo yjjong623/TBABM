@@ -19,16 +19,32 @@ TBABM::GetData(void)
 }
 
 bool
-TBABM::WriteSurveys(ofstream& ps, 
-                    ofstream& hs, 
-                    ofstream& ds)
+TBABM::WriteSurveys(shared_p<ofstream> ps, 
+                    shared_p<ofstream> hs, 
+                    shared_p<ofstream> ds)
 {
-    if ((ps << populationSurvey) &&
-        (hs << householdSurvey) &&
-        (ds << deathSurvey))
-        return true;
-    else
-        return false;
+    bool fail = false;
+
+    *ps << populationSurvey;
+    *hs << householdSurvey;
+    *ds << deathSurvey;
+
+    if (ps->fail()) {
+        fail = true;
+        printf("Write to populationSurvey failed\n");
+    }
+
+    if (hs->fail()) {
+        fail = true;
+        printf("Write to householdSurvey failed\n");
+    }
+
+    if (ds->fail()) {
+        fail = true;
+        printf("Write to deathSurvey failed\n");
+    }
+
+    return !fail;
 }
 
 bool TBABM::Run(void)
@@ -60,22 +76,13 @@ bool TBABM::Run(void)
     while (!eq.Empty())
         eq.Pop();
 
-    printf("Events processed: %d\n", events_processed);
-
-    // for (auto idv : population)
-        // printf("Use count A: %ld\n", idv.use_count());
+    // printf("Events processed: %d\n", events_processed);
 
     for (size_t i = 0; i < households.size(); i++)
         households[i].reset();
 
-    // for (auto idv : population)
-        // printf("Use count B: %ld\n", idv.use_count());
-
     for (size_t i = 0; i < population.size(); i++)
         population[i].reset();
-
-    // for (auto idv : population)
-        // printf("Use count C: %ld\n", idv.use_count());
 
     data.Close();
 
