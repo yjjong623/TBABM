@@ -12,3 +12,5 @@ output/
 **/*.xlsx
 .Rproj.user
 TBABM
+sftp-config.json
+bin

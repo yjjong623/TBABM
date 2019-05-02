@@ -4,6 +4,7 @@
 #include <string>
 #include <future>
 #include <sys/stat.h>
+#include <cstdint>
 
 #include <Normal.h>
 #include <RNG.h>
@@ -88,10 +89,10 @@ map<TimeStatType, string> columns {
 TimeStatisticsExport activeHouseholdContacts(columns);
 
 bool ExportTrajectory(TBABM& t, 
-					  int i, 
-					  ofstream& populationSurvey, 
-					  ofstream& householdSurvey, 
-					  ofstream& deathSurvey)
+					  std::uint_fast64_t i, 
+					  std::shared_ptr<ofstream> populationSurvey, 
+					  std::shared_ptr<ofstream> householdSurvey, 
+					  std::shared_ptr<ofstream> deathSurvey)
 {
 	bool success {true};
 
@@ -151,14 +152,6 @@ bool ExportTrajectory(TBABM& t,
 	success &= t.WriteSurveys(populationSurvey, householdSurvey, deathSurvey);
 
 	return success;
-}
-
-void WriteSeed(double timestamp)
-{
-	std::ofstream seedLog;
-	seedLog.open("../output/seed_log.txt", std::ios_base::app);
-	seedLog << timestamp << std::endl;
-	seedLog.close();
 }
 
 bool WriteData(string outputPrefix)
@@ -224,8 +217,64 @@ bool WriteData(string outputPrefix)
 	);
 }
 
+bool householdsFileValid(const string& fname)
+{
+	struct stat buf;
+	return stat(fname.c_str(), &buf) == 0;
+}
+
 int main(int argc, char **argv)
 {
+		// Required rguments:
+	// -t INTEGER
+	// 		The number of trajectories to run.
+	// -n INTEGER
+	// 		The initial population size.
+	// 		
+	// Optional arguments:
+	// -p SHEET_NAME
+	// 		Optional. Path to parameter sheet (as json file). If not specified,
+	// 		uses 'sampleParams.json'
+	// -y INTEGER
+	// 		Optional. Specifies the number of years for the model to run.
+	// -s INTEGER
+	// 		Optional. RNG seed. Default is std::time(NULL).
+	// -o FOLDER_NAME
+	// 		Optional. Folder to store outputs in. Include trailing 
+	// 		forward-slash. Otherwise, outputs to working dir
+	// -m INTEGER
+	// 	    Run in parallel with a pool size of INTEGER.
+	// -h FILE_NAME
+	// 		Load the specified households file. Defaults to household_structure.csv
+
+	string opthelp {\
+"Required arguments:\n\
+-t INTEGER\n\
+	The number of trajectories to run.\n\
+-n INTEGER\n\
+	The initial population size.\n\
+\n\
+Optional arguments:\n\
+-p SHEET_NAME\n\
+	Optional. Path to parameter sheet (as json file). If not specified,\n\
+	uses 'sampleParams.json'\n\
+-y INTEGER\n\
+	Optional. Specifies the number of years for the model to run.\n\
+-s INTEGER\n\
+	Optional. RNG seed. Default is std::time(NULL).\n\
+-o FOLDER_NAME\n\
+	Optional. Folder to store outputs in. Include trailing \n\
+	forward-slash. Otherwise, outputs to working dir\n\
+-m INTEGER\n\
+    Run in parallel with a pool size of INTEGER.\n\
+-h FILE_NAME\n\
+	Load the specified households file. Defaults to household_structure.csv"};
+
+	if (argc == 1) {
+		cout << opthelp << std::endl;
+		return EXIT_FAILURE;
+	}
+
 	Constants constants {};
 
 	// Initialize some constants that will be passed to each trajectory
@@ -237,41 +286,23 @@ int main(int argc, char **argv)
 
 	// Initialize a few default values for parameters that mostly can be 
 	// passed through the command line
-	const char *householdsFile {"household_structure.csv"};
+	string householdsFile {"household_structure.csv"};
 	int nTrajectories {1};
-	long timestamp {std::time(NULL)};
+	auto timestamp = static_cast<std::uint_fast64_t>(std::time(NULL));
 
 	string folder {""};
-	string parameter_sheet {"sampleParams"};
+	string parameter_sheet {"sampleParams.json"};
 
 	int pool_size {1};
 
-	// Required rguments:
-	// -t INTEGER
-	// 		The number of trajectories to run.
-	// -n INTEGER
-	// 		The initial population size.
-	// 		
-	// Optional arguments:
-	// -p SHEET_NAME
-	// 		Optional. Names a parameter sheet. Do not use file extension
-	// 		and do not specify directory; it is assumed to be '.json' and 
-	// 		exist in 'params/'. Without specification, 'sampleParams' is
-	// 		used.
-	// -y INTEGER
-	// 		Optional. Specifies the number of years for the model to run.
-	// -s INTEGER
-	// 		Optional. RNG seed. Default is std::time(NULL).
-	// -o FOLDER_NAME
-	// 		Optional. Folder to store outputs in. Include trailing 
-	// 		forward-slash.
-	// -m INTEGER
-	// 	    Run in parallel with a pool size of INTEGER.
 	int opt;
-	while ((opt = getopt(argc, argv, ":t:n:p:y:s:o:m:")) != -1)
+	while ((opt = getopt(argc, argv, ":t:n:p:y:s:o:m:h:")) != -1)
 	{
 		switch (opt)
 		{
+			case 'h':
+				householdsFile = std::string(optarg);
+				break;
 			case 't':
 				nTrajectories = atoi(optarg);
 				break;
@@ -302,30 +333,55 @@ int main(int argc, char **argv)
 
 	// Initialize the master RNG, and write the seed to the file "seed_log.txt"
 	RNG rng(timestamp);
-	WriteSeed(timestamp);
 
-	// Come up with the prefix for file output, and create the director the files
+	// Come up with the prefix for file output, and create the directory the files
 	// will reside in, if it isn't already there
-	string outputPrefix {"../output/" + folder + to_string(timestamp) + "_"};
-	mkdir(std::string("../output/" + folder).c_str(), S_IRWXU);
-	printf("outputPrefix is %s\n", outputPrefix.c_str());
+	mkdir(folder.c_str(), S_IRWXU);
+	string outputPrefix {folder + to_string(timestamp) + "_"};
 
-	// Initialize population, household, survey streams
-	string populationHeader = "trajectory,time,hash,age,sex,marital,household,householdHash,offspring,mom,dad,HIV,ART,CD4,TBStatus\n";
-	string householdHeader  = "trajectory,time,hash,size,head,spouse,directOffspring,otherOffspring,other\n";
-	string deathHeader = "trajectory,time,hash,age,sex,cause,HIV,HIV_date,ART,ART_date,CD4,baseline_CD4\n";
-	ofstream populationSurvey(outputPrefix + "populationSurvey.csv", ios_base::out);
-	ofstream householdSurvey(outputPrefix + "householdSurvey.csv", ios_base::out);
-	ofstream deathSurvey(outputPrefix + "deathSurvey.csv", ios_base::out);
-	populationSurvey << populationHeader;
-	householdSurvey  << householdHeader;
-	deathSurvey      << deathHeader;
+	// Check to make sure that a households file can be opened
+	if (!householdsFileValid(householdsFile)) {
+		printf("Error: households file '%s' invalid, exiting\n", householdsFile.c_str());
+		exit(EXIT_FAILURE);
+	}
 
+	const std::map<string, string> surveyHeaders {
+		{"population", "trajectory,time,hash,age,sex,marital,household,householdHash,offspring,mom,dad,HIV,ART,CD4,TBStatus"},
+		{"household", "trajectory,time,hash,size,head,spouse,directOffspring,otherOffspring,other"},
+		{"death", "trajectory,time,hash,age,sex,cause,HIV,HIV_date,ART,ART_date,CD4,baseline_CD4"}
+	};
+	std::map<string, std::shared_ptr<ofstream>> surveyFiles;
+
+	auto prepareSurvey = [outputPrefix](std::pair<string, string> name_and_header) 
+							-> std::pair<string, std::shared_ptr<ofstream>> {
+
+		// Attempt to initialize files to output surveys to
+		string fname {outputPrefix + name_and_header.first + ".csv"};
+
+		auto temp = std::make_shared<ofstream>(fname, ios_base::out);
+
+		// Handle initialization failures
+		if (temp->fail()) {
+			printf("Attempt to open file '%s' failed\n", fname.c_str());
+			exit(EXIT_FAILURE);
+		}
+
+		*temp << name_and_header.second << std::endl;
+
+		if (temp->fail())
+			printf("Attempt to write header to file '%s' failed\n", fname.c_str());
+
+		return std::make_pair(name_and_header.first, temp);
+	};
+
+	std::transform(surveyHeaders.begin(), 
+				   surveyHeaders.end(),
+				   std::inserter(surveyFiles, surveyFiles.begin()),
+				   prepareSurvey);
 
 	// Initialize the map of simulation parameters
 	std::map<string, Param> params{};
-	mapShortNames(fileToJSON(string("../params/") + parameter_sheet + string(".json")), params);
-
+	mapShortNames( fileToJSON(parameter_sheet), params );
 
 	// Thread pool for trajectories, and associated futures
 	ThreadPool pool(pool_size);
@@ -334,7 +390,7 @@ int main(int argc, char **argv)
 	// Mutex lock for data-export critical section
 	std::mutex mtx;
 
-	std::vector<long> seeds;
+	std::vector<std::uint_fast64_t> seeds;
 	for (int i = 0; i < nTrajectories; i++)
 		seeds.emplace_back(rng.mt_());
 
@@ -342,14 +398,14 @@ int main(int argc, char **argv)
 
 	for (int i = 0; i < nTrajectories; i++) {
 		results.emplace_back(
-			pool.enqueue([i, &params, constants, householdsFile, seeds, &mtx, &populationSurvey, &householdSurvey, &deathSurvey] {
+			pool.enqueue([i, &params, constants, householdsFile, seeds, &mtx, &surveyFiles] {
 				printf("#%4d RUNNING\n", i);
 
 				// Initialize a trajectory
 				auto seed = seeds[i];
 				auto traj = TBABM(params, 
 								  constants, 
-								  householdsFile, 
+								  householdsFile.c_str(), 
 								  seeds[i]);
 
 				// Run the trajectory and check its' status
@@ -362,7 +418,12 @@ int main(int argc, char **argv)
 				mtx.lock();
 
 				// Pass the TBABM object to a function that will export its data
-				if (!ExportTrajectory(traj, seed, populationSurvey, householdSurvey, deathSurvey)) {
+				if (!ExportTrajectory(traj, 
+									  seed,
+									  surveyFiles.at("population"),
+									  surveyFiles.at("household"),
+									  surveyFiles.at("death"))) {
+
 					printf("Trajectory #%4d: ExportTrajectrory(1) failed\n", i);
 					mtx.unlock();
 					return false;
@@ -371,7 +432,7 @@ int main(int argc, char **argv)
 				// Release the mutex lock and return
 				mtx.unlock();
 
-				printf("#%4d FINISHED\n", i);
+				// printf("#%4d FINISHED\n", i);
 				return true;
 			})
 		);
@@ -383,13 +444,17 @@ int main(int argc, char **argv)
 	for (int i = 0; i < nTrajectories; i++) {
 		printf("#%4d JOINED: %d\n", i, (int)results[i].get());
 	}
-
 	
 	std::cout << std::endl;
 
 	if (!WriteData(outputPrefix)) {
 		printf("WriteData() failed. Exiting\n");
 		exit(1);
+	}
+
+	for (auto && file : surveyFiles) {
+		file.second->flush();
+		file.second->close();
 	}
 
 	return 0;

@@ -10,12 +10,8 @@ find_package(StatisticalDistributionsLib REQUIRED)
 # set(TBABM_VERSION_MINOR 1 CACHE STRING "minor version" FORCE)
 # set(TBABM_VERSION ${TBABM_VERSION_MAJOR}.${TBABM_VERSION_MINOR} CACHE STRING "version" FORCE)
 
-# Define install destinations
-# set(include_dest "include/TBABM-${TBABM_VERSION}")
-# set(main_lib_dest "lib/TBABM-${TBABM_VERSION}")
-# set(lib_dest ${main_lib_dest}/${CMAKE_BUILD_TYPE})
-
 # Define options here
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Add subdirectories
 include_directories(${Boost_INCLUDE_DIRS})
