@@ -12,7 +12,7 @@
 E_RUNERR=65
 
 # Load dependencies
-if which module > /dev/null 2>&1; then
+if module help > /dev/null 2>&1; then
 	module load foss/2018b || { (>&2 echo 'Loading foss/2018b failed; exiting'); exit $E_RUNERR; };
 	module load parallel   || { (>&2 echo 'Loading parallel failed; exiting');   exit $E_RUNERR; };
 else

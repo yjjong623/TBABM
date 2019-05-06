@@ -25,7 +25,7 @@ if stat TBABM > /dev/null 2>&1; then
 	TBABM="./TBABM";
 	echo "Binary found [dir]: ./TBABM";
 
-elif which module > /dev/null 2>&1; then
+elif module help > /dev/null 2>&1; then
 	module load TBABM || { (>&2 echo 'Loading TBABM from Lmod failed; exiting');\
 						        exit $E_RUNERR; };
 
