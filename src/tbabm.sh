@@ -25,7 +25,7 @@ if stat TBABM > /dev/null 2>&1; then
 	TBABM="./TBABM";
 	echo "Binary found [dir]: ./TBABM";
 
-elif which -s module; then
+elif which module > /dev/null 2>&1; then
 	module load TBABM || { (>&2 echo 'Loading TBABM from Lmod failed; exiting');\
 						        exit $E_RUNERR; };
 
@@ -36,8 +36,9 @@ elif which -s module; then
 	echo "Binary found [Lmod]: $(which TBABM)";
 
 else
-	which -s TBABM || { (>&2 echo 'No Lmod, TBABM in $PATH, or TBABM in .; exiting');\
-							 exit $E_RUNERR; };
+	which TBABM > /dev/null 2>&1 || \
+		{ (>&2 echo 'No Lmod, TBABM in $PATH, or TBABM in .; exiting');\
+		       exit $E_RUNERR; };
 
 	TBABM=`which TBABM`;
 	echo "Binary found: [path]: $(which TBABM)";
