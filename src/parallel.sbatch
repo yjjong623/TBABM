@@ -9,25 +9,38 @@
 #SBATCH --mem-per-cpu=750M
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=marcus.russi@yale.edu
+E_RUNERR=65
 
-rangefile_title=${1?"Usage: parallel.sbatch RANGEFILE_TITLE N_RUNS"}
-n_runs=${2?"Usage: parallel.sbatch RANGEFILE_TITLE N_RUNS"}
-n_jobs=${SLURM_NTASKS-2}
+# Load dependencies
+if which -s module; then
+	module load foss/2018b || { (>&2 echo 'Loading foss/2018b failed; exiting'); exit $E_RUNERR; };
+	module load parallel   || { (>&2 echo 'Loading parallel failed; exiting');   exit $E_RUNERR; };
+else
+	which -s parallel || { (>&2 echo '"parallel" not found in $PATH; exiting'); exit $E_RUNERR; };
+fi
+
+usage_string="Usage: parallel.sbatch RANGEFILE_TITLE N_RUNS"
+
+rangefile_title=${1?$usage_string}
+
+n_runs=${2?$usage_string}
+n_jobs=${SLURM_NTASKS-`getconf _NPROCESSORS_ONLN`}
 n_threads=${SLURM_CPUS_PER_TASK-2}
 
-echo $rangefile_title $n_runs $n_jobs $n_threads
+echo "Running $rangefile_title for $n_runs runs using $n_jobs jobs on $n_threads threads/process"
 
-# Load the default version of GNU parallel.
-module load foss/2018b
-module load parallel
+if ! seq -w $n_runs | parallel stat {}.json > /dev/null; then
+	echo "Could not stat 1 or more of the runsheets; exiting";
+	exit 1;
+fi
 
-# When running a large number of tasks simultaneously, it may be
-# necessary to increase the user process limit.
-# ulimit -u 10000
-
-# This specifies the options used to run srun. The "-N1 -n1" options are
-# used to allocates a single core to each task.
-srun="srun -n1 -N1 --cpus-per-task $n_threads --exclusive"
+if which -s srun; then
+	# This specifies the options used to run srun. The "-N1 -n1" options are
+	# used to allocates a single core to each task.
+	srun="srun -n1 -N1 --cpus-per-task $n_threads --exclusive";
+else
+	srun="";
+fi
 
 # This specifies the options used to run GNU parallel:
 #
@@ -38,9 +51,7 @@ srun="srun -n1 -N1 --cpus-per-task $n_threads --exclusive"
 #   The combination of --joblog and --resume create a task log that
 #   can be used to monitor progress.
 #
-parallel="parallel --verbose --delay 0.2 -j $n_jobs --joblog $rangefile_title.log --resume"
-
-mkdir -p $rangefile_title\_output
+parallel="parallel --verbose -j $n_jobs --delay 0.2 --joblog parallel.log"
 
 # Run a script, runtask.sh, using GNU parallel and srun. Parallel
 # will run the runtask script for the numbers 1 through 128. To
@@ -53,5 +64,4 @@ mkdir -p $rangefile_title\_output
 #   size of threadpool
 #   population size
 #   name of parameter sheet
-$parallel $srun ./tbabm.sh $n_threads {} $rangefile_title '&>>' $rangefile_title\_output/{}.txt \
-    ::: $(seq -w $n_runs)
+seq -w $n_runs | $parallel $srun ./tbabm.sh $n_threads {} '$RANDOM' '>' {}.log '2>&1'
