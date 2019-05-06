@@ -9,6 +9,7 @@
 #SBATCH --mem-per-cpu=750M
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=marcus.russi@yale.edu
+
 E_RUNERR=65
 
 # Load dependencies
