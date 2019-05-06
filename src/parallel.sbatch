@@ -12,11 +12,11 @@
 E_RUNERR=65
 
 # Load dependencies
-if which -s module; then
+if which module > /dev/null 2>&1; then
 	module load foss/2018b || { (>&2 echo 'Loading foss/2018b failed; exiting'); exit $E_RUNERR; };
 	module load parallel   || { (>&2 echo 'Loading parallel failed; exiting');   exit $E_RUNERR; };
 else
-	which -s parallel || { (>&2 echo '"parallel" not found in $PATH; exiting'); exit $E_RUNERR; };
+	which parallel > /dev/null 2>&1 || { (>&2 echo '"parallel" not found in $PATH; exiting'); exit $E_RUNERR; };
 fi
 
 usage_string="Usage: parallel.sbatch RANGEFILE_TITLE N_RUNS"
@@ -34,7 +34,7 @@ if ! seq -w $n_runs | parallel stat {}.json > /dev/null; then
 	exit 1;
 fi
 
-if which -s srun; then
+if which srun > /dev/null 2>&1; then
 	# This specifies the options used to run srun. The "-N1 -n1" options are
 	# used to allocates a single core to each task.
 	srun="srun -n1 -N1 --cpus-per-task $n_threads --exclusive";
