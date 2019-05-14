@@ -60,6 +60,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 configure_file("parallel.sbatch" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/parallel.sbatch" COPYONLY)
 configure_file("tbabm.sh" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tbabm.sh" COPYONLY)
+configure_file("tbabm2.sh" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tbabm2.sh" COPYONLY)
 configure_file("household_structure.csv" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/household_structure.csv" COPYONLY)
 set(ADDITIONAL_MAKE_CLEAN_FILES ${ADDITIONAL_MAKE_CLEAN_FILES} "parallel.sbatch")
 

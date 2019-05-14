@@ -1,5 +1,9 @@
 source("R/graph_catalog.R")
 
+initial.dir<-getwd()
+print(initial.dir)
+quit()
+
 GraphAndSaveRun <- function(folder_name) {
   cat <- CreateGraphCatalog(folder_name)
   slash <- ifelse(folder_name[length(folder_name)] == '/', "", "/")

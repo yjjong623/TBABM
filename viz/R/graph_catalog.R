@@ -27,11 +27,15 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
   Loader           <- switch(run, "latest" = CSVLoaderGen(GetLatestPrefix(outputLocation)), 
                              CSVLoaderGen(GetPrefix(outputLocation, run)))
 
+  ps = function() Loader("population")
+  hs = function() Loader("household")
+  ds = function() Loader("death")
+  
   list(
     Loader                = Loader,
-    ps                    = function() Loader("populationSurvey"),
-    hs                    = function() Loader("householdSurvey"),
-    ds                    = function() Loader("deathSurvey"),
+    ps                    = ps,
+    hs                    = hs,
+    ds                    = ds,
     
     deathRatePyramid      = function() deathRatePyramid(Loader),
     populationPyramid     = function() Pyramid(Loader, "pyramid", "Count", "Age group"),
@@ -54,18 +58,18 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     hivInfectionsPyramid  = function() AveragedPyramid(Loader, "hivInfectionsPyramid", "Age Group", "Individuals infected") + ggtitle("HIV infections by age group, absolute count"),
     hivInfectionsRatePyr  = function() left_join(Loader("hivInfectionsPyramid"), 
                                                  Loader("populationPyramid"), 
-                                                 by=c("period", "trajectory", "age group", "category")) %>%
+                                                 by=c("period", "trajectocat <ry", "age group", "category")) %>%
                                        mutate(value = 100000*value.x/(value.y + 1)) %>%
                                        AveragedPyramid_impl("Age group", "Infections/100,000/yr") + ggtitle("HIV infection rate by age group"),
     hivNegative           = function() Graph(Loader, "hivNegative", "Time (years)", "HIV Negative"),
     hivPositive           = function() Graph(Loader, "hivPositive", "Time (years)", "HIV Positive"),
     hivPositiveART        = function() Graph(Loader, "hivPositiveART", "Time (years)", "HIV Positive + ART"),
     
-    hivCD4s               = function(size=100) CD4counts(ps, size),
-    hivSurvivalWithART    = function() hivSurvivalWithART(ds),
+    hivCD4s               = function(size=100) CD4counts(ps(), size),
+    hivSurvivalWithART    = function() hivSurvivalWithART(ds()),
     
-    hivCD4Decline         = function(n_samples) hivCD4Decline(ps, ds, n_samples),
-    hivSurvivalNoART      = function() hivSurvivalNoART(ds),
+    hivCD4Decline         = function(n_samples) hivCD4Decline(ps(), ds(), n_samples),
+    hivSurvivalNoART      = function() hivSurvivalNoART(ds()),
     
     # All seems to check out, but are the rates realistic?
     tbInfections          = function() Graph(Loader, "tbInfections", "Time (years)", "Infections/year") + ggtitle("Infections S->L"),
@@ -112,41 +116,3 @@ CreateGraphCatalog <- function(outputLocation, run="latest") {
     tbGrid                = function(cols=4, rows=3) TBGrid(Loader, cols=cols, rows=rows)
   )
 }
-
-# insFOIs <- function() {
-#   runs <- c(1552405442, 1552405546, 1552405640, 1552405734, 1552405813)
-#   household <- c(50, 5, 0.5, 0.05, 0.005)
-#   global <- c(0.005, 0.05, 0.5, 5, 50)
-#   datas <- c("tbInfectionsHousehold", "tbInfectionsCommunity")
-#   
-#   process <- function(run, household, global) {
-#       Loader <- CSVLoaderGen(GetPrefix(outputLocation, as.character(run)))
-#       
-#       map(datas, ~mutate(Loader(.), type=., 
-#                                     household=household, 
-#                                     global=global,
-#                                     seed=run)) %>%
-#         bind_rows()
-#   }
-#     
-#     pmap(list(runs, household, global), ~process(..1, ..2, ..3)) %>%
-#       bind_rows() %>%
-#       ggplot(aes(period, value, color=type, group=interaction(trajectory, type, seed))) +
-#         geom_line() +
-#         coord_cartesian(ylim=c(0, 300)) +
-#         theme_classic() +
-#         theme(legend.position = "top") +
-#         theme(legend.background = element_rect(fill="lightblue",
-#                                                size=0.5, linetype="solid", 
-#                                                colour ="darkblue")) +
-#         scale_color_discrete(name="Infection source", breaks=c("tbInfectionsCommunity", "tbInfectionsHousehold"), labels=c("Global/Community", "Household")) +
-#         labs(x="Time (years)", y="Infections/year", color="Infection source") +
-#         facet_grid(vars(household, global), labeller = "label_both")
-# }
-# 
-# insFOIs()
-  # geom_hline(yintercept = 19.61) + BIRTHRATE
-  # geom_hline(yintercept = 16.99) + DEATHRATE
-  # geom_hline(yintercept = 3) + MARRIAGERATE
-  # geom_hline(yintercept = 0.4) + DIVORCERATE
-  
