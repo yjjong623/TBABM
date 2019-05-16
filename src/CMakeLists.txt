@@ -58,11 +58,8 @@ set(src ${tbabm} ${demographic} ${hiv} ${tb} ${individual} ${household})
 
 include_directories(${Boost_INCLUDE_DIRS})
 
-configure_file("parallel.sbatch" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/parallel.sbatch" COPYONLY)
 configure_file("RunTBABM" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RunTBABM" COPYONLY)
 configure_file("household_structure.csv" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/household_structure.csv" COPYONLY)
-set(ADDITIONAL_MAKE_CLEAN_FILES ${ADDITIONAL_MAKE_CLEAN_FILES} "parallel.sbatch")
-
 
 add_executable(TBABM ${src})
 target_compile_features(TBABM PUBLIC cxx_std_14)

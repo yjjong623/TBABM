@@ -22,7 +22,7 @@ function print_usage {
 # See documentation of 'getopts' or 
 # https://sookocheff.com/post/bash/parsing-bash-script-arguments-with-shopts/
 # for more information about processing CLI arguments in Bash scripts
-optstring=":hb:r:n:t:qei:gm:j:"
+optstring=":hb:r:n:t:qe:i:gm:j:"
 
 # Make sure at least one argument was supplied. $# is the number of arguments
 # to the script.
@@ -41,6 +41,9 @@ N_INDIVIDUALS=31000
 DO_BATCH=false
 DO_EMAIL=false
 DO_GRAPH=false
+EMAIL_ADDR=""
+
+RUNTBABM_OPTSTRING=""
 
 # Put the flag being processed into the variable $opt
 while getopts $optstring opt; do
@@ -49,34 +52,38 @@ while getopts $optstring opt; do
       print_usage; exit 0
       ;;
     b )
-      RUN_NAME=$OPTARG
+      RUN_NAME=$OPTARG; RUNTBABM_OPTSTRING+="-b $OPTARG "
       ;;
     r )
-      RANGEFILE=$OPTARG
+      RANGEFILE=$OPTARG; RUNTBABM_OPTSTRING+="-r $OPTARG "
       ;;
     n )
-      N_RUNSHEETS=$OPTARG
+      N_RUNSHEETS=$OPTARG; RUNTBABM_OPTSTRING+="-n $OPTARG "
       ;;
     t )
-      N_TRAJECTORIES=$OPTARG
+      N_TRAJECTORIES=$OPTARG; RUNTBABM_OPTSTRING+="-t $OPTARG "
       ;;
     q )
       DO_BATCH=true
+      # The next line is commented so that when executed via sbatch,
+      # the script will not attempt to re-run itself
+      # RUNTBABM_OPTSTRING+="-q "
       ;;
     e )
       DO_EMAIL=true
+      EMAIL_ADDR=$OPTARG; RUNTBABM_OPTSTRING+="-e $OPTARG "
       ;;
     i )
-      N_INDIVIDUALS=$OPTARG
+      N_INDIVIDUALS=$OPTARG; RUNTBABM_OPTSTRING+="-i $OPTARG "
       ;;
     g )
-      DO_GRAPH=false
+      DO_GRAPH=false; RUNTBABM_OPTSTRING+="-g "
       ;;
     m )
-      N_THREADS=$OPTARG
+      N_THREADS=$OPTARG; RUNTBABM_OPTSTRING+="-m $OPTARG "
       ;;
     j )
-      N_JOBS=$OPTARG
+      N_JOBS=$OPTARG; RUNTBABM_OPTSTRING+="-j $OPTARG "
       ;;
     \? )
       echo "Invalid Option: -$OPTARG" 1>&2
@@ -100,7 +107,33 @@ if [[ "$N_RUNSHEETS" = 0 ]]; then
 fi
 
 # Get rid of arguments that have already been processed
-shift $((OPTIND -1))
+# shift $((OPTIND -1))
+echo $BASH_SOURCE $@
+
+if [[ "$DO_BATCH" = true ]]; then
+  SBATCH_OPTSTRING=""
+  SBATCH_OPTSTRING+='--time=00:30:00 '
+  SBATCH_OPTSTRING+='--partition=general '
+  SBATCH_OPTSTRING+="--job-name=$RUN_NAME "
+  SBATCH_OPTSTRING+='--output=slurm.log '
+  SBATCH_OPTSTRING+="--ntasks=$N_JOBS "
+  SBATCH_OPTSTRING+="--cpus-per-task=$N_THREADS "
+  SBATCH_OPTSTRING+='--mem-per-cpu=750M '
+
+  if [[ "$DO_EMAIL" = true ]]; then
+    SBATCH_OPTSTRING+='--mail-type=ALL '
+    SBATCH_OPTSTRING+="--mail-user=$EMAIL_ADDR"
+  fi
+
+  # which -s sbatch || \
+    # { (>&2 echo 'Error: sbatch was not found in $PATH; exiting');\
+      # exit 1; }
+
+  # Schedule the job and exit
+  echo sbatch $SBATCH_OPTSTRING $BASH_SOURCE $RUNTBABM_OPTSTRING
+  exit $?
+fi
+
 
 # Load dependencies: use Lmod if in cluster environment
 if module help > /dev/null 2>&1; then
@@ -181,7 +214,7 @@ tbabm="$TBABM_BIN $TBABM_OPTSTRING"
 #   The combination of --joblog and --resume create a task log that
 #   can be used to monitor progress.
 #
-parallel="parallel --verbose -j $N_JOBS --delay 0.2 --joblog parallel.log"
+parallel="parallel --dryrun --verbose -j $N_JOBS --delay 0.2 --joblog parallel.log"
 
 seq -w $N_RUNSHEETS | $parallel $srun $tbabm '>' {}.log '2>&1'
 
