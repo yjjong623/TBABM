@@ -1,11 +1,12 @@
 #!/bin/sh           
 
+# Print usage information
 function print_usage {
   echo "Usage:"
   echo "  TBABM -h"
   echo "    Print usage information and exit"
   echo "  TBABM [options] -r rangefile -n num_runsheets"
-  echo "    Run TBABM on 'num_runsheets' from 'rangefile'"
+  echo "    Run TBABM on 'num_runsheets' runsheets from 'rangefile'"
   echo
   echo "Options:"
   echo "  -b name       Name of the run"
@@ -18,9 +19,13 @@ function print_usage {
   echo "  -j num        Number of jobs. Default 2"
 }
 
+# See documentation of 'getopts' or 
+# https://sookocheff.com/post/bash/parsing-bash-script-arguments-with-shopts/
+# for more information about processing CLI arguments in Bash scripts
 optstring=":hb:r:n:t:qei:gm:j:"
 
-# Make sure at least one argument was supplied
+# Make sure at least one argument was supplied. $# is the number of arguments
+# to the script.
 if [[ $# -lt 1 ]]; then
   echo "Error: Too few options" 1>&2
   exit 1;
@@ -94,18 +99,10 @@ if [[ "$N_RUNSHEETS" = 0 ]]; then
   exit 1;
 fi
 
-echo "RUN_NAME=$RUN_NAME"
-echo "RANGEFILE=$RANGEFILE"
-echo "N_RUNSHEETS=$N_RUNSHEETS"
-echo "N_TRAJECTORIES=$N_TRAJECTORIES"
-echo "N_INDIVIDUALS=$N_INDIVIDUALS"
-echo "DO_BATCH=$DO_BATCH"
-echo "DO_EMAIL=$DO_EMAIL"
-echo "DO_GRAPH=$DO_GRAPH"
-
+# Get rid of arguments that have already been processed
 shift $((OPTIND -1))
 
-# Load dependencies
+# Load dependencies: use Lmod if in cluster environment
 if module help > /dev/null 2>&1; then
   module load foss/2018b || \
     { (>&2 echo 'Loading foss/2018b failed; exiting'); exit $E_RUNERR; };
@@ -113,19 +110,67 @@ if module help > /dev/null 2>&1; then
     { (>&2 echo 'Loading parallel failed; exiting');   exit $E_RUNERR; };
 fi
 
-which -s parallel || { (>&2 echo '"parallel" not found in $PATH; exiting'); exit $E_RUNERR; };
+# Ensure that GNU parallel exists, else exit
+which -s parallel || \
+  { (>&2 echo '"parallel" not found in $PATH; exiting'); exit $E_RUNERR; };
 
+# Make sure that all of the RunSheets exist
 if ! seq -w $N_RUNSHEETS | parallel -j40 stat {}.json > /dev/null; then
   echo "Could not stat 1 or more of the runsheets; exiting";
   exit 1;
 fi
-srun="";
 
+srun="";
 if which -s 'srun'; then
   # This specifies the options used to run srun. The "-N1 -n1" options are
   # used to allocates a single core to each task.
   srun="srun -n1 -N1 --cpus-per-task $N_THREADS --exclusive";
 fi
+
+seq -w $N_RUNSHEETS | parallel mkdir || \
+  { (>&2 echo "Creation of an output directory failed; exiting"); exit 1; }
+
+# Determine which TBABM binary will be used. Any TBABM binary in the working
+# directory is chosen first. Then, if Lmod is available, an attempt is made 
+# to load TBABM from there. Finally, TBABM is searched for in $PATH.
+if stat TBABM > /dev/null 2>&1; then
+  TBABM_BIN="./TBABM";
+  echo "Binary found [dir]: ./TBABM";
+
+# Check to see if Lmod exists
+elif module help > /dev/null 2>&1; then
+  module load TBABM || { (>&2 echo 'Loading TBABM from Lmod failed; exiting');\
+                    exit $E_RUNERR; };
+
+  which -s TBABM || \
+    { (>&2 echo 'No TBABM found in $PATH after successful Lmod load; exiting');\
+           exit $E_RUNERR; };
+
+  TBABM_BIN=`which TBABM`;
+  echo "Binary found [Lmod]: $(which TBABM)";
+
+else
+  which TBABM > /dev/null 2>&1 || \
+    { (>&2 echo 'No Lmod, TBABM in $PATH, or TBABM in ./; exiting');\
+           exit $E_RUNERR; };
+
+  TBABM_BIN=`which TBABM`;
+  echo "Binary found: [path]: $(which TBABM)";
+fi
+
+# Build the string of options passed to the TBABM binary. Escape (using '') 
+# variables whose values should be resolved on binary invocation.
+TBABM_OPTSTRING=""
+TBABM_OPTSTRING+="-t $N_TRAJECTORIES "
+TBABM_OPTSTRING+="-n $N_INDIVIDUALS "
+TBABM_OPTSTRING+='-p {}.json '
+TBABM_OPTSTRING+='-s $RANDOM '
+TBABM_OPTSTRING+='-o {}/ '
+TBABM_OPTSTRING+="-m $N_THREADS "
+TBABM_OPTSTRING+='-h household_structure.csv'
+
+# Final string to use with Parallel
+tbabm="$TBABM_BIN $TBABM_OPTSTRING"
 
 # This specifies the options used to run GNU parallel:
 #
@@ -138,12 +183,6 @@ fi
 #
 parallel="parallel --verbose -j $N_JOBS --delay 0.2 --joblog parallel.log"
 
-# Arguments to tbabm.sh:
-#   number of trajectories
-#   size of threadpool
-#   population size
-#   name of parameter sheet
-seq -w $N_RUNSHEETS | \
-  $parallel $srun ./tbabm.sh $N_THREADS {} '$RANDOM' '>' {}.log '2>&1'
+seq -w $N_RUNSHEETS | $parallel $srun $tbabm '>' {}.log '2>&1'
 
-exit 0;
+exit $?;
