@@ -125,12 +125,12 @@ if [[ "$DO_BATCH" = true ]]; then
     SBATCH_OPTSTRING+="--mail-user=$EMAIL_ADDR"
   fi
 
-  # which -s sbatch || \
-    # { (>&2 echo 'Error: sbatch was not found in $PATH; exiting');\
-      # exit 1; }
+  which -s sbatch || \
+    { (>&2 echo 'Error: sbatch was not found in $PATH; exiting');\
+      exit 1; }
 
   # Schedule the job and exit
-  echo sbatch $SBATCH_OPTSTRING $BASH_SOURCE $RUNTBABM_OPTSTRING
+  sbatch $SBATCH_OPTSTRING $BASH_SOURCE $RUNTBABM_OPTSTRING
   exit $?
 fi
 
@@ -213,7 +213,7 @@ tbabm="$TBABM_BIN $TBABM_OPTSTRING"
 #   The combination of --joblog and --resume create a task log that
 #   can be used to monitor progress.
 #
-parallel="parallel --dryrun --verbose -j $N_JOBS --delay 0.2 --joblog parallel.log"
+parallel="parallel --verbose -j $N_JOBS --delay 0.2 --joblog parallel.log"
 
 seq -w $N_RUNSHEETS | $parallel $srun $tbabm '>' {}.log '2>&1'
 
