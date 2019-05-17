@@ -10,7 +10,7 @@ function print_usage {
   echo
   echo "Options:"
   echo "  -b name       Name of the run"
-  echo "  -e            Email when job is finished. Implies -q"
+  echo "  -e address    Email when job is finished. Implies -q"
   echo "  -g            Graph the output"
   echo "  -i init_size  Initial size of population. Default 31000"
   echo "  -q            Run as a batch job through sbatch"
@@ -133,7 +133,6 @@ if [[ "$DO_BATCH" = true ]]; then
   echo sbatch $SBATCH_OPTSTRING $BASH_SOURCE $RUNTBABM_OPTSTRING
   exit $?
 fi
-
 
 # Load dependencies: use Lmod if in cluster environment
 if module help > /dev/null 2>&1; then
