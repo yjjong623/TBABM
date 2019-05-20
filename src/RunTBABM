@@ -11,7 +11,7 @@ function print_usage {
   echo "Options:"
   echo "  -b name       Name of the run"
   echo "  -e address    Email when job is finished. Implies -q"
-  echo "  -g            Graph the output"
+  # echo "  -g            Graph the output"
   echo "  -i init_size  Initial size of population. Default 31000"
   echo "  -q            Run as a batch job through sbatch"
   echo "  -t num        Number of trajectories per runsheet. Default 4"
@@ -125,7 +125,7 @@ if [[ "$DO_BATCH" = true ]]; then
     SBATCH_OPTSTRING+="--mail-user=$EMAIL_ADDR"
   fi
 
-  which -s sbatch || \
+  which sbatch > /dev/null || \
     { (>&2 echo 'Error: sbatch was not found in $PATH; exiting');\
       exit 1; }
 
@@ -143,17 +143,17 @@ if module help > /dev/null 2>&1; then
 fi
 
 # Ensure that GNU parallel exists, else exit
-which -s parallel || \
+which parallel > /dev/null || \
   { (>&2 echo '"parallel" not found in $PATH; exiting'); exit $E_RUNERR; };
 
 # Make sure that all of the RunSheets exist
-if ! seq -w $N_RUNSHEETS | parallel -j40 stat {}.json > /dev/null; then
+if ! seq -w $N_RUNSHEETS | parallel -X stat {}.json > /dev/null; then
   echo "Could not stat 1 or more of the runsheets; exiting";
   exit 1;
 fi
 
 srun="";
-if which -s 'srun'; then
+if which 'srun' > /dev/null; then
   # This specifies the options used to run srun. The "-N1 -n1" options are
   # used to allocates a single core to each task.
   srun="srun -n1 -N1 --cpus-per-task $N_THREADS --exclusive";
@@ -168,27 +168,30 @@ seq -w $N_RUNSHEETS | parallel mkdir || \
 if stat TBABM > /dev/null 2>&1; then
   TBABM_BIN="./TBABM";
   echo "Binary found [dir]: ./TBABM";
-
-# Check to see if Lmod exists
-elif module help > /dev/null 2>&1; then
-  module load TBABM || { (>&2 echo 'Loading TBABM from Lmod failed; exiting');\
-                    exit $E_RUNERR; };
-
-  which -s TBABM || \
-    { (>&2 echo 'No TBABM found in $PATH after successful Lmod load; exiting');\
-           exit $E_RUNERR; };
-
-  TBABM_BIN=`which TBABM`;
-  echo "Binary found [Lmod]: $(which TBABM)";
-
 else
-  which TBABM > /dev/null 2>&1 || \
-    { (>&2 echo 'No Lmod, TBABM in $PATH, or TBABM in ./; exiting');\
-           exit $E_RUNERR; };
-
-  TBABM_BIN=`which TBABM`;
-  echo "Binary found: [path]: $(which TBABM)";
+  TBABM_BIN="TBABM"
 fi
+
+# # Check to see if Lmod exists
+# elif module help > /dev/null 2>&1; then
+#   module load TBABM || { (>&2 echo 'Loading TBABM from Lmod failed; exiting');\
+#                     exit $E_RUNERR; };
+
+#   which -s TBABM || \
+#     { (>&2 echo 'No TBABM found in $PATH after successful Lmod load; exiting');\
+#            exit $E_RUNERR; };
+
+#   TBABM_BIN=`which TBABM`;
+#   echo "Binary found [Lmod]: $(which TBABM)";
+
+# else
+#   which TBABM > /dev/null 2>&1 || \
+#     { (>&2 echo 'No Lmod, TBABM in $PATH, or TBABM in ./; exiting');\
+#            exit $E_RUNERR; };
+
+#   TBABM_BIN=`which TBABM`;
+#   echo "Binary found: [path]: $(which TBABM)";
+# fi
 
 # Build the string of options passed to the TBABM binary. Escape (using '') 
 # variables whose values should be resolved on binary invocation.
