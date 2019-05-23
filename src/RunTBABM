@@ -108,7 +108,6 @@ fi
 
 # Get rid of arguments that have already been processed
 # shift $((OPTIND -1))
-echo $BASH_SOURCE $@
 
 if [[ "$DO_BATCH" = true ]]; then
   SBATCH_OPTSTRING=""
@@ -116,7 +115,7 @@ if [[ "$DO_BATCH" = true ]]; then
   SBATCH_OPTSTRING+='--partition=general '
   SBATCH_OPTSTRING+="--job-name=$RUN_NAME "
   SBATCH_OPTSTRING+='--output=slurm.log '
-  SBATCH_OPTSTRING+="--ntasks=$N_JOBS "
+  SBATCH_OPTSTRING+="--ntasks=$((N_JOBS+1)) "
   SBATCH_OPTSTRING+="--cpus-per-task=$N_THREADS "
   SBATCH_OPTSTRING+='--mem-per-cpu=750M '
 
@@ -159,15 +158,16 @@ if which 'srun' > /dev/null; then
   srun="srun -n1 -N1 --cpus-per-task $N_THREADS --exclusive";
 fi
 
-seq -w $N_RUNSHEETS | parallel mkdir || \
-  { (>&2 echo "Creation of an output directory failed; exiting"); exit 1; }
+seq -w $N_RUNSHEETS | xargs rm -rf || \
+  { (>&2 echo "Failed to remove existing result directories; exiting"); exit $?; }
+seq -w $N_RUNSHEETS | xargs mkdir || \
+  { (>&2 echo "Creation of an output directory failed; exiting"); exit $?; }
 
 # Determine which TBABM binary will be used. Any TBABM binary in the working
 # directory is chosen first. Then, if Lmod is available, an attempt is made 
 # to load TBABM from there. Finally, TBABM is searched for in $PATH.
 if stat TBABM > /dev/null 2>&1; then
   TBABM_BIN="./TBABM";
-  echo "Binary found [dir]: ./TBABM";
 else
   TBABM_BIN="TBABM"
 fi
@@ -216,8 +216,8 @@ tbabm="$TBABM_BIN $TBABM_OPTSTRING"
 #   The combination of --joblog and --resume create a task log that
 #   can be used to monitor progress.
 #
-parallel="parallel --verbose -j $N_JOBS --delay 0.2 --joblog parallel.log"
+parallel="parallel -j $N_JOBS --delay 0.2 --joblog parallel.log"
 
-seq -w $N_RUNSHEETS | $parallel $srun $tbabm '>' {}.log '2>&1'
+seq -w $N_RUNSHEETS | $parallel $srun $tbabm '>' {}.log '2>&1;' echo {}
 
 exit $?;
