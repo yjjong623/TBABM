@@ -337,7 +337,7 @@ Optional arguments:\n\
 	// Come up with the prefix for file output, and create the directory the files
 	// will reside in, if it isn't already there
 	mkdir(folder.c_str(), S_IRWXU);
-	string outputPrefix {folder + to_string(timestamp) + "_"};
+	string outputPrefix {folder /*+ to_string(timestamp) + "_"*/};
 
 	// Check to make sure that a households file can be opened
 	if (!householdsFileValid(householdsFile)) {
