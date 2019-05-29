@@ -1,2 +1,5 @@
 name,lower,upper,step
 TB_rapidprog_risk,0,0.15,0.01
+TB_p_init_infect,0.3,0.5,0.1
+TB_risk_global,2,16,2
+TB_risk_household,5,20,5

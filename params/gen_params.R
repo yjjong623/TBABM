@@ -123,8 +123,9 @@ main <- function(args) {
   proto_fname <- args[1]
   rangefiles_fnames <- args[-1]
   
-  GenPrefix <- function(rangefile_fname) 
-                 paste0(tools::file_path_sans_ext(rangefile_fname), "_")
+  # GenPrefix <- function(rangefile_fname) 
+  #                paste0(tools::file_path_sans_ext(rangefile_fname), "_")
+  GenPrefix <- function(rangefile_fname) return("")
   
   runsheet_sets <- map(rangefiles_fnames, ~GenRunSheets(proto_fname, .))
   runsheet_prefixes <- map(rangefiles_fnames, GenPrefix)

@@ -26,8 +26,8 @@ timeseries_spec = cols(period=col_integer(),
 
 summary_spec = cols(trajectory=col_character(),
 					type=col_character(),
-					min=col_integer(),
-					max=col_integer(),
+					min=col_double(),
+					max=col_double(),
 					mean=col_double(),
 					median=col_double())
 
