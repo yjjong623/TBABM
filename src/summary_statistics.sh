@@ -21,6 +21,24 @@
 
 files='tbCompletedTreatment.csv|tbInTreatment.csv|tbExperienced.csv|tbInfectious.csv|tbLatent.csv|tbSusceptible.csv|tbTxExperiencedAdults.csv|tbTxExperiencedInfectiousAdults.csv|tbTxNaiveAdults.csv|tbTxNaiveInfectiousAdults.csv'
 
+cd $1 || (>&2 echo 'Failed to open directory' $1)
+
+awk 'NR > 1 && $1 < 50' populationSize.csv | sort -t , -k 1 > ps_clean.csv
+
+ls -1 |
+  grep -oE $files |
+  xargs awk -F, -v OFS=, 'FNR > 1 && FNR < 52 { print substr(FILENAME, 1, index(FILENAME, ".csv")-1), $0 }' |
+  sort -t , -k 2 |
+  join -t , -1 2 -2 1 -o '1.1,1.2,1.3,1.4,2.3' - ps_clean.csv |
+  awk -F, -v OFS=, '{ print $1, $2, $3, 100*$4/($5+0.0001) }' |
+  (echo 'Type,Period,Trajectory,Value'; cat) |
+  datamash -s -t, --round 4 --header-in --group Type min Value max Value mean Value median Value |
+  sed 's/^/'$1',/g'
+
+rm -f ps_clean.csv
+
+exit $?;
+
 # Go to the directory, exit if this fails, and list the contents of the
 # directory, 1 per line
 cd $1 && ls -1 | 
@@ -37,9 +55,8 @@ cd $1 && ls -1 |
   # NR is an 'awk' variable that essentially means line number
   # $0 is the line (including all of its fields, i.e. columns)
   xargs -I % awk -F , -v OFS=, 'NR>1{ print "%", $0 }' % |
-  # Get rid of the 50th row, which in the current implementation of a
-  # PrevalenceTimeSeries will always be blank.
-  awk 'NR % 51 != 0' |
+  # Get rid of the periods 0-9 and 50
+  awk -F , '10 <= $2 && $2 < 50 { print $0 }' |
   # Remove the file extension from the filename. This converts the filename to
   # the 'type' name, i.e. 'tbExperienced.csv' => 'tbExperienced'
   sed 's/.csv//g' |
