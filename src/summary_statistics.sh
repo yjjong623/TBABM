@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script calculates summary statistics on TimeSeries, where the TimeSeries
 # involved are specified in the 'files' variable.

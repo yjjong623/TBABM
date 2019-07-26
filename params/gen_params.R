@@ -39,7 +39,8 @@ GenRunSheets <- function(proto_fname, rangefile_fname) {
   # to modify the prototype RunSheet. Thus, the keys of the innermost lists
   # correspond to the 'short-name' of a parameter, and the values, for right
   # now, are what 'parameter-1' should be set to.
-  crossed <- pmap(substitutions, function(name, lower, upper, step) seq(lower, upper, step)) %>%
+  crossed <- pmap(substitutions, 
+                  function(name, lower, upper, step) seq(lower, upper, step)) %>%
     setNames(substitutions$name) %>% cross()
   
   # Given a list of substitutions, outputs a new parameter sheet, as a tibble, which
@@ -61,30 +62,6 @@ GenRunSheets <- function(proto_fname, rangefile_fname) {
   crossed %>% map(~GenRunSheet(., proto))
 }
 
-# For each generated RunSheet, create a list of the parameters in that RunSheet
-# that were in the set of parameters that the rangefile designated as variable
-InspectNewRunSheets <- function(NewRunSheets, rangefile_fname) {
-  substitutions <- read_csv(rangefile_fname, col_types=datasheet_spec) %>% as_tibble()
-  
-  map(NewRunSheets, ~.[which(.$`short-name` %in% substitutions$name), c('short-name', 'parameter-1')])
-}
-
-# Given a list of new RunSheets, and the filename of the rangefile
-# that generated them, create a line graph of all of the parameters that
-# are being varied, where X is the name of the parameter being varied, and
-# Y is its value in each of the RunSheetss
-PlotNewRunSheets <- function(new_runsheets, rangefile_fname) {
-  all_sheets <- InspectNewRunSheets(new_runsheets, rangefile_fname) %>%
-    bind_rows(.id="group")
-  
-  ggplot(all_sheets, aes(`short-name`, 
-                         `parameter-1`, 
-                         group=group, 
-                         color=group)) + 
-    geom_line() +
-    geom_point()
-}
-
 WriteRunSheets <- function(runsheets, prefix="RunSheet_") {
   
   # Determine the number of digits needed to represent the ID of the
@@ -93,6 +70,7 @@ WriteRunSheets <- function(runsheets, prefix="RunSheet_") {
   num_digits <- floor(log10(num_sheets)) + 1
   
   WriteRunSheet <- function(runsheet, sheet_id) {
+    print(runsheet)
     
     # Format the RunSheet ID: add an appropriate amount of leading 0's
     number <- formatC(sheet_id, width=num_digits, format="d", flag="0")
@@ -115,22 +93,42 @@ main <- function(args) {
   n_args <- length(args)
   n_rangefiles <- n_args - 1
   
+  offset <- 0
+  collate <- FALSE
+  
   if (n_args < 2) {
-    print("Usage: PROTOTYPE_FILE [RANGEFILE]+")
+    print("Usage: PROTOTYPE_FILE RANGEFILE")
     return();
   }
   
-  proto_fname <- args[1]
-  rangefiles_fnames <- args[-1]
+  if (args[1] == "-c") {
+    collate <- TRUE
+    offset <- offset + 1
+  }
+  
+  proto_fname <- args[offset + 1]
+  rangefile_fname <- args[offset + 2]
   
   # GenPrefix <- function(rangefile_fname) 
   #                paste0(tools::file_path_sans_ext(rangefile_fname), "_")
   GenPrefix <- function(rangefile_fname) return("")
   
-  runsheet_sets <- map(rangefiles_fnames, ~GenRunSheets(proto_fname, .))
-  runsheet_prefixes <- map(rangefiles_fnames, GenPrefix)
-  runsheets_written <- map2(runsheet_sets, runsheet_prefixes,
-                            ~WriteRunSheets(.x, prefix=.y))
+  runsheets <- GenRunSheets(proto_fname, rangefile_fname)
+  
+  if (collate) {
+    map(runsheets, ~toJSON(., na='null')) %>% 
+      paste(collapse="\n") %>% 
+      write(file="runsheets.json")
+    
+    iwalk(runsheets, ~write_csv(.x, "runsheets.csv", append=(.y != 1)))
+  } else {
+    WriteRunSheets(runsheets, prefix="")
+  }
+  
+  # runsheet_sets <- map(rangefiles_fnames, ~GenRunSheets(proto_fname, .))
+  # runsheet_prefixes <- map(rangefiles_fnames, GenPrefix)
+  # runsheets_written <- map2(runsheet_sets, runsheet_prefixes,
+                            # ~WriteRunSheets(.x, prefix=.y))
 }
 
 main(commandArgs(trailingOnly=TRUE))
@@ -147,3 +145,29 @@ main(commandArgs(trailingOnly=TRUE))
 # test_sheets_larger <- GenRunSheets("prototype.csv", "rangefile_example_larger.csv")
 # PlotNewRunSheets(test_sheets_larger, "rangefile_example_larger.csv")
 # WriteRunSheets(test_sheets_larger)
+
+
+# For each generated RunSheet, create a list of the parameters in that RunSheet
+# that were in the set of parameters that the rangefile designated as variable
+InspectNewRunSheets <- function(NewRunSheets, rangefile_fname) {
+  substitutions <- read_csv(rangefile_fname, col_types=datasheet_spec) %>% as_tibble()
+  
+  map(NewRunSheets, ~.[which(.$`short-name` %in% substitutions$name), 
+                       c('short-name', 'parameter-1')])
+}
+
+# Given a list of new RunSheets, and the filename of the rangefile
+# that generated them, create a line graph of all of the parameters that
+# are being varied, where X is the name of the parameter being varied, and
+# Y is its value in each of the RunSheetss
+PlotNewRunSheets <- function(new_runsheets, rangefile_fname) {
+  all_sheets <- InspectNewRunSheets(new_runsheets, rangefile_fname) %>%
+    bind_rows(.id="group")
+  
+  ggplot(all_sheets, aes(`short-name`, 
+                         `parameter-1`, 
+                         group=group, 
+                         color=group)) + 
+    geom_line() +
+    geom_point()
+}

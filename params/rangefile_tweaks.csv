@@ -1,5 +1,0 @@
-name,lower,upper,step
-TB_risk_global,0,60,10
-TB_risk_household,0,60,10
-TB_p_init_infect,0.4,0.5,0.05
-TB_prog_time,0.0035,0.1035,0.05
