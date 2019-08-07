@@ -1,0 +1,60 @@
+#!/usr/bin/env Rscript
+library(EasyCalibrator)
+library(tibble)
+
+#########################################################
+## Real data: preprocessing functions
+#########################################################
+ReformatRawCalibData <- function(d) {
+  vars <- setdiff(names(d), 'year')
+
+  # Reformat each target into a tibble with a 'year' variable
+  # and a 'value' variable
+  tibbles <- purrr::map_at(d, vars, ~tibble::tibble(year=d$year, value=.))
+
+  # For each target, remove entries that are NA-valued
+  purrr::map(tibbles[vars], ~dplyr::filter(., !is.na(value)))
+}
+
+#########################################################
+## Real data
+#########################################################
+calibrationData_raw <- tibble::tibble(
+  year = 2002:2008,
+  populationChildren = c(10427, 10531, 10637, 10743, 10850, 10959, 11068),
+  populationAdults =   c(25903, 26162, 26424, 26688, 26955, 27224, 27497),
+  notifiedTBChildren = c(82, 60, 66, 69, 73, 77, 69),
+  notifiedTBExperiencedAdults = c(105, 119, 130, 109, 130, 126, 137),
+  notifiedTBNaiveAdults = c(172, 234, 200, 224, 216, 233, 210),
+  prevalenceExperiencedAdults = 100*c(0.097, NA, NA, NA, NA, NA, NA),
+  prevalenceHIV = c(0.052, NA, NA, NA, NA, NA, NA),
+  prevalenceInfectiousNaiveAdults = 100*c(0.0051, NA, NA, NA, NA, NA, NA),
+  prevalenceInfectiousExperiencedAdults = 100*c(0.0299, NA, NA, NA, NA, NA, NA)
+)
+
+calibrationData <- ReformatRawCalibData(calibrationData_raw)
+
+tar_prevalence_HIV <- list(type='TS',
+                           model=c('hivPositive', 'populationSize'),
+                           observed=calibrationData$prevalenceHIV)
+
+targets <- list(HIVPrevalence=tar_prevalence_HIV)
+
+fakePopSize <- 500
+
+# Open 'stdin' as a file descriptor
+f <- file("stdin")
+open(f)
+
+# Read one line at a time until EOF
+while(length(line <- readLines(f, n = 1)) > 0){
+
+  # cd into the directory given by the line, generate a likelihood,
+  # cd back out, and print the likelihood to stdout
+  setwd(line)
+  likelihood <- EasyCalibrator::CalibrateTargets(targets)
+  setwd('..')
+
+  write(paste0(line, ',', as.character(likelihood)),
+        stdout())
+}
