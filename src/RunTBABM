@@ -3,15 +3,16 @@
 # Print usage information
 function print_usage {
   echo "Usage:"
-  echo "  TBABM -h"
+  echo "  RunTBABM -h"
   echo "    Print usage information and exit"
-  echo "  TBABM [options] -r rangefile -n num_runsheets"
+  echo "  RunTBABM [options] -r rangefile -n num_runsheets"
   echo "    Run TBABM on 'num_runsheets' runsheets from 'rangefile'"
   echo
   echo "Options:"
-  echo "  -b name       Name of the run"
-  echo "  -e address    Email when job is finished. Implies -q"
-  echo "  -c file       Collated. Each line of 'file' is a RunSheet"
+  echo "  -b name       Name of the run. Used for naming sbatch jobs"
+  echo "  -e address    Email when job is finished. To use with -q"
+  echo "  -c file       Collated. Each line of 'file' is a RunSheet."
+  echo "                No need to use -r or -n in this configuration"
   # echo "  -g            Graph the output"
   echo "  -i init_size  Initial size of population. Default 31000"
   echo "  -q            Run as a batch job through sbatch"
@@ -83,9 +84,9 @@ while getopts $optstring opt; do
     i )
       N_INDIVIDUALS=$OPTARG; RUNTBABM_OPTSTRING+="-i $OPTARG "
       ;;
-    g )
-      DO_GRAPH=false; RUNTBABM_OPTSTRING+="-g "
-      ;;
+    # g )
+    #   DO_GRAPH=false; RUNTBABM_OPTSTRING+="-g "
+    #   ;;
     m )
       N_THREADS=$OPTARG; RUNTBABM_OPTSTRING+="-m $OPTARG "
       ;;
@@ -104,17 +105,14 @@ while getopts $optstring opt; do
 done
 
 if [[ "$RANGEFILE" = "" && "$COLLATE" = "false" ]]; then
-  echo "Error: Must specify rangefile" 1>&2
+  echo "Error: Must specify rangefile if not using the '-c' flag" 1>&2
   exit 1;
 fi
 
 if [[ "$N_RUNSHEETS" = "0" && "$COLLATE" = "false" ]]; then
-  echo "Error: Must specify # rangefiles" 1>&2
+  echo "Error: Must specify # rangefiles when not using the '-c' flag" 1>&2
   exit 1;
 fi
-
-# Get rid of arguments that have already been processed
-# shift $((OPTIND -1))
 
 if [[ "$DO_BATCH" = true ]]; then
   SBATCH_OPTSTRING=""
@@ -132,7 +130,7 @@ if [[ "$DO_BATCH" = true ]]; then
   fi
 
   which sbatch > /dev/null || \
-    { (>&2 echo 'Error: sbatch was not found in $PATH; exiting');\
+    { (>&2 echo 'Error: Batch job requested, but sbatch was not found in $PATH; exiting');\
       exit 1; }
 
   # Schedule the job and exit
@@ -163,20 +161,23 @@ fi
 srun="";
 if which 'srun' > /dev/null; then
   # This specifies the options used to run srun. The "-N1 -n1" options are
-  # used to allocates a single core to each task.
+  # used to allocates a single core to each task (a task is one model run,
+  # which may include multiple trajectories).
   srun="srun -n1 --cpus-per-task $N_THREADS --exclusive";
 fi
 
+# Remove existing result directories that would conflict with the ones that
+# must be created for the results that will be generated
 if [[ "$COLLATE" = "false" ]]; then
   seq -w $N_RUNSHEETS | xargs rm -rf || \
-    { (>&2 echo "Failed to remove existing result directories; exiting"); exit $?; }
+    { (>&2 echo "Failed to remove existing result directories; exiting");
+      exit $?; }
   seq -w $N_RUNSHEETS | xargs mkdir || \
     { (>&2 echo "Creation of an output directory failed; exiting"); exit $?; }
 fi
 
 # Determine which TBABM binary will be used. Any TBABM binary in the working
-# directory is chosen first. Then, if Lmod is available, an attempt is made 
-# to load TBABM from there. Finally, TBABM is searched for in $PATH.
+# directory is chosen first. Then, TBABM is searched for in $PATH.
 if stat TBABM > /dev/null 2>&1; then
   TBABM_BIN="./TBABM";
 else
@@ -188,11 +189,7 @@ fi
 TBABM_OPTSTRING=""
 TBABM_OPTSTRING+="-t $N_TRAJECTORIES "
 TBABM_OPTSTRING+="-n $N_INDIVIDUALS "
-if [[ "$COLLATE" = "false" ]]; then
-  TBABM_OPTSTRING+='-p {}.json '
-else
-  TBABM_OPTSTRING+='-p {} '
-fi
+TBABM_OPTSTRING+='-p {}.json '
 TBABM_OPTSTRING+='-s $RANDOM '
 TBABM_OPTSTRING+='-o {#}/ '
 TBABM_OPTSTRING+="-m $N_THREADS "
@@ -225,25 +222,25 @@ function tbabm_coll () {
 export N_TRAJECTORIES N_INDIVIDUALS N_THREADS srun TBABM_BIN
 export -f tbabm_coll
 
-function analyze () {
-  ../src/summary_statistics.sh $1 >> results.csv # | tee -a results.csv 1>&2
-  echo $1
-}
-export -f analyze
-
-function remove () {
-  rm -rf $1
-}
-export -f remove
+# function analyze () {
+#   ../src/summary_statistics.sh $1 >> results.csv # | tee -a results.csv 1>&2
+#   echo $1
+# }
+# export -f analyze
+# 
+# function remove () {
+#   rm -rf $1
+# }
+# export -f remove
 
 if [[ "$COLLATE" = "false" ]]; then
   seq -w $N_RUNSHEETS | parallel $ps_opts $srun $tbabm '>' {}.log '2>&1;' echo {}
 else
   cat $COLLATED_FILE | 
-    parallel $pc_opts tbabm_coll {} {#} |
+    parallel $pc_opts tbabm_coll {} '{#}'
     # parallel -j1 analyze |
-    ./pipes.R |
-    parallel -j1 remove # &&
+    # ./pipes.R |
+    # parallel -j1 remove # &&
   # ./likelihoods.R < results.csv
 fi
 
